@@ -10,11 +10,13 @@ exports.UtilityBillsModule = void 0;
 const common_1 = require("@nestjs/common");
 const utility_bills_service_1 = require("./utility-bills.service");
 const utility_bills_controller_1 = require("./utility-bills.controller");
+const notifications_module_1 = require("../notifications/notifications.module");
 let UtilityBillsModule = class UtilityBillsModule {
 };
 exports.UtilityBillsModule = UtilityBillsModule;
 exports.UtilityBillsModule = UtilityBillsModule = __decorate([
     (0, common_1.Module)({
+        imports: [notifications_module_1.NotificationsModule],
         controllers: [utility_bills_controller_1.UtilityBillsController],
         providers: [utility_bills_service_1.UtilityBillsService],
         exports: [utility_bills_service_1.UtilityBillsService],

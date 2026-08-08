@@ -10,11 +10,13 @@ exports.MealsModule = void 0;
 const common_1 = require("@nestjs/common");
 const meals_service_1 = require("./meals.service");
 const meals_controller_1 = require("./meals.controller");
+const notifications_module_1 = require("../notifications/notifications.module");
 let MealsModule = class MealsModule {
 };
 exports.MealsModule = MealsModule;
 exports.MealsModule = MealsModule = __decorate([
     (0, common_1.Module)({
+        imports: [notifications_module_1.NotificationsModule],
         controllers: [meals_controller_1.MealsController],
         providers: [meals_service_1.MealsService],
         exports: [meals_service_1.MealsService],

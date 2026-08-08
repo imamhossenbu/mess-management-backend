@@ -10,11 +10,13 @@ exports.MonthlySummaryModule = void 0;
 const common_1 = require("@nestjs/common");
 const monthly_summary_service_1 = require("./monthly-summary.service");
 const monthly_summary_controller_1 = require("./monthly-summary.controller");
+const notifications_module_1 = require("../notifications/notifications.module");
 let MonthlySummaryModule = class MonthlySummaryModule {
 };
 exports.MonthlySummaryModule = MonthlySummaryModule;
 exports.MonthlySummaryModule = MonthlySummaryModule = __decorate([
     (0, common_1.Module)({
+        imports: [notifications_module_1.NotificationsModule],
         controllers: [monthly_summary_controller_1.MonthlySummaryController],
         providers: [monthly_summary_service_1.MonthlySummaryService],
         exports: [monthly_summary_service_1.MonthlySummaryService],

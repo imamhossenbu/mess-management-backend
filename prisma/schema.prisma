@@ -177,7 +177,7 @@ model ShopDebt {
 // ==================== SHOP MONTHLY SUMMARY ====================
 model ShopMonthlySummary {
   id                String            @id @default(cuid())
-  monthYear         DateTime
+  monthYear         DateTime          @unique  
   totalDebt         Decimal           @default(0)
   totalPaid         Decimal           @default(0)
   currentDue        Decimal           @default(0)

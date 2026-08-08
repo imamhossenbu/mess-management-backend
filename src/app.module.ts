@@ -10,6 +10,8 @@ import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
 import { MarketingsModule } from "./modules/marketings/marketings.module";
 import { InventoryModule } from "./modules/inventory/inventory.module";
 import { UtilityBillsModule } from "./modules/utility-bills/utility-bills.module";
+import { ShopDebtsModule } from "./modules/shop-debts/shop-debts.module";
+import { PaymentsModule } from "./modules/payments/payments.module";
 
 @Module({
   imports: [
@@ -23,8 +25,10 @@ import { UtilityBillsModule } from "./modules/utility-bills/utility-bills.module
     UsersModule,
     MealsModule,
     MarketingsModule,
-     InventoryModule,
+    InventoryModule,
     UtilityBillsModule,
+    ShopDebtsModule,
+    PaymentsModule,
     HealthModule,
   ],
   controllers: [],

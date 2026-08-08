@@ -19,9 +19,14 @@ let InventoryService = class InventoryService {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
     }
-    async getAllInventory() {
+    async getAllInventory(messId) {
         let meat = await this.prisma.inventory.findUnique({
-            where: { type: client_1.InventoryType.MEAT },
+            where: {
+                messId_type: {
+                    messId,
+                    type: client_1.InventoryType.MEAT,
+                },
+            },
             include: {
                 logs: {
                     orderBy: { date: "desc" },
@@ -42,7 +47,12 @@ let InventoryService = class InventoryService {
             },
         });
         let fish = await this.prisma.inventory.findUnique({
-            where: { type: client_1.InventoryType.FISH },
+            where: {
+                messId_type: {
+                    messId,
+                    type: client_1.InventoryType.FISH,
+                },
+            },
             include: {
                 logs: {
                     orderBy: { date: "desc" },
@@ -64,7 +74,7 @@ let InventoryService = class InventoryService {
         });
         if (!meat) {
             meat = await this.prisma.inventory.create({
-                data: { type: client_1.InventoryType.MEAT, quantity: 0 },
+                data: { messId, type: client_1.InventoryType.MEAT, quantity: 0 },
                 include: {
                     logs: {
                         orderBy: { date: "desc" },
@@ -87,7 +97,7 @@ let InventoryService = class InventoryService {
         }
         if (!fish) {
             fish = await this.prisma.inventory.create({
-                data: { type: client_1.InventoryType.FISH, quantity: 0 },
+                data: { messId, type: client_1.InventoryType.FISH, quantity: 0 },
                 include: {
                     logs: {
                         orderBy: { date: "desc" },
@@ -108,11 +118,68 @@ let InventoryService = class InventoryService {
                 },
             });
         }
-        return [meat, fish];
+        const meatWithLogs = await this.prisma.inventory.findUnique({
+            where: {
+                messId_type: {
+                    messId,
+                    type: client_1.InventoryType.MEAT,
+                },
+            },
+            include: {
+                logs: {
+                    orderBy: { date: "desc" },
+                    take: 10,
+                    include: {
+                        marketing: {
+                            select: {
+                                id: true,
+                                itemName: true,
+                                quantity: true,
+                                amount: true,
+                                shopName: true,
+                                date: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const fishWithLogs = await this.prisma.inventory.findUnique({
+            where: {
+                messId_type: {
+                    messId,
+                    type: client_1.InventoryType.FISH,
+                },
+            },
+            include: {
+                logs: {
+                    orderBy: { date: "desc" },
+                    take: 10,
+                    include: {
+                        marketing: {
+                            select: {
+                                id: true,
+                                itemName: true,
+                                quantity: true,
+                                amount: true,
+                                shopName: true,
+                                date: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        return [meatWithLogs || meat, fishWithLogs || fish];
     }
-    async getInventory(type) {
+    async getInventory(messId, type) {
         let inventory = await this.prisma.inventory.findUnique({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
             include: {
                 logs: {
                     orderBy: { date: "desc" },
@@ -134,7 +201,7 @@ let InventoryService = class InventoryService {
         });
         if (!inventory) {
             inventory = await this.prisma.inventory.create({
-                data: { type, quantity: 0 },
+                data: { messId, type, quantity: 0 },
                 include: {
                     logs: {
                         orderBy: { date: "desc" },
@@ -155,11 +222,37 @@ let InventoryService = class InventoryService {
                 },
             });
         }
-        return inventory;
+        const inventoryWithLogs = await this.prisma.inventory.findUnique({
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
+            include: {
+                logs: {
+                    orderBy: { date: "desc" },
+                    take: 20,
+                    include: {
+                        marketing: {
+                            select: {
+                                id: true,
+                                itemName: true,
+                                quantity: true,
+                                amount: true,
+                                shopName: true,
+                                date: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        return inventoryWithLogs || inventory;
     }
-    async getSummary() {
-        const meat = await this.getInventory(client_1.InventoryType.MEAT);
-        const fish = await this.getInventory(client_1.InventoryType.FISH);
+    async getSummary(messId) {
+        const meat = await this.getInventory(messId, client_1.InventoryType.MEAT);
+        const fish = await this.getInventory(messId, client_1.InventoryType.FISH);
         return {
             meat: {
                 available: meat.quantity,
@@ -175,11 +268,16 @@ let InventoryService = class InventoryService {
             },
         };
     }
-    async getLogs(type) {
-        const where = {};
+    async getLogs(messId, type) {
+        const where = { messId };
         if (type) {
             const inventory = await this.prisma.inventory.findUnique({
-                where: { type },
+                where: {
+                    messId_type: {
+                        messId,
+                        type,
+                    },
+                },
             });
             if (!inventory) {
                 throw new common_1.NotFoundException(`Inventory for ${type} not found`);
@@ -206,7 +304,7 @@ let InventoryService = class InventoryService {
             },
         });
     }
-    async addInventory(addInventoryDto) {
+    async addInventory(messId, addInventoryDto) {
         const { type, quantity, marketingId, note } = addInventoryDto;
         if (quantity <= 0) {
             throw new common_1.BadRequestException("Quantity must be greater than 0");
@@ -220,15 +318,25 @@ let InventoryService = class InventoryService {
             }
         }
         let inventory = await this.prisma.inventory.findUnique({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
         });
         if (!inventory) {
             inventory = await this.prisma.inventory.create({
-                data: { type, quantity: 0 },
+                data: { messId, type, quantity: 0 },
             });
         }
         const updated = await this.prisma.inventory.update({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
             data: {
                 quantity: inventory.quantity + quantity,
                 lastUpdated: new Date(),
@@ -236,6 +344,7 @@ let InventoryService = class InventoryService {
         });
         await this.prisma.inventoryLog.create({
             data: {
+                messId,
                 inventoryId: inventory.id,
                 change: quantity,
                 reason: "ADD",
@@ -243,17 +352,21 @@ let InventoryService = class InventoryService {
                 note: note || `${quantity} পিস যোগ করা হয়েছে`,
             },
         });
-        const updatedInventory = await this.getInventory(type);
+        const updatedInventory = await this.getInventory(messId, type);
         if (updatedInventory.quantity > 50) {
-            const admins = await this.prisma.user.findMany({
+            const admins = await this.prisma.messMember.findMany({
                 where: {
-                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    messId,
+                    role: { in: ["SUPER_ADMIN", "ADMIN"] },
                     isActive: true,
+                },
+                include: {
+                    user: true,
                 },
             });
             for (const admin of admins) {
                 await this.notificationsService.create({
-                    userId: admin.id,
+                    userId: admin.userId,
                     type: "INVENTORY",
                     title: "Stock Level High",
                     message: `${type} stock is now ${updatedInventory.quantity} pieces. Consider reducing purchases.`,
@@ -263,13 +376,18 @@ let InventoryService = class InventoryService {
         }
         return updated;
     }
-    async removeInventory(removeInventoryDto) {
+    async removeInventory(messId, removeInventoryDto) {
         const { type, quantity, note } = removeInventoryDto;
         if (quantity <= 0) {
             throw new common_1.BadRequestException("Quantity must be greater than 0");
         }
         const inventory = await this.prisma.inventory.findUnique({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
         });
         if (!inventory) {
             throw new common_1.NotFoundException(`Inventory for ${type} not found`);
@@ -278,7 +396,12 @@ let InventoryService = class InventoryService {
             throw new common_1.BadRequestException(`Insufficient quantity. Available: ${inventory.quantity}, Requested: ${quantity}`);
         }
         const updated = await this.prisma.inventory.update({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
             data: {
                 quantity: inventory.quantity - quantity,
                 lastUpdated: new Date(),
@@ -286,34 +409,45 @@ let InventoryService = class InventoryService {
         });
         await this.prisma.inventoryLog.create({
             data: {
+                messId,
                 inventoryId: inventory.id,
                 change: -quantity,
                 reason: "REMOVE",
                 note: note || `${quantity} পিস ব্যবহার করা হয়েছে`,
             },
         });
-        const updatedInventory = await this.getInventory(type);
+        const updatedInventory = await this.getInventory(messId, type);
         if (updatedInventory.quantity < 10) {
             await this.notificationsService.sendInventoryAlert(type, updatedInventory.quantity);
         }
         return updated;
     }
-    async setInventory(setInventoryDto) {
+    async setInventory(messId, setInventoryDto) {
         const { type, quantity, note } = setInventoryDto;
         if (quantity < 0) {
             throw new common_1.BadRequestException("Quantity cannot be negative");
         }
         let inventory = await this.prisma.inventory.findUnique({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
         });
         if (!inventory) {
             inventory = await this.prisma.inventory.create({
-                data: { type, quantity: 0 },
+                data: { messId, type, quantity: 0 },
             });
         }
         const change = quantity - inventory.quantity;
         const updated = await this.prisma.inventory.update({
-            where: { type },
+            where: {
+                messId_type: {
+                    messId,
+                    type,
+                },
+            },
             data: {
                 quantity,
                 lastUpdated: new Date(),
@@ -322,6 +456,7 @@ let InventoryService = class InventoryService {
         if (change !== 0) {
             await this.prisma.inventoryLog.create({
                 data: {
+                    messId,
                     inventoryId: inventory.id,
                     change,
                     reason: "MANUAL",
@@ -329,15 +464,19 @@ let InventoryService = class InventoryService {
                 },
             });
         }
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "INVENTORY",
                 title: "Inventory Manually Updated",
                 message: `${type} stock has been manually set to ${quantity} pieces.`,
@@ -349,19 +488,23 @@ let InventoryService = class InventoryService {
         }
         return updated;
     }
-    async checkAvailability(type, requiredQuantity) {
-        const inventory = await this.getInventory(type);
+    async checkAvailability(messId, type, requiredQuantity) {
+        const inventory = await this.getInventory(messId, type);
         const isAvailable = inventory.quantity >= requiredQuantity;
         if (!isAvailable) {
-            const admins = await this.prisma.user.findMany({
+            const admins = await this.prisma.messMember.findMany({
                 where: {
-                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    messId,
+                    role: { in: ["SUPER_ADMIN", "ADMIN"] },
                     isActive: true,
+                },
+                include: {
+                    user: true,
                 },
             });
             for (const admin of admins) {
                 await this.notificationsService.create({
-                    userId: admin.id,
+                    userId: admin.userId,
                     type: "INVENTORY",
                     title: "Stock Check Alert",
                     message: `${type} stock check failed. Required: ${requiredQuantity}, Available: ${inventory.quantity}`,
@@ -376,11 +519,11 @@ let InventoryService = class InventoryService {
             type,
         };
     }
-    async bulkAdd(items) {
+    async bulkAdd(messId, items) {
         const results = [];
         for (const item of items) {
             try {
-                const result = await this.addInventory(item);
+                const result = await this.addInventory(messId, item);
                 results.push({ success: true, type: item.type, result });
             }
             catch (error) {
@@ -388,16 +531,20 @@ let InventoryService = class InventoryService {
                 results.push({ success: false, type: item.type, error: errorMessage });
             }
         }
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         const successCount = results.filter((r) => r.success).length;
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "INVENTORY",
                 title: "Bulk Inventory Add",
                 message: `${successCount} items added to inventory successfully.`,
@@ -406,11 +553,11 @@ let InventoryService = class InventoryService {
         }
         return results;
     }
-    async bulkRemove(items) {
+    async bulkRemove(messId, items) {
         const results = [];
         for (const item of items) {
             try {
-                const result = await this.removeInventory(item);
+                const result = await this.removeInventory(messId, item);
                 results.push({ success: true, type: item.type, result });
             }
             catch (error) {
@@ -418,16 +565,20 @@ let InventoryService = class InventoryService {
                 results.push({ success: false, type: item.type, error: errorMessage });
             }
         }
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         const successCount = results.filter((r) => r.success).length;
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "INVENTORY",
                 title: "Bulk Inventory Remove",
                 message: `${successCount} items removed from inventory successfully.`,

@@ -6,63 +6,67 @@ export declare class InventoryService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    getAllInventory(): Promise<({
+    getAllInventory(messId: string): Promise<({
         logs: ({
             marketing: {
                 id: string;
+                amount: import("@prisma/client/runtime/library").Decimal;
                 quantity: string;
                 date: Date;
                 itemName: string;
-                amount: import("@prisma/client/runtime/library").Decimal;
                 shopName: string;
             };
         } & {
             id: string;
             createdAt: Date;
+            messId: string;
             date: Date;
+            note: string | null;
+            marketingId: string | null;
             inventoryId: string;
             change: number;
             reason: string;
-            marketingId: string | null;
-            note: string | null;
         })[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.InventoryType;
-        quantity: number;
-        lastUpdated: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        lastUpdated: Date;
+        quantity: number;
     })[]>;
-    getInventory(type: InventoryType): Promise<{
+    getInventory(messId: string, type: InventoryType): Promise<{
         logs: ({
             marketing: {
                 id: string;
+                amount: import("@prisma/client/runtime/library").Decimal;
                 quantity: string;
                 date: Date;
                 itemName: string;
-                amount: import("@prisma/client/runtime/library").Decimal;
                 shopName: string;
             };
         } & {
             id: string;
             createdAt: Date;
+            messId: string;
             date: Date;
+            note: string | null;
+            marketingId: string | null;
             inventoryId: string;
             change: number;
             reason: string;
-            marketingId: string | null;
-            note: string | null;
         })[];
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.InventoryType;
-        quantity: number;
-        lastUpdated: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        lastUpdated: Date;
+        quantity: number;
     }>;
-    getSummary(): Promise<{
+    getSummary(messId: string): Promise<{
         meat: {
             available: number;
             unit: string;
@@ -70,21 +74,22 @@ export declare class InventoryService {
             logs: ({
                 marketing: {
                     id: string;
+                    amount: import("@prisma/client/runtime/library").Decimal;
                     quantity: string;
                     date: Date;
                     itemName: string;
-                    amount: import("@prisma/client/runtime/library").Decimal;
                     shopName: string;
                 };
             } & {
                 id: string;
                 createdAt: Date;
+                messId: string;
                 date: Date;
+                note: string | null;
+                marketingId: string | null;
                 inventoryId: string;
                 change: number;
                 reason: string;
-                marketingId: string | null;
-                note: string | null;
             })[];
         };
         fish: {
@@ -94,88 +99,94 @@ export declare class InventoryService {
             logs: ({
                 marketing: {
                     id: string;
+                    amount: import("@prisma/client/runtime/library").Decimal;
                     quantity: string;
                     date: Date;
                     itemName: string;
-                    amount: import("@prisma/client/runtime/library").Decimal;
                     shopName: string;
                 };
             } & {
                 id: string;
                 createdAt: Date;
+                messId: string;
                 date: Date;
+                note: string | null;
+                marketingId: string | null;
                 inventoryId: string;
                 change: number;
                 reason: string;
-                marketingId: string | null;
-                note: string | null;
             })[];
         };
     }>;
-    getLogs(type?: InventoryType): Promise<({
-        inventory: {
-            id: string;
-            type: import(".prisma/client").$Enums.InventoryType;
-            quantity: number;
-            lastUpdated: Date;
-            createdAt: Date;
-            updatedAt: Date;
-        };
+    getLogs(messId: string, type?: InventoryType): Promise<({
         marketing: {
             id: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
             quantity: string;
             date: Date;
             itemName: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
             shopName: string;
+        };
+        inventory: {
+            type: import(".prisma/client").$Enums.InventoryType;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            messId: string;
+            lastUpdated: Date;
+            quantity: number;
         };
     } & {
         id: string;
         createdAt: Date;
+        messId: string;
         date: Date;
+        note: string | null;
+        marketingId: string | null;
         inventoryId: string;
         change: number;
         reason: string;
-        marketingId: string | null;
-        note: string | null;
     })[]>;
-    addInventory(addInventoryDto: AddInventoryDto): Promise<{
-        id: string;
+    addInventory(messId: string, addInventoryDto: AddInventoryDto): Promise<{
         type: import(".prisma/client").$Enums.InventoryType;
-        quantity: number;
-        lastUpdated: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-    }>;
-    removeInventory(removeInventoryDto: RemoveInventoryDto): Promise<{
-        id: string;
-        type: import(".prisma/client").$Enums.InventoryType;
-        quantity: number;
+        messId: string;
         lastUpdated: Date;
+        quantity: number;
+    }>;
+    removeInventory(messId: string, removeInventoryDto: RemoveInventoryDto): Promise<{
+        type: import(".prisma/client").$Enums.InventoryType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-    }>;
-    setInventory(setInventoryDto: SetInventoryDto): Promise<{
-        id: string;
-        type: import(".prisma/client").$Enums.InventoryType;
-        quantity: number;
+        messId: string;
         lastUpdated: Date;
+        quantity: number;
+    }>;
+    setInventory(messId: string, setInventoryDto: SetInventoryDto): Promise<{
+        type: import(".prisma/client").$Enums.InventoryType;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        lastUpdated: Date;
+        quantity: number;
     }>;
-    checkAvailability(type: InventoryType, requiredQuantity: number): Promise<{
+    checkAvailability(messId: string, type: InventoryType, requiredQuantity: number): Promise<{
         available: boolean;
         availableQuantity: number;
         requiredQuantity: number;
         type: import(".prisma/client").$Enums.InventoryType;
     }>;
-    bulkAdd(items: {
+    bulkAdd(messId: string, items: {
         type: InventoryType;
         quantity: number;
         marketingId?: string;
         note?: string;
     }[]): Promise<any[]>;
-    bulkRemove(items: {
+    bulkRemove(messId: string, items: {
         type: InventoryType;
         quantity: number;
         note?: string;

@@ -10,62 +10,85 @@ export declare class AuthService {
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         user: {
-            id: string;
-            name: string;
-            phone: string;
             email: string;
-            role: import(".prisma/client").$Enums.Role;
-            roomNumber: string;
-            profileImage: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            phone: string | null;
+            profileImage: string | null;
+            isActive: boolean;
         };
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
+            email: string;
             id: string;
-            name: string;
-            phone: string;
-            email: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            roomNumber: string | null;
-            profileImage: string | null;
-            isActive: boolean;
-            joinedDate: Date;
-            leftDate: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            phone: string | null;
+            profileImage: string | null;
+            isActive: boolean;
         };
     }>;
     getProfile(userId: string): Promise<{
-        balance: number;
-        balances: any;
+        email: string;
         id: string;
         name: string;
         phone: string;
-        email: string;
-        role: import(".prisma/client").$Enums.Role;
-        roomNumber: string;
         profileImage: string;
         isActive: boolean;
-        joinedDate: Date;
+        messMembers: ({
+            mess: {
+                description: string | null;
+                email: string | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                phone: string | null;
+                isActive: boolean;
+                slug: string;
+                address: string | null;
+                logo: string | null;
+                city: string | null;
+                country: string | null;
+                maxMembers: number;
+            };
+            userBalance: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                balance: import("@prisma/client/runtime/library").Decimal;
+                lastUpdated: Date;
+                memberId: string;
+            };
+        } & {
+            userId: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            joinedDate: Date;
+            leftDate: Date | null;
+        })[];
     }>;
     googleLogin(googleUser: any): Promise<{
         accessToken: string;
         user: {
+            email: string;
             id: string;
-            name: string;
-            phone: string;
-            email: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            roomNumber: string | null;
-            profileImage: string | null;
-            isActive: boolean;
-            joinedDate: Date;
-            leftDate: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            phone: string | null;
+            profileImage: string | null;
+            isActive: boolean;
         };
-        isNewUser: boolean;
     }>;
     private generateToken;
 }

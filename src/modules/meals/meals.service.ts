@@ -12,28 +12,30 @@ import {
   SingleMealEntryDto,
   UpdateMealDto,
 } from "./dto";
-import { startOfDay, endOfDay, format, getMonth, getYear } from "date-fns";
-import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
+import { startOfDay, endOfDay, format } from "date-fns";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class MealsService {
   constructor(
     private prisma: PrismaService,
-    private notificationsService: NotificationsService, // ✅ Inject
+    private notificationsService: NotificationsService,
   ) {}
 
   // ==================== CREATE ====================
 
-  async create(createMealDto: CreateMealDto) {
-    // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: createMealDto.userId },
+  async create(messId: string, createMealDto: CreateMealDto) {
+    // Check if member exists in this mess
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId: createMealDto.userId,
+        messId: messId,
+        isActive: true,
+      },
     });
 
-    if (!user) {
-      throw new NotFoundException(
-        `User with ID ${createMealDto.userId} not found`,
-      );
+    if (!member) {
+      throw new NotFoundException(`User is not a member of this mess`);
     }
 
     // Check if already exists for this date
@@ -43,7 +45,7 @@ export class MealsService {
 
     const existing = await this.prisma.meal.findFirst({
       where: {
-        userId: createMealDto.userId,
+        memberId: member.id,
         date: {
           gte: start,
           lte: end,
@@ -65,7 +67,8 @@ export class MealsService {
 
     const meal = await this.prisma.meal.create({
       data: {
-        userId: createMealDto.userId,
+        messId,
+        memberId: member.id,
         date: date,
         morning,
         lunch,
@@ -73,18 +76,22 @@ export class MealsService {
         totalMeal,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
     // Update daily summary
-    await this.updateDailySummary(date);
+    await this.updateDailySummary(messId, date);
 
     // ✅ Send notification to user about meal entry
     const mealType = [];
@@ -105,14 +112,44 @@ export class MealsService {
 
   // ==================== BULK ENTRY ====================
 
-  async bulkEntry(bulkMealDto: BulkMealEntryDto) {
+  async bulkEntry(messId: string, bulkMealDto: BulkMealEntryDto) {
     const date = new Date(bulkMealDto.date);
     const start = startOfDay(date);
     const end = endOfDay(date);
 
+    // Get all members of this mess
+    const allUserIds = [
+      ...(bulkMealDto.morningUserIds || []),
+      ...(bulkMealDto.lunchUserIds || []),
+      ...(bulkMealDto.dinnerUserIds || []),
+    ];
+
+    const uniqueUserIds = [...new Set(allUserIds)];
+
+    // Check if all users exist in this mess
+    const members = await this.prisma.messMember.findMany({
+      where: {
+        messId,
+        userId: { in: uniqueUserIds },
+        isActive: true,
+      },
+    });
+
+    const foundUserIds = members.map((m) => m.userId);
+    const missingUserIds = uniqueUserIds.filter(
+      (id) => !foundUserIds.includes(id),
+    );
+
+    if (missingUserIds.length > 0) {
+      throw new NotFoundException(
+        `Users not found in this mess: ${missingUserIds.join(", ")}`,
+      );
+    }
+
     // Delete existing meals for this date
     await this.prisma.meal.deleteMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
@@ -120,40 +157,14 @@ export class MealsService {
       },
     });
 
-    const allUserIds = [
-      ...(bulkMealDto.morningUserIds || []),
-      ...(bulkMealDto.lunchUserIds || []),
-      ...(bulkMealDto.dinnerUserIds || []),
-    ];
+    const memberMap = new Map(members.map((m) => [m.userId, m.id]));
 
-    // Get unique user IDs
-    const uniqueUserIds = [...new Set(allUserIds)];
-
-    // Check if all users exist
-    const users = await this.prisma.user.findMany({
-      where: {
-        id: { in: uniqueUserIds },
-      },
-      select: { id: true },
-    });
-
-    const foundUserIds = users.map((u) => u.id);
-    const missingUserIds = uniqueUserIds.filter(
-      (id) => !foundUserIds.includes(id),
-    );
-
-    if (missingUserIds.length > 0) {
-      throw new NotFoundException(
-        `Users not found: ${missingUserIds.join(", ")}`,
-      );
-    }
-
-    // Create meals for all users
     const morningSet = new Set(bulkMealDto.morningUserIds || []);
     const lunchSet = new Set(bulkMealDto.lunchUserIds || []);
     const dinnerSet = new Set(bulkMealDto.dinnerUserIds || []);
 
     const mealPromises = uniqueUserIds.map(async (userId) => {
+      const memberId = memberMap.get(userId)!;
       const morning = morningSet.has(userId);
       const lunch = lunchSet.has(userId);
       const dinner = dinnerSet.has(userId);
@@ -161,7 +172,8 @@ export class MealsService {
 
       return this.prisma.meal.create({
         data: {
-          userId,
+          messId,
+          memberId,
           date: date,
           morning,
           lunch,
@@ -174,22 +186,27 @@ export class MealsService {
     const meals = await Promise.all(mealPromises);
 
     // Update daily summary
-    await this.updateDailySummary(date);
+    await this.updateDailySummary(messId, date);
 
     // Fetch user details
     const mealsWithUsers = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -216,16 +233,20 @@ export class MealsService {
     }
 
     // ✅ Send notification to admins about bulk entry
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "MEAL",
         title: "Bulk Meal Entry",
         message: `Bulk meal entry completed for ${format(date, "yyyy-MM-dd")}. Total: ${uniqueUserIds.length} users, ${mealsWithUsers.reduce((sum, m) => sum + m.totalMeal, 0)} meals`,
@@ -248,35 +269,40 @@ export class MealsService {
 
   // ==================== SINGLE MEAL TYPE ENTRY ====================
 
-  async singleMealEntry(singleMealDto: SingleMealEntryDto) {
+  async singleMealEntry(messId: string, singleMealDto: SingleMealEntryDto) {
     const date = new Date(singleMealDto.date);
     const start = startOfDay(date);
     const end = endOfDay(date);
     const mealType = singleMealDto.mealType;
 
-    // Check if all users exist
-    const users = await this.prisma.user.findMany({
+    // Check if all users exist in this mess
+    const members = await this.prisma.messMember.findMany({
       where: {
-        id: { in: singleMealDto.userIds },
+        messId,
+        userId: { in: singleMealDto.userIds },
+        isActive: true,
       },
-      select: { id: true },
     });
 
-    const foundUserIds = users.map((u) => u.id);
+    const foundUserIds = members.map((m) => m.userId);
     const missingUserIds = singleMealDto.userIds.filter(
       (id) => !foundUserIds.includes(id),
     );
 
     if (missingUserIds.length > 0) {
       throw new NotFoundException(
-        `Users not found: ${missingUserIds.join(", ")}`,
+        `Users not found in this mess: ${missingUserIds.join(", ")}`,
       );
     }
 
+    const memberMap = new Map(members.map((m) => [m.userId, m.id]));
+
     // Get existing meals for this date
+    const memberIds = singleMealDto.userIds.map((id) => memberMap.get(id)!);
     const existingMeals = await this.prisma.meal.findMany({
       where: {
-        userId: { in: singleMealDto.userIds },
+        messId,
+        memberId: { in: memberIds },
         date: {
           gte: start,
           lte: end,
@@ -284,18 +310,17 @@ export class MealsService {
       },
     });
 
-    const existingMap = new Map(existingMeals.map((m) => [m.userId, m]));
+    const existingMap = new Map(existingMeals.map((m) => [m.memberId, m]));
 
     // Update or create meals
     const mealPromises = singleMealDto.userIds.map(async (userId) => {
-      const existing = existingMap.get(userId);
+      const memberId = memberMap.get(userId)!;
+      const existing = existingMap.get(memberId);
 
       if (existing) {
-        // Update existing
         const updateData: any = {};
         updateData[mealType] = true;
 
-        // Recalculate total
         const morning = mealType === "morning" ? true : existing.morning;
         const lunch = mealType === "lunch" ? true : existing.lunch;
         const dinner = mealType === "dinner" ? true : existing.dinner;
@@ -310,7 +335,6 @@ export class MealsService {
           },
         });
       } else {
-        // Create new
         const morning = mealType === "morning";
         const lunch = mealType === "lunch";
         const dinner = mealType === "dinner";
@@ -319,7 +343,8 @@ export class MealsService {
 
         return this.prisma.meal.create({
           data: {
-            userId,
+            messId,
+            memberId,
             date: date,
             morning,
             lunch,
@@ -333,22 +358,27 @@ export class MealsService {
     await Promise.all(mealPromises);
 
     // Update daily summary
-    await this.updateDailySummary(date);
+    await this.updateDailySummary(messId, date);
 
     // Fetch updated meals
     const updatedMeals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -381,14 +411,19 @@ export class MealsService {
 
   // ==================== FIND ====================
 
-  async findAll() {
+  async findAll(messId: string) {
     return this.prisma.meal.findMany({
+      where: { messId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -398,29 +433,50 @@ export class MealsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(messId: string, id: string) {
     const meal = await this.prisma.meal.findUnique({
-      where: { id },
+      where: { id, messId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
     if (!meal) {
-      throw new NotFoundException(`Meal with ID ${id} not found`);
+      throw new NotFoundException(`Meal with ID ${id} not found in this mess`);
     }
 
     return meal;
   }
 
-  async findByUser(userId: string, startDate?: Date, endDate?: Date) {
-    const where: any = { userId };
+  async findByUser(
+    messId: string,
+    userId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId,
+        messId,
+        isActive: true,
+      },
+    });
+
+    if (!member) {
+      throw new NotFoundException(`User is not a member of this mess`);
+    }
+
+    const where: any = { messId, memberId: member.id };
 
     if (startDate && endDate) {
       where.date = {
@@ -432,11 +488,15 @@ export class MealsService {
     return this.prisma.meal.findMany({
       where,
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -446,57 +506,71 @@ export class MealsService {
     });
   }
 
-  async findByDate(date: Date) {
+  async findByDate(messId: string, date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
     return this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
       orderBy: {
-        user: {
-          name: "asc",
+        member: {
+          user: {
+            name: "asc",
+          },
         },
       },
     });
   }
 
-  async getDailySummary(date: Date) {
+  async getDailySummary(messId: string, date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
     const meals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
       orderBy: {
-        user: {
-          name: "asc",
+        member: {
+          user: {
+            name: "asc",
+          },
         },
       },
     });
@@ -506,10 +580,12 @@ export class MealsService {
     const totalDinner = meals.filter((m) => m.dinner).length;
     const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
 
-    // Get daily summary from database
     const dailySummary = await this.prisma.dailySummary.findUnique({
       where: {
-        date: start,
+        messId_date: {
+          messId,
+          date: start,
+        },
       },
     });
 
@@ -529,28 +605,32 @@ export class MealsService {
     };
   }
 
-  async getMonthlySummary(year: number, month: number) {
+  async getMonthlySummary(messId: string, year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
     const meals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
-    // User-wise summary
     const userMap = new Map<
       string,
       {
@@ -564,16 +644,17 @@ export class MealsService {
     >();
 
     meals.forEach((meal) => {
-      const existing = userMap.get(meal.userId);
+      const userId = meal.member.userId;
+      const existing = userMap.get(userId);
       if (existing) {
         existing.morning += meal.morning ? 1 : 0;
         existing.lunch += meal.lunch ? 1 : 0;
         existing.dinner += meal.dinner ? 1 : 0;
         existing.totalMeals += meal.totalMeal;
       } else {
-        userMap.set(meal.userId, {
-          userId: meal.userId,
-          userName: meal.user.name,
+        userMap.set(userId, {
+          userId: userId,
+          userName: meal.member.user.name,
           morning: meal.morning ? 1 : 0,
           lunch: meal.lunch ? 1 : 0,
           dinner: meal.dinner ? 1 : 0,
@@ -603,13 +684,20 @@ export class MealsService {
 
   // ==================== UPDATE ====================
 
-  async update(id: string, updateMealDto: UpdateMealDto) {
+  async update(messId: string, id: string, updateMealDto: UpdateMealDto) {
     const existing = await this.prisma.meal.findUnique({
-      where: { id },
+      where: { id, messId },
+      include: {
+        member: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
 
     if (!existing) {
-      throw new NotFoundException(`Meal with ID ${id} not found`);
+      throw new NotFoundException(`Meal with ID ${id} not found in this mess`);
     }
 
     const morning =
@@ -633,27 +721,29 @@ export class MealsService {
         totalMeal,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Update daily summary
-    await this.updateDailySummary(meal.date);
+    await this.updateDailySummary(messId, meal.date);
 
-    // ✅ Send notification for update
     const mealType = [];
     if (morning) mealType.push("Morning");
     if (lunch) mealType.push("Lunch");
     if (dinner) mealType.push("Dinner");
 
     await this.notificationsService.create({
-      userId: existing.userId,
+      userId: existing.member.userId,
       type: "MEAL",
       title: "Meal Entry Updated",
       message: `Your meal entry for ${format(meal.date, "yyyy-MM-dd")} has been updated. New: ${mealType.join(", ")}. Total: ${totalMeal} meal(s)`,
@@ -665,40 +755,46 @@ export class MealsService {
 
   // ==================== DELETE ====================
 
-  async remove(id: string) {
+  async remove(messId: string, id: string) {
     const meal = await this.prisma.meal.findUnique({
-      where: { id },
+      where: { id, messId },
     });
 
     if (!meal) {
-      throw new NotFoundException(`Meal with ID ${id} not found`);
+      throw new NotFoundException(`Meal with ID ${id} not found in this mess`);
     }
+
+    const member = await this.prisma.messMember.findUnique({
+      where: { id: meal.memberId },
+      include: { user: true },
+    });
 
     await this.prisma.meal.delete({
       where: { id },
     });
 
-    // Update daily summary
-    await this.updateDailySummary(meal.date);
+    await this.updateDailySummary(messId, meal.date);
 
-    // ✅ Send notification for deletion
-    await this.notificationsService.create({
-      userId: meal.userId,
-      type: "MEAL",
-      title: "Meal Entry Deleted",
-      message: `Your meal entry for ${format(meal.date, "yyyy-MM-dd")} has been deleted.`,
-      link: "/meals",
-    });
+    if (member) {
+      await this.notificationsService.create({
+        userId: member.userId,
+        type: "MEAL",
+        title: "Meal Entry Deleted",
+        message: `Your meal entry for ${format(meal.date, "yyyy-MM-dd")} has been deleted.`,
+        link: "/meals",
+      });
+    }
 
     return { message: `Meal with ID ${id} deleted successfully` };
   }
 
-  async removeByDate(date: Date) {
+  async removeByDate(messId: string, date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
     const deleted = await this.prisma.meal.deleteMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
@@ -706,20 +802,22 @@ export class MealsService {
       },
     });
 
-    // Update daily summary
-    await this.updateDailySummary(date);
+    await this.updateDailySummary(messId, date);
 
-    // ✅ Send notification for bulk deletion
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "MEAL",
         title: "Bulk Meal Deletion",
         message: `${deleted.count} meal entries deleted for ${format(date, "yyyy-MM-dd")}`,
@@ -735,13 +833,13 @@ export class MealsService {
 
   // ==================== DAILY SUMMARY UPDATE ====================
 
-  private async updateDailySummary(date: Date) {
+  private async updateDailySummary(messId: string, date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
-    // Get today's meals
     const meals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
@@ -751,32 +849,36 @@ export class MealsService {
 
     const dailyTotalMeal = meals.reduce((sum, m) => sum + m.totalMeal, 0);
 
-    // Get previous day's summary
     const previousDay = new Date(date);
     previousDay.setDate(previousDay.getDate() - 1);
     const previousStart = startOfDay(previousDay);
 
     const previousSummary = await this.prisma.dailySummary.findUnique({
       where: {
-        date: previousStart,
+        messId_date: {
+          messId,
+          date: previousStart,
+        },
       },
     });
 
-    const previousRunningCost =
-      previousSummary?.runningMarketCost ||
-      (new PrismaService().$queryRaw`0` as any);
-    // Actually we need to get from marketing - will be updated when marketing module is added
-
-    // For now, just update meal data
     const existing = await this.prisma.dailySummary.findUnique({
       where: {
-        date: start,
+        messId_date: {
+          messId,
+          date: start,
+        },
       },
     });
 
     if (existing) {
       await this.prisma.dailySummary.update({
-        where: { date: start },
+        where: {
+          messId_date: {
+            messId,
+            date: start,
+          },
+        },
         data: {
           dailyTotalMeal,
         },
@@ -784,6 +886,7 @@ export class MealsService {
     } else {
       await this.prisma.dailySummary.create({
         data: {
+          messId,
           date: start,
           dailyTotalMeal,
           dailyMarketCost: 0,

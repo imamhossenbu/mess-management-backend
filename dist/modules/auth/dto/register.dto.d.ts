@@ -5,9 +5,9 @@ export declare enum Role {
 }
 export declare class RegisterDto {
     name: string;
-    phone: string;
-    email?: string;
+    email: string;
     password: string;
+    phone?: string;
     roomNumber?: string;
     role?: Role;
 }

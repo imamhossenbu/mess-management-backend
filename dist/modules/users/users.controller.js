@@ -20,8 +20,8 @@ const users_service_1 = require("./users.service");
 const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
+const register_dto_1 = require("../auth/dto/register.dto");
 let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
@@ -61,15 +61,6 @@ exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Create a new user" }),
-    (0, swagger_1.ApiResponse)({
-        status: 201,
-        description: "User created successfully",
-        type: dto_1.UserResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 409, description: "User already exists" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: "Forbidden" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.CreateUserDto]),
@@ -78,14 +69,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Get all users" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "List of all users",
-        type: [dto_1.UserResponseDto],
-    }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: "Forbidden" }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -93,16 +76,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Get a user by ID" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User found",
-        type: dto_1.UserResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: "Forbidden" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -111,17 +84,6 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Update a user" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User updated successfully",
-        type: dto_1.UserResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    (0, swagger_1.ApiResponse)({ status: 409, description: "Phone or email already taken" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: "Forbidden" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -131,14 +93,6 @@ __decorate([
 __decorate([
     (0, common_1.Patch)("profile"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Update own profile" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Profile updated successfully",
-        type: dto_1.UserResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 409, description: "Phone or email already taken" }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -150,25 +104,6 @@ __decorate([
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("file")),
     (0, swagger_1.ApiConsumes)("multipart/form-data"),
-    (0, swagger_1.ApiOperation)({ summary: "Upload profile image" }),
-    (0, swagger_1.ApiBody)({
-        schema: {
-            type: "object",
-            properties: {
-                file: {
-                    type: "string",
-                    format: "binary",
-                },
-            },
-        },
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Profile image uploaded successfully",
-        type: dto_1.UserResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: "Invalid file" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
@@ -179,14 +114,6 @@ __decorate([
     (0, common_1.Delete)("profile/image"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Remove profile image" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Profile image removed successfully",
-        type: dto_1.UserResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: "No profile image to remove" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -195,12 +122,6 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN),
-    (0, swagger_1.ApiOperation)({ summary: "Soft delete a user" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: "User deactivated successfully" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: "Forbidden - Super Admin only" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -210,12 +131,6 @@ __decorate([
     (0, common_1.Delete)(":id/hard"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Hard delete a user" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: "User deleted permanently" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: "Forbidden - Super Admin only" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -223,7 +138,7 @@ __decorate([
 ], UsersController.prototype, "hardDelete", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)("users"),
-    (0, swagger_1.ApiSecurity)("JWT-auth"),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Controller)("users"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [users_service_1.UsersService])

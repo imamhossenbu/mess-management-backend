@@ -19,214 +19,158 @@ const payments_service_1 = require("./payments.service");
 const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
+const register_dto_1 = require("../auth/dto/register.dto");
+const current_mess_decorator_1 = require("../../common/current-mess.decorator");
 let PaymentsController = class PaymentsController {
     constructor(paymentsService) {
         this.paymentsService = paymentsService;
     }
-    async create(createPaymentDto) {
-        return this.paymentsService.create(createPaymentDto);
+    async create(messId, createPaymentDto) {
+        return this.paymentsService.create(messId, createPaymentDto);
     }
-    async findAll() {
-        return this.paymentsService.findAll();
+    async findAll(messId) {
+        return this.paymentsService.findAll(messId);
     }
-    async getAllUserBalances() {
-        return this.paymentsService.getAllUserBalances();
+    async getAllUserBalances(messId) {
+        return this.paymentsService.getAllUserBalances(messId);
     }
-    async getMonthlySummary(year, month) {
+    async getMonthlySummary(messId, year, month) {
         const queryYear = year || new Date().getFullYear();
         const queryMonth = month || new Date().getMonth() + 1;
-        return this.paymentsService.getMonthlySummary(queryYear, queryMonth);
+        return this.paymentsService.getMonthlySummary(messId, queryYear, queryMonth);
     }
-    async findByUser(userId, startDate, endDate) {
+    async findByUser(messId, userId, startDate, endDate) {
         const start = startDate ? new Date(startDate) : undefined;
         const end = endDate ? new Date(endDate) : undefined;
-        return this.paymentsService.findByUser(userId, start, end);
+        return this.paymentsService.findByUser(messId, userId, start, end);
     }
-    async getUserBalance(userId) {
-        return this.paymentsService.getUserBalance(userId);
+    async getUserBalance(messId, userId) {
+        return this.paymentsService.getUserBalance(messId, userId);
     }
-    async findByDate(date) {
-        return this.paymentsService.findByDate(new Date(date));
+    async findByDate(messId, date) {
+        return this.paymentsService.findByDate(messId, new Date(date));
     }
-    async findByMonth(year, month) {
-        return this.paymentsService.findByMonth(year, month);
+    async findByMonth(messId, year, month) {
+        return this.paymentsService.findByMonth(messId, year, month);
     }
-    async findOne(id) {
-        return this.paymentsService.findOne(id);
+    async findOne(messId, id) {
+        return this.paymentsService.findOne(messId, id);
     }
-    async update(id, updatePaymentDto) {
-        return this.paymentsService.update(id, updatePaymentDto);
+    async update(messId, id, updatePaymentDto) {
+        return this.paymentsService.update(messId, id, updatePaymentDto);
     }
-    async remove(id) {
-        return this.paymentsService.remove(id);
+    async remove(messId, id) {
+        return this.paymentsService.remove(messId, id);
     }
 };
 exports.PaymentsController = PaymentsController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Create a new payment" }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: "Payment created successfully" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreatePaymentDto]),
+    __metadata("design:paramtypes", [String, dto_1.CreatePaymentDto]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get all payments" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "List of all payments",
-        type: [dto_1.PaymentResponseDto],
-    }),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)("balances"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Get all user balances (Admin/Manager only)" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: "All user balances" }),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "getAllUserBalances", null);
 __decorate([
     (0, common_1.Get)("monthly"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get monthly payment summary" }),
-    (0, swagger_1.ApiQuery)({ name: "year", required: false, example: 2026 }),
-    (0, swagger_1.ApiQuery)({ name: "month", required: false, example: 8 }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Monthly payment summary",
-        type: dto_1.MonthlyPaymentSummaryDto,
-    }),
-    __param(0, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Query)("year", common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Query)("month", common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "getMonthlySummary", null);
 __decorate([
     (0, common_1.Get)("user/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get payments by user" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User payments",
-        type: [dto_1.PaymentResponseDto],
-    }),
-    __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Query)("startDate")),
-    __param(2, (0, common_1.Query)("endDate")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Query)("startDate")),
+    __param(3, (0, common_1.Query)("endDate")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "findByUser", null);
 __decorate([
     (0, common_1.Get)("user/:userId/balance"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get user balance" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User balance",
-        type: dto_1.UserBalanceDto,
-    }),
-    __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "getUserBalance", null);
 __decorate([
     (0, common_1.Get)("date/:date"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get payments by date" }),
-    (0, swagger_1.ApiParam)({ name: "date", example: "2026-08-08" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Date payments",
-        type: [dto_1.PaymentResponseDto],
-    }),
-    __param(0, (0, common_1.Param)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "findByDate", null);
 __decorate([
     (0, common_1.Get)("month/:year/:month"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get payments by month" }),
-    (0, swagger_1.ApiParam)({ name: "year", example: 2026 }),
-    (0, swagger_1.ApiParam)({ name: "month", example: 8 }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Month payments",
-        type: [dto_1.PaymentResponseDto],
-    }),
-    __param(0, (0, common_1.Param)("year", common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Param)("month", common_1.ParseIntPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("year", common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Param)("month", common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "findByMonth", null);
 __decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get a payment by ID" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Payment UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Payment found",
-        type: dto_1.PaymentResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Payment not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Update a payment" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Payment UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Payment updated successfully",
-        type: dto_1.PaymentResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Payment not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.UpdatePaymentDto]),
+    __metadata("design:paramtypes", [String, String, dto_1.UpdatePaymentDto]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete a payment" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Payment UUID" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: "Payment deleted successfully" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Payment not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "remove", null);
 exports.PaymentsController = PaymentsController = __decorate([
     (0, swagger_1.ApiTags)("payments"),
-    (0, swagger_1.ApiSecurity)("JWT-auth"),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Controller)("payments"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [payments_service_1.PaymentsService])

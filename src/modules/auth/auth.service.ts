@@ -9,98 +9,89 @@ import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RegisterDto, LoginDto } from "./dto";
 import { Role } from "./dto/register.dto";
-import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private notificationsService: NotificationsService, // ✅ Inject
+    private notificationsService: NotificationsService,
   ) {}
 
   async register(dto: RegisterDto) {
     // Check if user exists
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ phone: dto.phone }, { email: dto.email }],
-      },
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
     });
 
     if (existingUser) {
-      throw new ConflictException(
-        "User already exists with this phone or email",
-      );
+      throw new ConflictException("User already exists with this email");
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // Create user
+    // ✅ Create user
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
-        phone: dto.phone,
         email: dto.email,
+        phone: dto.phone || "",
         password: hashedPassword,
-        role: dto.role || Role.MEMBER,
-        roomNumber: dto.roomNumber,
-      },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        roomNumber: true,
-        profileImage: true,
-      },
-    });
-
-    // Create user balance
-    await this.prisma.userBalance.create({
-      data: {
-        userId: user.id,
-        balance: 0,
-      },
-    });
-
-    // ✅ Send welcome notification to new user
-    await this.notificationsService.create({
-      userId: user.id,
-      type: "SYSTEM",
-      title: "Welcome to Mess Management System",
-      message: `Hello ${user.name}, welcome to the mess management system. Your account has been successfully created with role: ${user.role}`,
-      link: "/profile",
-    });
-
-    // ✅ Send notification to all admins about new user
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        profileImage: null,
         isActive: true,
       },
     });
 
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "SYSTEM",
-        title: "New User Registered",
-        message: `${user.name} has registered as ${user.role}`,
-        link: `/users/${user.id}`,
-      });
-    }
+    // ✅ Create default mess
+    const mess = await this.prisma.mess.create({
+      data: {
+        name: `${user.name}'s Mess`,
+        slug: `mess-${Date.now()}`,
+        description: "My mess",
+        isActive: true,
+      },
+    });
+
+    // ✅ Create mess member (SUPER_ADMIN)
+    const member = await this.prisma.messMember.create({
+      data: {
+        userId: user.id,
+        messId: mess.id,
+        role: "SUPER_ADMIN",
+        isActive: true,
+      },
+    });
+
+    // ✅ Create user balance - memberId ব্যবহার করুন
+    await this.prisma.userBalance.create({
+      data: {
+        memberId: member.id, // ✅ userId না, memberId ব্যবহার করুন
+        balance: 0,
+      },
+    });
+
+    // ✅ Send welcome notification
+    await this.notificationsService.create({
+      userId: user.id,
+      type: "SYSTEM",
+      title: "Welcome to the Mess!",
+      message: `Hello ${user.name}, your account has been created successfully. Your mess "${mess.name}" has been created.`,
+      link: "/profile",
+    });
 
     // Generate token
     const token = this.generateToken(user);
 
-    return { accessToken: token, user };
+    const { password, ...userWithoutPassword } = user;
+
+    return { accessToken: token, user: userWithoutPassword };
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { phone: dto.phone },
+      where: { email: dto.email },
     });
 
     if (!user) {
@@ -117,17 +108,7 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    // ✅ Send login notification
-    await this.notificationsService.create({
-      userId: user.id,
-      type: "SYSTEM",
-      title: "Login Notification",
-      message: `You have successfully logged in at ${new Date().toLocaleString()}`,
-      link: "/profile",
-    });
-
     const { password, ...userWithoutPassword } = user;
-
     const token = this.generateToken(user);
 
     return { accessToken: token, user: userWithoutPassword };
@@ -139,16 +120,14 @@ export class AuthService {
       select: {
         id: true,
         name: true,
-        phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
+        phone: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: true,
+            userBalance: true,
           },
         },
       },
@@ -158,27 +137,16 @@ export class AuthService {
       throw new UnauthorizedException("User not found");
     }
 
-    return {
-      ...user,
-      balance: user.balances?.[0]?.balance
-        ? Number(user.balances[0].balance)
-        : 0,
-      balances: undefined,
-    };
+    return user;
   }
 
   async googleLogin(googleUser: any) {
     try {
-      // Check if user exists with email
       let user = await this.prisma.user.findUnique({
         where: { email: googleUser.email },
       });
 
-      let isNewUser = false;
-
       if (!user) {
-        isNewUser = true;
-        // Create new user with random password
         const randomPassword = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -186,68 +154,44 @@ export class AuthService {
           data: {
             name: googleUser.name,
             email: googleUser.email,
-            phone: "", // Google provides no phone, will be updated later
+            phone: "",
             password: hashedPassword,
-            role: Role.MEMBER,
             profileImage: googleUser.picture || null,
           },
         });
 
-        // Create user balance
-        await this.prisma.userBalance.create({
+        // Create default mess
+        const mess = await this.prisma.mess.create({
           data: {
-            userId: user.id,
-            balance: 0,
-          },
-        });
-
-        // ✅ Send welcome notification for Google login
-        await this.notificationsService.create({
-          userId: user.id,
-          type: "SYSTEM",
-          title: "Welcome! Google Login",
-          message: `Hello ${user.name}, welcome to the mess management system. You have signed in with Google.`,
-          link: "/profile",
-        });
-
-        // ✅ Notify admins about new Google user
-        const admins = await this.prisma.user.findMany({
-          where: {
-            role: { in: ["SUPER_ADMIN", "MANAGER"] },
+            name: `${user.name}'s Mess`,
+            slug: `mess-${Date.now()}`,
             isActive: true,
           },
         });
 
-        for (const admin of admins) {
-          await this.notificationsService.create({
-            userId: admin.id,
-            type: "SYSTEM",
-            title: "New Google User Registered",
-            message: `${user.name} has registered via Google`,
-            link: `/users/${user.id}`,
-          });
-        }
-      } else {
-        // ✅ Send Google login notification for existing user
-        await this.notificationsService.create({
-          userId: user.id,
-          type: "SYSTEM",
-          title: "Google Login Notification",
-          message: `You have successfully logged in via Google at ${new Date().toLocaleString()}`,
-          link: "/profile",
+        const member = await this.prisma.messMember.create({
+          data: {
+            userId: user.id,
+            messId: mess.id,
+            role: "SUPER_ADMIN",
+            isActive: true,
+          },
+        });
+
+        await this.prisma.userBalance.create({
+          data: {
+            memberId: member.id,
+            balance: 0,
+          },
         });
       }
 
-      // Generate token
       const token = this.generateToken(user);
-
-      // Remove password from response
       const { password, ...userWithoutPassword } = user;
 
       return {
         accessToken: token,
         user: userWithoutPassword,
-        isNewUser,
       };
     } catch (error) {
       throw new UnauthorizedException("Google login failed");
@@ -255,7 +199,7 @@ export class AuthService {
   }
 
   private generateToken(user: any) {
-    const payload = { sub: user.id, phone: user.phone, role: user.role };
+    const payload = { sub: user.id, email: user.email };
     return this.jwtService.sign(payload);
   }
 }

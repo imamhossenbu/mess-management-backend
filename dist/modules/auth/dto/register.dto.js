@@ -27,14 +27,8 @@ __decorate([
     __metadata("design:type", String)
 ], RegisterDto.prototype, "name", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "01712345678" }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "phone", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: "john@example.com", required: false }),
+    (0, swagger_1.ApiProperty)({ example: "user@example.com" }),
     (0, class_validator_1.IsEmail)(),
-    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "email", void 0);
 __decorate([
@@ -43,6 +37,12 @@ __decorate([
     (0, class_validator_1.MinLength)(6),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "01712345678", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "phone", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: "Room-101", required: false }),
     (0, class_validator_1.IsString)(),

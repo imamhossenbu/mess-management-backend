@@ -6,7 +6,11 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.enableCors();
+    app.enableCors({
+        origin: ["http://localhost:3000", "http://localhost:3001"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization", "X-Mess-Id"],
+    });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         transform: true,
@@ -16,22 +20,31 @@ async function bootstrap() {
         .setTitle("Mess Management System API")
         .setDescription("Complete API documentation for Mess Management System")
         .setVersion("1.0")
-        .addSecurity("JWT-auth", {
+        .addBearerAuth({
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
-    })
+        name: "JWT",
+        description: "Enter JWT token",
+        in: "header",
+    }, "JWT-auth")
         .addTag("auth", "Authentication endpoints")
         .addTag("users", "User management endpoints")
         .addTag("meals", "Meal management endpoints")
+        .addTag("marketings", "Marketing/Bazar management endpoints")
+        .addTag("inventory", "Inventory management endpoints")
+        .addTag("utility-bills", "Utility bills management endpoints")
+        .addTag("payments", "Payment management endpoints")
+        .addTag("shop-debts", "Shop debt management endpoints")
+        .addTag("monthly-summary", "Monthly summary endpoints")
+        .addTag("dashboard", "Dashboard analytics endpoints")
+        .addTag("notifications", "Notification management endpoints")
         .addTag("health", "Health check endpoints")
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup("api-docs", app, document, {
         swaggerOptions: {
             persistAuthorization: true,
-            tagsSorter: "alpha",
-            operationsSorter: "alpha",
         },
     });
     const port = process.env.PORT || 5001;

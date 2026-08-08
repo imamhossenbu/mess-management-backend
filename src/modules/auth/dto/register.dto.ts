@@ -19,19 +19,19 @@ export class RegisterDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: "01712345678" })
-  @IsString()
-  phone: string;
-
-  @ApiProperty({ example: "john@example.com", required: false })
+  @ApiProperty({ example: "user@example.com" })
   @IsEmail()
-  @IsOptional()
-  email?: string;
+  email: string;
 
   @ApiProperty({ example: "password123" })
   @IsString()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({ example: "01712345678", required: false })
+  @IsString()
+  @IsOptional()
+  phone?: string;
 
   @ApiProperty({ example: "Room-101", required: false })
   @IsString()

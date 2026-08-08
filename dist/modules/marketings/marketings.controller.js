@@ -19,203 +19,148 @@ const marketings_service_1 = require("./marketings.service");
 const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
+const register_dto_1 = require("../auth/dto/register.dto");
+const current_mess_decorator_1 = require("../../common/current-mess.decorator");
 let MarketingsController = class MarketingsController {
     constructor(marketingsService) {
         this.marketingsService = marketingsService;
     }
-    async create(createMarketingDto) {
-        return this.marketingsService.create(createMarketingDto);
+    async create(messId, createMarketingDto) {
+        return this.marketingsService.create(messId, createMarketingDto);
     }
-    async findAll() {
-        return this.marketingsService.findAll();
+    async findAll(messId) {
+        return this.marketingsService.findAll(messId);
     }
-    async getDailySummary(date) {
+    async getDailySummary(messId, date) {
         const queryDate = date ? new Date(date) : new Date();
-        return this.marketingsService.getDailySummary(queryDate);
+        return this.marketingsService.getDailySummary(messId, queryDate);
     }
-    async getMonthlySummary(year, month) {
+    async getMonthlySummary(messId, year, month) {
         const queryYear = year || new Date().getFullYear();
         const queryMonth = month || new Date().getMonth() + 1;
-        return this.marketingsService.getMonthlySummary(queryYear, queryMonth);
+        return this.marketingsService.getMonthlySummary(messId, queryYear, queryMonth);
     }
-    async findByUser(userId, startDate, endDate) {
+    async findByUser(messId, userId, startDate, endDate) {
         const start = startDate ? new Date(startDate) : undefined;
         const end = endDate ? new Date(endDate) : undefined;
-        return this.marketingsService.findByUser(userId, start, end);
+        return this.marketingsService.findByUser(messId, userId, start, end);
     }
-    async findByDate(date) {
-        return this.marketingsService.findByDate(new Date(date));
+    async findByDate(messId, date) {
+        return this.marketingsService.findByDate(messId, new Date(date));
     }
-    async findOne(id) {
-        return this.marketingsService.findOne(id);
+    async findOne(messId, id) {
+        return this.marketingsService.findOne(messId, id);
     }
-    async update(id, updateMarketingDto) {
-        return this.marketingsService.update(id, updateMarketingDto);
+    async update(messId, id, updateMarketingDto) {
+        return this.marketingsService.update(messId, id, updateMarketingDto);
     }
-    async remove(id) {
-        return this.marketingsService.remove(id);
+    async remove(messId, id) {
+        return this.marketingsService.remove(messId, id);
     }
-    async removeByDate(date) {
-        return this.marketingsService.removeByDate(new Date(date));
+    async removeByDate(messId, date) {
+        return this.marketingsService.removeByDate(messId, new Date(date));
     }
 };
 exports.MarketingsController = MarketingsController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Create a new marketing/bazar entry" }),
-    (0, swagger_1.ApiResponse)({
-        status: 201,
-        description: "Marketing entry created successfully",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreateMarketingDto]),
+    __metadata("design:paramtypes", [String, dto_1.CreateMarketingDto]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get all marketing entries" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "List of all marketing entries",
-        type: [dto_1.MarketingResponseDto],
-    }),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)("daily"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get daily marketing summary" }),
-    (0, swagger_1.ApiQuery)({ name: "date", required: false, example: "2026-08-08" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Daily marketing summary",
-        type: dto_1.DailyMarketingSummaryDto,
-    }),
-    __param(0, (0, common_1.Query)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Query)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "getDailySummary", null);
 __decorate([
     (0, common_1.Get)("monthly"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get monthly marketing summary" }),
-    (0, swagger_1.ApiQuery)({ name: "year", required: false, example: 2026 }),
-    (0, swagger_1.ApiQuery)({ name: "month", required: false, example: 8 }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Monthly marketing summary",
-        type: dto_1.MonthlyMarketingSummaryDto,
-    }),
-    __param(0, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Query)("year", common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Query)("month", common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "getMonthlySummary", null);
 __decorate([
     (0, common_1.Get)("user/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get marketing entries by user" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User marketing entries",
-        type: [dto_1.MarketingResponseDto],
-    }),
-    __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Query)("startDate")),
-    __param(2, (0, common_1.Query)("endDate")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Query)("startDate")),
+    __param(3, (0, common_1.Query)("endDate")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "findByUser", null);
 __decorate([
     (0, common_1.Get)("date/:date"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get marketing entries by date" }),
-    (0, swagger_1.ApiParam)({ name: "date", example: "2026-08-08" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Date marketing entries",
-        type: [dto_1.MarketingResponseDto],
-    }),
-    __param(0, (0, common_1.Param)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "findByDate", null);
 __decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get a marketing entry by ID" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Marketing UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Marketing entry found",
-        type: dto_1.MarketingResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Marketing entry not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Update a marketing entry" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Marketing UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Marketing entry updated successfully",
-        type: dto_1.MarketingResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Marketing entry not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.UpdateMarketingDto]),
+    __metadata("design:paramtypes", [String, String, dto_1.UpdateMarketingDto]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete a marketing entry" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Marketing UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Marketing entry deleted successfully",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Marketing entry not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Delete)("date/:date"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete all marketing entries for a date" }),
-    (0, swagger_1.ApiParam)({ name: "date", example: "2026-08-08" }),
-    __param(0, (0, common_1.Param)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "removeByDate", null);
 exports.MarketingsController = MarketingsController = __decorate([
     (0, swagger_1.ApiTags)("marketings"),
-    (0, swagger_1.ApiSecurity)("JWT-auth"),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Controller)("marketings"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [marketings_service_1.MarketingsService])

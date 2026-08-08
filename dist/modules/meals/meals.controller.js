@@ -19,236 +19,172 @@ const meals_service_1 = require("./meals.service");
 const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
+const register_dto_1 = require("../auth/dto/register.dto");
+const current_mess_decorator_1 = require("../../common/current-mess.decorator");
 let MealsController = class MealsController {
     constructor(mealsService) {
         this.mealsService = mealsService;
     }
-    async create(createMealDto) {
-        return this.mealsService.create(createMealDto);
+    async create(messId, createMealDto) {
+        return this.mealsService.create(messId, createMealDto);
     }
-    async bulkEntry(bulkMealDto) {
-        return this.mealsService.bulkEntry(bulkMealDto);
+    async bulkEntry(messId, bulkMealDto) {
+        return this.mealsService.bulkEntry(messId, bulkMealDto);
     }
-    async singleMealEntry(singleMealDto) {
-        return this.mealsService.singleMealEntry(singleMealDto);
+    async singleMealEntry(messId, singleMealDto) {
+        return this.mealsService.singleMealEntry(messId, singleMealDto);
     }
-    async findAll() {
-        return this.mealsService.findAll();
+    async findAll(messId) {
+        return this.mealsService.findAll(messId);
     }
-    async getDailySummary(date) {
+    async getDailySummary(messId, date) {
         const queryDate = date ? new Date(date) : new Date();
-        return this.mealsService.getDailySummary(queryDate);
+        return this.mealsService.getDailySummary(messId, queryDate);
     }
-    async getMonthlySummary(year, month) {
+    async getMonthlySummary(messId, year, month) {
         const queryYear = year || new Date().getFullYear();
         const queryMonth = month || new Date().getMonth() + 1;
-        return this.mealsService.getMonthlySummary(queryYear, queryMonth);
+        return this.mealsService.getMonthlySummary(messId, queryYear, queryMonth);
     }
-    async findByUser(userId, startDate, endDate) {
+    async findByUser(messId, userId, startDate, endDate) {
         const start = startDate ? new Date(startDate) : undefined;
         const end = endDate ? new Date(endDate) : undefined;
-        return this.mealsService.findByUser(userId, start, end);
+        return this.mealsService.findByUser(messId, userId, start, end);
     }
-    async findByDate(date) {
-        return this.mealsService.findByDate(new Date(date));
+    async findByDate(messId, date) {
+        return this.mealsService.findByDate(messId, new Date(date));
     }
-    async findOne(id) {
-        return this.mealsService.findOne(id);
+    async findOne(messId, id) {
+        return this.mealsService.findOne(messId, id);
     }
-    async update(id, updateMealDto) {
-        return this.mealsService.update(id, updateMealDto);
+    async update(messId, id, updateMealDto) {
+        return this.mealsService.update(messId, id, updateMealDto);
     }
-    async remove(id) {
-        return this.mealsService.remove(id);
+    async remove(messId, id) {
+        return this.mealsService.remove(messId, id);
     }
-    async removeByDate(date) {
-        return this.mealsService.removeByDate(new Date(date));
+    async removeByDate(messId, date) {
+        return this.mealsService.removeByDate(messId, new Date(date));
     }
 };
 exports.MealsController = MealsController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Create a single meal entry" }),
-    (0, swagger_1.ApiResponse)({
-        status: 201,
-        description: "Meal created successfully",
-        type: dto_1.MealResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 409,
-        description: "Meal already exists for this date",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreateMealDto]),
+    __metadata("design:paramtypes", [String, dto_1.CreateMealDto]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)("bulk"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Bulk meal entry for a date" }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: "Bulk meals created successfully" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.BulkMealEntryDto]),
+    __metadata("design:paramtypes", [String, dto_1.BulkMealEntryDto]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "bulkEntry", null);
 __decorate([
     (0, common_1.Post)("single-meal-type"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({
-        summary: "Entry for a single meal type (morning/lunch/dinner)",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: "Meals updated successfully" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.SingleMealEntryDto]),
+    __metadata("design:paramtypes", [String, dto_1.SingleMealEntryDto]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "singleMealEntry", null);
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get all meals" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "List of all meals",
-        type: [dto_1.MealResponseDto],
-    }),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)("daily"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get daily meal summary" }),
-    (0, swagger_1.ApiQuery)({ name: "date", required: false, example: "2026-08-08" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Daily meal summary",
-        type: dto_1.DailyMealSummaryDto,
-    }),
-    __param(0, (0, common_1.Query)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Query)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "getDailySummary", null);
 __decorate([
     (0, common_1.Get)("monthly"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get monthly meal summary" }),
-    (0, swagger_1.ApiQuery)({ name: "year", required: false, example: 2026 }),
-    (0, swagger_1.ApiQuery)({ name: "month", required: false, example: 8 }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Monthly meal summary",
-        type: dto_1.MonthlyMealSummaryDto,
-    }),
-    __param(0, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Query)("year", common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Query)("month", common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "getMonthlySummary", null);
 __decorate([
     (0, common_1.Get)("user/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get meals by user ID" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User meals",
-        type: [dto_1.MealResponseDto],
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
-    __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Query)("startDate")),
-    __param(2, (0, common_1.Query)("endDate")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Query)("startDate")),
+    __param(3, (0, common_1.Query)("endDate")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "findByUser", null);
 __decorate([
     (0, common_1.Get)("date/:date"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get meals by date" }),
-    (0, swagger_1.ApiParam)({ name: "date", example: "2026-08-08" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Date meals",
-        type: [dto_1.MealResponseDto],
-    }),
-    __param(0, (0, common_1.Param)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "findByDate", null);
 __decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get a meal by ID" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Meal UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Meal found",
-        type: dto_1.MealResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Meal not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Update a meal" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Meal UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Meal updated successfully",
-        type: dto_1.MealResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Meal not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.UpdateMealDto]),
+    __metadata("design:paramtypes", [String, String, dto_1.UpdateMealDto]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete a meal" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Meal UUID" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: "Meal deleted successfully" }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Meal not found" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Delete)("date/:date"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete all meals for a date" }),
-    (0, swagger_1.ApiParam)({ name: "date", example: "2026-08-08" }),
-    __param(0, (0, common_1.Param)("date")),
+    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    __param(1, (0, common_1.Param)("date")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], MealsController.prototype, "removeByDate", null);
 exports.MealsController = MealsController = __decorate([
     (0, swagger_1.ApiTags)("meals"),
-    (0, swagger_1.ApiSecurity)("JWT-auth"),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Controller)("meals"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [meals_service_1.MealsService])

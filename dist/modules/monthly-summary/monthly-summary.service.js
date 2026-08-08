@@ -19,31 +19,41 @@ let MonthlySummaryService = class MonthlySummaryService {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
     }
-    async generateMonthlySummary(year, month) {
+    async generateMonthlySummary(messId, year, month) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
-        const users = await this.prisma.user.findMany({
-            where: { isActive: true },
+        const members = await this.prisma.messMember.findMany({
+            where: {
+                messId,
+                isActive: true,
+            },
             include: {
-                balances: true,
+                user: true,
+                userBalance: true,
             },
         });
-        if (users.length === 0) {
-            throw new common_1.BadRequestException("No active users found");
+        if (members.length === 0) {
+            throw new common_1.BadRequestException("No active members found in this mess");
         }
         const meals = await this.prisma.meal.findMany({
             where: {
+                messId,
                 date: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
                 },
             },
             include: {
-                user: true,
+                member: {
+                    include: {
+                        user: true,
+                    },
+                },
             },
         });
         const marketings = await this.prisma.marketing.findMany({
             where: {
+                messId,
                 date: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
@@ -53,6 +63,7 @@ let MonthlySummaryService = class MonthlySummaryService {
         const totalMarketCost = marketings.reduce((sum, m) => sum + Number(m.amount), 0);
         const utilityBills = await this.prisma.utilityBill.findMany({
             where: {
+                messId,
                 monthYear: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
@@ -60,9 +71,9 @@ let MonthlySummaryService = class MonthlySummaryService {
             },
         });
         const totalUtilityCost = utilityBills.reduce((sum, b) => sum + Number(b.amount), 0);
-        const userMealMap = new Map();
+        const memberMealMap = new Map();
         meals.forEach((meal) => {
-            const existing = userMealMap.get(meal.userId);
+            const existing = memberMealMap.get(meal.memberId);
             if (existing) {
                 existing.totalMeal += meal.totalMeal;
                 existing.morning += meal.morning ? 1 : 0;
@@ -70,7 +81,7 @@ let MonthlySummaryService = class MonthlySummaryService {
                 existing.dinner += meal.dinner ? 1 : 0;
             }
             else {
-                userMealMap.set(meal.userId, {
+                memberMealMap.set(meal.memberId, {
                     totalMeal: meal.totalMeal,
                     morning: meal.morning ? 1 : 0,
                     lunch: meal.lunch ? 1 : 0,
@@ -78,50 +89,52 @@ let MonthlySummaryService = class MonthlySummaryService {
                 });
             }
         });
-        const totalMeals = Array.from(userMealMap.values()).reduce((sum, u) => sum + u.totalMeal, 0);
+        const totalMeals = Array.from(memberMealMap.values()).reduce((sum, u) => sum + u.totalMeal, 0);
         const mealRate = totalMeals > 0 ? totalMarketCost / totalMeals : 0;
-        const perPersonUtility = totalUtilityCost / users.length;
+        const perPersonUtility = totalUtilityCost / members.length;
         const payments = await this.prisma.payment.findMany({
             where: {
+                messId,
                 paymentDate: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
                 },
             },
         });
-        const userPaymentMap = new Map();
+        const memberPaymentMap = new Map();
         payments.forEach((payment) => {
-            const existing = userPaymentMap.get(payment.userId) || 0;
-            userPaymentMap.set(payment.userId, existing + Number(payment.amount));
+            const existing = memberPaymentMap.get(payment.memberId) || 0;
+            memberPaymentMap.set(payment.memberId, existing + Number(payment.amount));
         });
         const previousMonth = new Date(year, month - 2, 1);
         const previousSummaries = await this.prisma.monthlySummary.findMany({
             where: {
+                messId,
                 monthYear: previousMonth,
             },
         });
         const previousDueMap = new Map();
         previousSummaries.forEach((summary) => {
-            previousDueMap.set(summary.userId, Number(summary.currentDue));
+            previousDueMap.set(summary.memberId, Number(summary.currentDue));
         });
-        const userSummaries = users.map((user) => {
-            const userMeal = userMealMap.get(user.id) || {
+        const userSummaries = members.map((member) => {
+            const memberMeal = memberMealMap.get(member.id) || {
                 totalMeal: 0,
                 morning: 0,
                 lunch: 0,
                 dinner: 0,
             };
-            const mealBill = userMeal.totalMeal * mealRate;
+            const mealBill = memberMeal.totalMeal * mealRate;
             const utilityShare = perPersonUtility;
             const totalBill = mealBill + utilityShare;
-            const totalPaid = userPaymentMap.get(user.id) || 0;
-            const previousDue = previousDueMap.get(user.id) || 0;
+            const totalPaid = memberPaymentMap.get(member.id) || 0;
+            const previousDue = previousDueMap.get(member.id) || 0;
             const currentDue = totalBill - totalPaid + previousDue;
             return {
-                userId: user.id,
-                userName: user.name,
-                phone: user.phone,
-                totalMeal: userMeal.totalMeal,
+                userId: member.userId,
+                userName: member.user.name,
+                phone: member.user.phone || "",
+                totalMeal: memberMeal.totalMeal,
                 mealRate: Number(mealRate),
                 mealBill: Number(mealBill),
                 utilityShare: Number(utilityShare),
@@ -132,7 +145,7 @@ let MonthlySummaryService = class MonthlySummaryService {
                 carryToNext: Number(currentDue),
             };
         });
-        await this.saveMonthlySummary(year, month, userSummaries, {
+        await this.saveMonthlySummary(messId, year, month, userSummaries, {
             totalMeals,
             mealRate,
             totalMarketCost,
@@ -160,16 +173,20 @@ let MonthlySummaryService = class MonthlySummaryService {
                 });
             }
         }
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         const totalDue = userSummaries.reduce((sum, u) => sum + u.currentDue, 0);
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "SUMMARY",
                 title: `Monthly Summary Generated - ${(0, date_fns_1.format)(startDate, "MMMM yyyy")}`,
                 message: `Monthly summary generated. Total meals: ${totalMeals}, Total bill: ${Number(totalMeals * mealRate + totalUtilityCost)} TK, Total due: ${totalDue} TK`,
@@ -184,22 +201,34 @@ let MonthlySummaryService = class MonthlySummaryService {
             totalMealBill: Number(totalMeals * mealRate),
             totalUtilityBill: Number(totalUtilityCost),
             totalBill: Number(totalMeals * mealRate + totalUtilityCost),
-            totalPaid: Number(Array.from(userPaymentMap.values()).reduce((a, b) => a + b, 0)),
+            totalPaid: Number(Array.from(memberPaymentMap.values()).reduce((a, b) => a + b, 0)),
             totalDue: Number(userSummaries.reduce((sum, u) => sum + u.currentDue, 0)),
             userSummaries,
         };
     }
-    async saveMonthlySummary(year, month, userSummaries, totals) {
+    async saveMonthlySummary(messId, year, month, userSummaries, totals) {
         const monthYear = new Date(year, month - 1, 1);
         await this.prisma.monthlySummary.deleteMany({
             where: {
+                messId,
                 monthYear: monthYear,
             },
         });
+        const members = await this.prisma.messMember.findMany({
+            where: {
+                messId,
+                userId: { in: userSummaries.map((s) => s.userId) },
+            },
+        });
+        const memberMap = new Map(members.map((m) => [m.userId, m.id]));
         for (const summary of userSummaries) {
+            const memberId = memberMap.get(summary.userId);
+            if (!memberId)
+                continue;
             await this.prisma.monthlySummary.create({
                 data: {
-                    userId: summary.userId,
+                    messId,
+                    memberId,
                     monthYear: monthYear,
                     totalMeal: summary.totalMeal,
                     mealRate: summary.mealRate,
@@ -214,12 +243,15 @@ let MonthlySummaryService = class MonthlySummaryService {
             });
         }
         for (const summary of userSummaries) {
+            const memberId = memberMap.get(summary.userId);
+            if (!memberId)
+                continue;
             const userBalance = await this.prisma.userBalance.findUnique({
-                where: { userId: summary.userId },
+                where: { memberId },
             });
             if (userBalance) {
                 await this.prisma.userBalance.update({
-                    where: { userId: summary.userId },
+                    where: { memberId },
                     data: {
                         balance: summary.currentDue,
                         lastUpdated: new Date(),
@@ -228,18 +260,23 @@ let MonthlySummaryService = class MonthlySummaryService {
             }
         }
     }
-    async getMonthlySummary(year, month) {
+    async getMonthlySummary(messId, year, month) {
         const monthYear = new Date(year, month - 1, 1);
         const summaries = await this.prisma.monthlySummary.findMany({
             where: {
+                messId,
                 monthYear: monthYear,
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
@@ -248,9 +285,9 @@ let MonthlySummaryService = class MonthlySummaryService {
             throw new common_1.NotFoundException(`No summary found for ${(0, date_fns_1.format)(monthYear, "MMMM yyyy")}`);
         }
         const userSummaries = summaries.map((s) => ({
-            userId: s.userId,
-            userName: s.user.name,
-            phone: s.user.phone,
+            userId: s.member.userId,
+            userName: s.member.user.name,
+            phone: s.member.user.phone || "",
             totalMeal: s.totalMeal,
             mealRate: Number(s.mealRate),
             mealBill: Number(s.mealBill),
@@ -280,8 +317,18 @@ let MonthlySummaryService = class MonthlySummaryService {
             userSummaries,
         };
     }
-    async getUserMonthlySummaries(userId, year, month) {
-        const where = { userId };
+    async getUserMonthlySummaries(messId, userId, year, month) {
+        const member = await this.prisma.messMember.findFirst({
+            where: {
+                userId,
+                messId,
+                isActive: true,
+            },
+        });
+        if (!member) {
+            throw new common_1.NotFoundException(`User is not a member of this mess`);
+        }
+        const where = { messId, memberId: member.id };
         if (year && month) {
             const monthYear = new Date(year, month - 1, 1);
             where.monthYear = monthYear;
@@ -289,11 +336,15 @@ let MonthlySummaryService = class MonthlySummaryService {
         const summaries = await this.prisma.monthlySummary.findMany({
             where,
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
@@ -316,18 +367,23 @@ let MonthlySummaryService = class MonthlySummaryService {
             carryToNext: Number(s.carryToNext),
         }));
     }
-    async getAllMonthlySummaries() {
+    async getAllMonthlySummaries(messId) {
         const summaries = await this.prisma.monthlySummary.findMany({
+            where: { messId },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
-            orderBy: [{ monthYear: "desc" }, { user: { name: "asc" } }],
+            orderBy: [{ monthYear: "desc" }, { member: { user: { name: "asc" } } }],
         });
         return summaries.map((s) => ({
             ...s,
@@ -341,14 +397,18 @@ let MonthlySummaryService = class MonthlySummaryService {
             carryToNext: Number(s.carryToNext),
         }));
     }
-    async updateMonthlySummary(id, updateDto) {
+    async updateMonthlySummary(messId, id, updateDto) {
         const existing = await this.prisma.monthlySummary.findUnique({
-            where: { id },
+            where: { id, messId },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
                     },
                 },
             },
@@ -370,17 +430,21 @@ let MonthlySummaryService = class MonthlySummaryService {
                 carryToNext: updateDto.carryToNext,
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
         });
         await this.notificationsService.create({
-            userId: existing.userId,
+            userId: existing.member.userId,
             type: "SUMMARY",
             title: "Monthly Summary Updated",
             message: `Your monthly summary for ${(0, date_fns_1.format)(existing.monthYear, "MMMM yyyy")} has been updated. New total bill: ${Number(updated.totalBill)} TK`,
@@ -388,7 +452,7 @@ let MonthlySummaryService = class MonthlySummaryService {
         });
         if (updateDto.currentDue !== undefined) {
             await this.prisma.userBalance.update({
-                where: { userId: existing.userId },
+                where: { memberId: existing.memberId },
                 data: {
                     balance: updateDto.currentDue,
                     lastUpdated: new Date(),
@@ -407,23 +471,29 @@ let MonthlySummaryService = class MonthlySummaryService {
             carryToNext: Number(updated.carryToNext),
         };
     }
-    async deleteMonthlySummary(year, month) {
+    async deleteMonthlySummary(messId, year, month) {
         const monthYear = new Date(year, month - 1, 1);
         const summaries = await this.prisma.monthlySummary.findMany({
             where: {
+                messId,
                 monthYear: monthYear,
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
                     },
                 },
             },
         });
         const deleted = await this.prisma.monthlySummary.deleteMany({
             where: {
+                messId,
                 monthYear: monthYear,
             },
         });
@@ -432,22 +502,26 @@ let MonthlySummaryService = class MonthlySummaryService {
         }
         for (const summary of summaries) {
             await this.notificationsService.create({
-                userId: summary.userId,
+                userId: summary.member.userId,
                 type: "SUMMARY",
                 title: "Monthly Summary Deleted",
                 message: `Your monthly summary for ${(0, date_fns_1.format)(monthYear, "MMMM yyyy")} has been deleted. Please contact admin if this was a mistake.`,
                 link: "/monthly-summary",
             });
         }
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "SUMMARY",
                 title: "Monthly Summary Deleted",
                 message: `${deleted.count} summaries deleted for ${(0, date_fns_1.format)(monthYear, "MMMM yyyy")}`,

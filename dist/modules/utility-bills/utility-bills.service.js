@@ -20,7 +20,7 @@ let UtilityBillsService = class UtilityBillsService {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
     }
-    async create(createUtilityBillDto) {
+    async create(messId, createUtilityBillDto) {
         const { billType, monthYear, amount, paidBy, note } = createUtilityBillDto;
         if (paidBy) {
             const user = await this.prisma.user.findUnique({
@@ -33,6 +33,7 @@ let UtilityBillsService = class UtilityBillsService {
         const monthDate = new Date(monthYear);
         const existing = await this.prisma.utilityBill.findFirst({
             where: {
+                messId,
                 billType,
                 monthYear: {
                     gte: (0, date_fns_1.startOfDay)(monthDate),
@@ -45,6 +46,7 @@ let UtilityBillsService = class UtilityBillsService {
         }
         const bill = await this.prisma.utilityBill.create({
             data: {
+                messId,
                 billType,
                 monthYear: monthDate,
                 amount,
@@ -61,8 +63,14 @@ let UtilityBillsService = class UtilityBillsService {
                 },
             },
         });
-        const users = await this.prisma.user.findMany({
-            where: { isActive: true },
+        const members = await this.prisma.messMember.findMany({
+            where: {
+                messId,
+                isActive: true,
+            },
+            include: {
+                user: true,
+            },
         });
         const billTypeLabels = {
             CURRENT: "Electricity",
@@ -71,24 +79,28 @@ let UtilityBillsService = class UtilityBillsService {
             WATER: "Water",
             KHALA: "Cook",
         };
-        for (const user of users) {
+        for (const member of members) {
             await this.notificationsService.create({
-                userId: user.id,
+                userId: member.userId,
                 type: "BILL",
                 title: `New ${billTypeLabels[billType] || billType} Bill Added`,
                 message: `${(0, date_fns_1.format)(monthDate, "MMMM yyyy")} ${billTypeLabels[billType] || billType} bill of ${amount} TK has been added.`,
                 link: "/utility-bills",
             });
         }
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "BILL",
                 title: "Utility Bill Added",
                 message: `${billTypeLabels[billType] || billType} bill of ${amount} TK added for ${(0, date_fns_1.format)(monthDate, "MMMM yyyy")}`,
@@ -97,8 +109,9 @@ let UtilityBillsService = class UtilityBillsService {
         }
         return bill;
     }
-    async findAll() {
+    async findAll(messId) {
         return this.prisma.utilityBill.findMany({
+            where: { messId },
             include: {
                 payer: {
                     select: {
@@ -113,9 +126,9 @@ let UtilityBillsService = class UtilityBillsService {
             },
         });
     }
-    async findOne(id) {
+    async findOne(messId, id) {
         const bill = await this.prisma.utilityBill.findUnique({
-            where: { id },
+            where: { id, messId },
             include: {
                 payer: {
                     select: {
@@ -127,15 +140,16 @@ let UtilityBillsService = class UtilityBillsService {
             },
         });
         if (!bill) {
-            throw new common_1.NotFoundException(`Utility bill with ID ${id} not found`);
+            throw new common_1.NotFoundException(`Utility bill with ID ${id} not found in this mess`);
         }
         return bill;
     }
-    async findByMonth(year, month) {
+    async findByMonth(messId, year, month) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
         return this.prisma.utilityBill.findMany({
             where: {
+                messId,
                 monthYear: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
@@ -155,10 +169,13 @@ let UtilityBillsService = class UtilityBillsService {
             },
         });
     }
-    async getMonthlySummary(year, month) {
-        const bills = await this.findByMonth(year, month);
-        const activeMembers = await this.prisma.user.count({
-            where: { isActive: true },
+    async getMonthlySummary(messId, year, month) {
+        const bills = await this.findByMonth(messId, year, month);
+        const activeMembers = await this.prisma.messMember.count({
+            where: {
+                messId,
+                isActive: true,
+            },
         });
         const totalCurrent = bills
             .filter((b) => b.billType === client_1.BillType.CURRENT)
@@ -178,15 +195,19 @@ let UtilityBillsService = class UtilityBillsService {
         const totalAmount = totalCurrent + totalWifi + totalRent + totalWater + totalKhala;
         const perPersonShare = activeMembers > 0 ? totalAmount / activeMembers : 0;
         if (totalAmount > 50000) {
-            const admins = await this.prisma.user.findMany({
+            const admins = await this.prisma.messMember.findMany({
                 where: {
-                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    messId,
+                    role: { in: ["SUPER_ADMIN", "ADMIN"] },
                     isActive: true,
+                },
+                include: {
+                    user: true,
                 },
             });
             for (const admin of admins) {
                 await this.notificationsService.create({
-                    userId: admin.id,
+                    userId: admin.userId,
                     type: "BILL",
                     title: "High Utility Bill Alert",
                     message: `Total utility bill for ${(0, date_fns_1.format)(new Date(year, month - 1, 1), "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
@@ -208,8 +229,10 @@ let UtilityBillsService = class UtilityBillsService {
             bills,
         };
     }
-    async getSummary() {
-        const bills = await this.prisma.utilityBill.findMany();
+    async getSummary(messId) {
+        const bills = await this.prisma.utilityBill.findMany({
+            where: { messId },
+        });
         const totalCurrent = bills
             .filter((b) => b.billType === client_1.BillType.CURRENT)
             .reduce((sum, b) => sum + Number(b.amount), 0);
@@ -226,8 +249,11 @@ let UtilityBillsService = class UtilityBillsService {
             .filter((b) => b.billType === client_1.BillType.KHALA)
             .reduce((sum, b) => sum + Number(b.amount), 0);
         const totalAmount = totalCurrent + totalWifi + totalRent + totalWater + totalKhala;
-        const activeMembers = await this.prisma.user.count({
-            where: { isActive: true },
+        const activeMembers = await this.prisma.messMember.count({
+            where: {
+                messId,
+                isActive: true,
+            },
         });
         return {
             totalCurrent,
@@ -240,9 +266,9 @@ let UtilityBillsService = class UtilityBillsService {
             totalMembers: activeMembers,
         };
     }
-    async update(id, updateUtilityBillDto) {
+    async update(messId, id, updateUtilityBillDto) {
         const existing = await this.prisma.utilityBill.findUnique({
-            where: { id },
+            where: { id, messId },
             include: {
                 payer: {
                     select: {
@@ -253,7 +279,7 @@ let UtilityBillsService = class UtilityBillsService {
             },
         });
         if (!existing) {
-            throw new common_1.NotFoundException(`Utility bill with ID ${id} not found`);
+            throw new common_1.NotFoundException(`Utility bill with ID ${id} not found in this mess`);
         }
         if (updateUtilityBillDto.paidBy) {
             const user = await this.prisma.user.findUnique({
@@ -288,12 +314,18 @@ let UtilityBillsService = class UtilityBillsService {
             WATER: "Water",
             KHALA: "Cook",
         };
-        const users = await this.prisma.user.findMany({
-            where: { isActive: true },
+        const members = await this.prisma.messMember.findMany({
+            where: {
+                messId,
+                isActive: true,
+            },
+            include: {
+                user: true,
+            },
         });
-        for (const user of users) {
+        for (const member of members) {
             await this.notificationsService.create({
-                userId: user.id,
+                userId: member.userId,
                 type: "BILL",
                 title: `Utility Bill Updated`,
                 message: `${billTypeLabels[existing.billType] || existing.billType} bill for ${(0, date_fns_1.format)(existing.monthYear, "MMMM yyyy")} has been updated to ${updated.amount} TK.`,
@@ -302,9 +334,9 @@ let UtilityBillsService = class UtilityBillsService {
         }
         return updated;
     }
-    async remove(id) {
+    async remove(messId, id) {
         const bill = await this.prisma.utilityBill.findUnique({
-            where: { id },
+            where: { id, messId },
             include: {
                 payer: {
                     select: {
@@ -315,7 +347,7 @@ let UtilityBillsService = class UtilityBillsService {
             },
         });
         if (!bill) {
-            throw new common_1.NotFoundException(`Utility bill with ID ${id} not found`);
+            throw new common_1.NotFoundException(`Utility bill with ID ${id} not found in this mess`);
         }
         await this.prisma.utilityBill.delete({
             where: { id },
@@ -327,12 +359,18 @@ let UtilityBillsService = class UtilityBillsService {
             WATER: "Water",
             KHALA: "Cook",
         };
-        const users = await this.prisma.user.findMany({
-            where: { isActive: true },
+        const members = await this.prisma.messMember.findMany({
+            where: {
+                messId,
+                isActive: true,
+            },
+            include: {
+                user: true,
+            },
         });
-        for (const user of users) {
+        for (const member of members) {
             await this.notificationsService.create({
-                userId: user.id,
+                userId: member.userId,
                 type: "BILL",
                 title: `Utility Bill Deleted`,
                 message: `${billTypeLabels[bill.billType] || bill.billType} bill for ${(0, date_fns_1.format)(bill.monthYear, "MMMM yyyy")} has been deleted.`,
@@ -341,11 +379,12 @@ let UtilityBillsService = class UtilityBillsService {
         }
         return { message: `Utility bill with ID ${id} deleted successfully` };
     }
-    async removeByMonth(year, month) {
+    async removeByMonth(messId, year, month) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
         const deleted = await this.prisma.utilityBill.deleteMany({
             where: {
+                messId,
                 monthYear: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
@@ -353,12 +392,18 @@ let UtilityBillsService = class UtilityBillsService {
             },
         });
         if (deleted.count > 0) {
-            const users = await this.prisma.user.findMany({
-                where: { isActive: true },
+            const members = await this.prisma.messMember.findMany({
+                where: {
+                    messId,
+                    isActive: true,
+                },
+                include: {
+                    user: true,
+                },
             });
-            for (const user of users) {
+            for (const member of members) {
                 await this.notificationsService.create({
-                    userId: user.id,
+                    userId: member.userId,
                     type: "BILL",
                     title: `Utility Bills Deleted`,
                     message: `${deleted.count} utility bills for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} have been deleted.`,

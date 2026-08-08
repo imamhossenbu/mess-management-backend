@@ -7,19 +7,19 @@ import {
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateShopDebtDto, UpdateShopDebtDto } from "./dto";
 import { DebtStatus } from "@prisma/client";
-import { startOfDay, endOfDay, format, getMonth, getYear } from "date-fns";
-import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
+import { startOfDay, endOfDay, format } from "date-fns";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class ShopDebtsService {
   constructor(
     private prisma: PrismaService,
-    private notificationsService: NotificationsService, // ✅ Inject
+    private notificationsService: NotificationsService,
   ) {}
 
   // ==================== CREATE ====================
 
-  async create(createShopDebtDto: CreateShopDebtDto) {
+  async create(messId: string, createShopDebtDto: CreateShopDebtDto) {
     const { shopName, date, itemDetails, amount, status, note } =
       createShopDebtDto;
 
@@ -27,6 +27,7 @@ export class ShopDebtsService {
 
     const debt = await this.prisma.shopDebt.create({
       data: {
+        messId,
         shopName,
         date: debtDate,
         itemDetails,
@@ -36,20 +37,23 @@ export class ShopDebtsService {
       },
     });
 
-    // Update monthly summary
-    await this.updateMonthlySummary(debtDate);
+    await this.updateMonthlySummary(messId, debtDate);
 
-    // ✅ Send notification to admins
-    const admins = await this.prisma.user.findMany({
+    // ✅ Send notification to admins of this mess
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "SYSTEM",
         title: "New Shop Debt Added",
         message: `${shopName}: ${amount} TK debt added for ${format(debtDate, "yyyy-MM-dd")}`,
@@ -60,6 +64,7 @@ export class ShopDebtsService {
     // ✅ Check if total debt for this shop is high
     const shopDebts = await this.prisma.shopDebt.findMany({
       where: {
+        messId,
         shopName,
         status: DebtStatus.DUE,
       },
@@ -73,7 +78,7 @@ export class ShopDebtsService {
     if (totalShopDebt > 10000) {
       for (const admin of admins) {
         await this.notificationsService.create({
-          userId: admin.id,
+          userId: admin.userId,
           type: "SYSTEM",
           title: "High Shop Debt Alert",
           message: `${shopName} has total due of ${totalShopDebt} TK. Please review.`,
@@ -87,13 +92,15 @@ export class ShopDebtsService {
 
   // ==================== PAY ====================
 
-  async payDebt(id: string, paidDate?: string) {
+  async payDebt(messId: string, id: string, paidDate?: string) {
     const debt = await this.prisma.shopDebt.findUnique({
-      where: { id },
+      where: { id, messId },
     });
 
     if (!debt) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
+      throw new NotFoundException(
+        `Shop debt with ID ${id} not found in this mess`,
+      );
     }
 
     if (debt.status === DebtStatus.PAID) {
@@ -108,20 +115,22 @@ export class ShopDebtsService {
       },
     });
 
-    // Update monthly summary
-    await this.updateMonthlySummary(debt.date);
+    await this.updateMonthlySummary(messId, debt.date);
 
-    // ✅ Send notification to admins
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "SYSTEM",
         title: "Shop Debt Paid",
         message: `${debt.shopName}: ${debt.amount} TK debt has been paid.`,
@@ -134,29 +143,33 @@ export class ShopDebtsService {
 
   // ==================== FIND ====================
 
-  async findAll() {
+  async findAll(messId: string) {
     return this.prisma.shopDebt.findMany({
+      where: { messId },
       orderBy: {
         date: "desc",
       },
     });
   }
 
-  async findOne(id: string) {
+  async findOne(messId: string, id: string) {
     const debt = await this.prisma.shopDebt.findUnique({
-      where: { id },
+      where: { id, messId },
     });
 
     if (!debt) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
+      throw new NotFoundException(
+        `Shop debt with ID ${id} not found in this mess`,
+      );
     }
 
     return debt;
   }
 
-  async findByShop(shopName: string) {
+  async findByShop(messId: string, shopName: string) {
     return this.prisma.shopDebt.findMany({
       where: {
+        messId,
         shopName: {
           contains: shopName,
           mode: "insensitive",
@@ -168,12 +181,13 @@ export class ShopDebtsService {
     });
   }
 
-  async findByDate(date: Date) {
+  async findByDate(messId: string, date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
     return this.prisma.shopDebt.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
@@ -185,12 +199,13 @@ export class ShopDebtsService {
     });
   }
 
-  async findByMonth(year: number, month: number) {
+  async findByMonth(messId: string, year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
     return this.prisma.shopDebt.findMany({
       where: {
+        messId,
         date: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
@@ -202,8 +217,10 @@ export class ShopDebtsService {
     });
   }
 
-  async getSummary() {
-    const allDebts = await this.prisma.shopDebt.findMany();
+  async getSummary(messId: string) {
+    const allDebts = await this.prisma.shopDebt.findMany({
+      where: { messId },
+    });
 
     const totalDue = allDebts
       .filter((d) => d.status === DebtStatus.DUE)
@@ -215,7 +232,6 @@ export class ShopDebtsService {
 
     const totalAmount = allDebts.reduce((sum, d) => sum + Number(d.amount), 0);
 
-    // Shop-wise summary
     const shopMap = new Map<
       string,
       { totalDue: number; totalPaid: number; totalAmount: number }
@@ -246,18 +262,21 @@ export class ShopDebtsService {
       }),
     );
 
-    // ✅ Send notification if total due is too high
     if (totalDue > 20000) {
-      const admins = await this.prisma.user.findMany({
+      const admins = await this.prisma.messMember.findMany({
         where: {
-          role: { in: ["SUPER_ADMIN", "MANAGER"] },
+          messId,
+          role: { in: ["SUPER_ADMIN", "ADMIN"] },
           isActive: true,
+        },
+        include: {
+          user: true,
         },
       });
 
       for (const admin of admins) {
         await this.notificationsService.create({
-          userId: admin.id,
+          userId: admin.userId,
           type: "SYSTEM",
           title: "High Total Shop Debt Alert",
           message: `Total shop debt is ${totalDue} TK across all shops. Please review.`,
@@ -274,8 +293,8 @@ export class ShopDebtsService {
     };
   }
 
-  async getMonthlySummary(year: number, month: number) {
-    const debts = await this.findByMonth(year, month);
+  async getMonthlySummary(messId: string, year: number, month: number) {
+    const debts = await this.findByMonth(messId, year, month);
 
     const totalDebt = debts
       .filter((d) => d.status === DebtStatus.DUE)
@@ -299,13 +318,19 @@ export class ShopDebtsService {
 
   // ==================== UPDATE ====================
 
-  async update(id: string, updateShopDebtDto: UpdateShopDebtDto) {
+  async update(
+    messId: string,
+    id: string,
+    updateShopDebtDto: UpdateShopDebtDto,
+  ) {
     const existing = await this.prisma.shopDebt.findUnique({
-      where: { id },
+      where: { id, messId },
     });
 
     if (!existing) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
+      throw new NotFoundException(
+        `Shop debt with ID ${id} not found in this mess`,
+      );
     }
 
     const updated = await this.prisma.shopDebt.update({
@@ -322,20 +347,22 @@ export class ShopDebtsService {
       },
     });
 
-    // Update monthly summary
-    await this.updateMonthlySummary(existing.date);
+    await this.updateMonthlySummary(messId, existing.date);
 
-    // ✅ Send notification for update
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "SYSTEM",
         title: "Shop Debt Updated",
         message: `${existing.shopName}: Debt updated. New amount: ${updated.amount} TK`,
@@ -348,33 +375,37 @@ export class ShopDebtsService {
 
   // ==================== DELETE ====================
 
-  async remove(id: string) {
+  async remove(messId: string, id: string) {
     const debt = await this.prisma.shopDebt.findUnique({
-      where: { id },
+      where: { id, messId },
     });
 
     if (!debt) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
+      throw new NotFoundException(
+        `Shop debt with ID ${id} not found in this mess`,
+      );
     }
 
     await this.prisma.shopDebt.delete({
       where: { id },
     });
 
-    // Update monthly summary
-    await this.updateMonthlySummary(debt.date);
+    await this.updateMonthlySummary(messId, debt.date);
 
-    // ✅ Send notification for deletion
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "SYSTEM",
         title: "Shop Debt Deleted",
         message: `${debt.shopName}: ${debt.amount} TK debt has been deleted.`,
@@ -387,7 +418,7 @@ export class ShopDebtsService {
 
   // ==================== MONTHLY SUMMARY ====================
 
-  private async updateMonthlySummary(date: Date) {
+  private async updateMonthlySummary(messId: string, date: Date) {
     const monthYear = new Date(date.getFullYear(), date.getMonth(), 1);
     const startDate = startOfDay(monthYear);
     const endDate = endOfDay(
@@ -396,6 +427,7 @@ export class ShopDebtsService {
 
     const debts = await this.prisma.shopDebt.findMany({
       where: {
+        messId,
         date: {
           gte: startDate,
           lte: endDate,
@@ -415,13 +447,21 @@ export class ShopDebtsService {
 
     const existing = await this.prisma.shopMonthlySummary.findUnique({
       where: {
-        monthYear: startDate,
+        messId_monthYear: {
+          messId,
+          monthYear: startDate,
+        },
       },
     });
 
     if (existing) {
       await this.prisma.shopMonthlySummary.update({
-        where: { monthYear: startDate },
+        where: {
+          messId_monthYear: {
+            messId,
+            monthYear: startDate,
+          },
+        },
         data: {
           totalDebt,
           totalPaid,
@@ -431,6 +471,7 @@ export class ShopDebtsService {
     } else {
       await this.prisma.shopMonthlySummary.create({
         data: {
+          messId,
           monthYear: startDate,
           totalDebt,
           totalPaid,
@@ -442,11 +483,14 @@ export class ShopDebtsService {
 
   // ==================== GET MONTHLY SUMMARY ====================
 
-  async getMonthlySummaryReport(year: number, month: number) {
+  async getMonthlySummaryReport(messId: string, year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const summary = await this.prisma.shopMonthlySummary.findUnique({
       where: {
-        monthYear: startDate,
+        messId_monthYear: {
+          messId,
+          monthYear: startDate,
+        },
       },
     });
 

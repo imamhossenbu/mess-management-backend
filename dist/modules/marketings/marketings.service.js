@@ -22,19 +22,27 @@ let MarketingsService = class MarketingsService {
         this.inventoryService = inventoryService;
         this.notificationsService = notificationsService;
     }
-    async create(createMarketingDto) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: createMarketingDto.userId },
+    async create(messId, createMarketingDto) {
+        const member = await this.prisma.messMember.findFirst({
+            where: {
+                userId: createMarketingDto.userId,
+                messId: messId,
+                isActive: true,
+            },
+            include: {
+                user: true,
+            },
         });
-        if (!user) {
-            throw new common_1.NotFoundException(`User with ID ${createMarketingDto.userId} not found`);
+        if (!member) {
+            throw new common_1.NotFoundException(`User is not a member of this mess`);
         }
         const date = createMarketingDto.date
             ? new Date(createMarketingDto.date)
             : new Date();
         const marketing = await this.prisma.marketing.create({
             data: {
-                userId: createMarketingDto.userId,
+                messId,
+                memberId: member.id,
                 date: date,
                 itemName: createMarketingDto.itemName,
                 quantity: createMarketingDto.quantity,
@@ -44,32 +52,36 @@ let MarketingsService = class MarketingsService {
                 note: createMarketingDto.note,
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
         });
         if (createMarketingDto.inventoryType && createMarketingDto.totalPieces) {
             const inventoryType = createMarketingDto.inventoryType;
-            await this.inventoryService.addInventory({
+            await this.inventoryService.addInventory(messId, {
                 type: inventoryType,
                 quantity: createMarketingDto.totalPieces,
                 marketingId: marketing.id,
                 note: `বাজার থেকে ${createMarketingDto.totalPieces} পিস ${createMarketingDto.itemName} কেনা হয়েছে`,
             });
             if (createMarketingDto.usedPieces && createMarketingDto.usedPieces > 0) {
-                await this.inventoryService.removeInventory({
+                await this.inventoryService.removeInventory(messId, {
                     type: inventoryType,
                     quantity: createMarketingDto.usedPieces,
                     note: `আজকের রান্নায় ${createMarketingDto.usedPieces} পিস ${createMarketingDto.itemName} ব্যবহার করা হয়েছে`,
                 });
             }
         }
-        await this.updateDailySummary(date);
+        await this.updateDailySummary(messId, date);
         await this.notificationsService.create({
             userId: createMarketingDto.userId,
             type: "SYSTEM",
@@ -77,31 +89,40 @@ let MarketingsService = class MarketingsService {
             message: `You have added a bazar entry: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,
             link: "/marketings",
         });
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "SYSTEM",
                 title: "New Bazar Entry",
-                message: `${user.name} added bazar: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,
+                message: `${member.user.name} added bazar: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,
                 link: `/marketings/${marketing.id}`,
             });
         }
         return marketing;
     }
-    async findAll() {
+    async findAll(messId) {
         return this.prisma.marketing.findMany({
+            where: { messId },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
@@ -110,26 +131,40 @@ let MarketingsService = class MarketingsService {
             },
         });
     }
-    async findOne(id) {
+    async findOne(messId, id) {
         const marketing = await this.prisma.marketing.findUnique({
-            where: { id },
+            where: { id, messId },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
         });
         if (!marketing) {
-            throw new common_1.NotFoundException(`Marketing with ID ${id} not found`);
+            throw new common_1.NotFoundException(`Marketing with ID ${id} not found in this mess`);
         }
         return marketing;
     }
-    async findByUser(userId, startDate, endDate) {
-        const where = { userId };
+    async findByUser(messId, userId, startDate, endDate) {
+        const member = await this.prisma.messMember.findFirst({
+            where: {
+                userId,
+                messId,
+                isActive: true,
+            },
+        });
+        if (!member) {
+            throw new common_1.NotFoundException(`User is not a member of this mess`);
+        }
+        const where = { messId, memberId: member.id };
         if (startDate && endDate) {
             where.date = {
                 gte: (0, date_fns_1.startOfDay)(startDate),
@@ -139,11 +174,15 @@ let MarketingsService = class MarketingsService {
         return this.prisma.marketing.findMany({
             where,
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
@@ -152,22 +191,27 @@ let MarketingsService = class MarketingsService {
             },
         });
     }
-    async findByDate(date) {
+    async findByDate(messId, date) {
         const start = (0, date_fns_1.startOfDay)(date);
         const end = (0, date_fns_1.endOfDay)(date);
         return this.prisma.marketing.findMany({
             where: {
+                messId,
                 date: {
                     gte: start,
                     lte: end,
                 },
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
@@ -176,22 +220,27 @@ let MarketingsService = class MarketingsService {
             },
         });
     }
-    async getDailySummary(date) {
+    async getDailySummary(messId, date) {
         const start = (0, date_fns_1.startOfDay)(date);
         const end = (0, date_fns_1.endOfDay)(date);
         const items = await this.prisma.marketing.findMany({
             where: {
+                messId,
                 date: {
                     gte: start,
                     lte: end,
                 },
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
@@ -210,15 +259,19 @@ let MarketingsService = class MarketingsService {
             .filter((item) => item.paymentType === client_1.PaymentType.SELF)
             .reduce((sum, item) => sum + Number(item.amount), 0);
         if (totalAmount > 10000) {
-            const admins = await this.prisma.user.findMany({
+            const admins = await this.prisma.messMember.findMany({
                 where: {
-                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    messId,
+                    role: { in: ["SUPER_ADMIN", "ADMIN"] },
                     isActive: true,
+                },
+                include: {
+                    user: true,
                 },
             });
             for (const admin of admins) {
                 await this.notificationsService.create({
-                    userId: admin.id,
+                    userId: admin.userId,
                     type: "SYSTEM",
                     title: "High Bazar Spending Alert",
                     message: `Total bazar cost for today is ${totalAmount} TK. Please review.`,
@@ -236,21 +289,26 @@ let MarketingsService = class MarketingsService {
             items,
         };
     }
-    async getMonthlySummary(year, month) {
+    async getMonthlySummary(messId, year, month) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
         const items = await this.prisma.marketing.findMany({
             where: {
+                messId,
                 date: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
                     lte: (0, date_fns_1.endOfDay)(endDate),
                 },
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
                     },
                 },
             },
@@ -285,15 +343,19 @@ let MarketingsService = class MarketingsService {
             count: data.count,
         }));
         if (totalAmount > 50000) {
-            const admins = await this.prisma.user.findMany({
+            const admins = await this.prisma.messMember.findMany({
                 where: {
-                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    messId,
+                    role: { in: ["SUPER_ADMIN", "ADMIN"] },
                     isActive: true,
+                },
+                include: {
+                    user: true,
                 },
             });
             for (const admin of admins) {
                 await this.notificationsService.create({
-                    userId: admin.id,
+                    userId: admin.userId,
                     type: "SYSTEM",
                     title: "High Monthly Bazar Spending",
                     message: `Total bazar cost for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
@@ -312,25 +374,29 @@ let MarketingsService = class MarketingsService {
             categorySummary: categorySummary.sort((a, b) => b.totalAmount - a.totalAmount),
         };
     }
-    async update(id, updateMarketingDto) {
+    async update(messId, id, updateMarketingDto) {
         const existing = await this.prisma.marketing.findUnique({
-            where: { id },
+            where: { id, messId },
         });
         if (!existing) {
-            throw new common_1.NotFoundException(`Marketing with ID ${id} not found`);
+            throw new common_1.NotFoundException(`Marketing with ID ${id} not found in this mess`);
         }
         if (updateMarketingDto.userId) {
-            const user = await this.prisma.user.findUnique({
-                where: { id: updateMarketingDto.userId },
+            const member = await this.prisma.messMember.findFirst({
+                where: {
+                    userId: updateMarketingDto.userId,
+                    messId,
+                    isActive: true,
+                },
             });
-            if (!user) {
-                throw new common_1.NotFoundException(`User with ID ${updateMarketingDto.userId} not found`);
+            if (!member) {
+                throw new common_1.NotFoundException(`User is not a member of this mess`);
             }
         }
         const updated = await this.prisma.marketing.update({
             where: { id },
             data: {
-                userId: updateMarketingDto.userId,
+                memberId: updateMarketingDto.userId ? undefined : existing.memberId,
                 itemName: updateMarketingDto.itemName,
                 quantity: updateMarketingDto.quantity,
                 amount: updateMarketingDto.amount,
@@ -339,51 +405,63 @@ let MarketingsService = class MarketingsService {
                 note: updateMarketingDto.note,
             },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        phone: true,
+                member: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true,
+                            },
+                        },
                     },
                 },
             },
         });
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "SYSTEM",
                 title: "Bazar Entry Updated",
-                message: `Bazar entry ${existing.itemName} has been updated by ${updated.user.name}`,
+                message: `Bazar entry ${existing.itemName} has been updated`,
                 link: `/marketings/${id}`,
             });
         }
         return updated;
     }
-    async remove(id) {
+    async remove(messId, id) {
         const marketing = await this.prisma.marketing.findUnique({
-            where: { id },
+            where: { id, messId },
         });
         if (!marketing) {
-            throw new common_1.NotFoundException(`Marketing with ID ${id} not found`);
+            throw new common_1.NotFoundException(`Marketing with ID ${id} not found in this mess`);
         }
         await this.prisma.marketing.delete({
             where: { id },
         });
-        const admins = await this.prisma.user.findMany({
+        const admins = await this.prisma.messMember.findMany({
             where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                messId,
+                role: { in: ["SUPER_ADMIN", "ADMIN"] },
                 isActive: true,
+            },
+            include: {
+                user: true,
             },
         });
         for (const admin of admins) {
             await this.notificationsService.create({
-                userId: admin.id,
+                userId: admin.userId,
                 type: "SYSTEM",
                 title: "Bazar Entry Deleted",
                 message: `Bazar entry ${marketing.itemName} (${marketing.amount} TK) has been deleted.`,
@@ -392,11 +470,12 @@ let MarketingsService = class MarketingsService {
         }
         return { message: `Marketing with ID ${id} deleted successfully` };
     }
-    async removeByDate(date) {
+    async removeByDate(messId, date) {
         const start = (0, date_fns_1.startOfDay)(date);
         const end = (0, date_fns_1.endOfDay)(date);
         const deleted = await this.prisma.marketing.deleteMany({
             where: {
+                messId,
                 date: {
                     gte: start,
                     lte: end,
@@ -404,15 +483,19 @@ let MarketingsService = class MarketingsService {
             },
         });
         if (deleted.count > 0) {
-            const admins = await this.prisma.user.findMany({
+            const admins = await this.prisma.messMember.findMany({
                 where: {
-                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    messId,
+                    role: { in: ["SUPER_ADMIN", "ADMIN"] },
                     isActive: true,
+                },
+                include: {
+                    user: true,
                 },
             });
             for (const admin of admins) {
                 await this.notificationsService.create({
-                    userId: admin.id,
+                    userId: admin.userId,
                     type: "SYSTEM",
                     title: "Bulk Bazar Deletion",
                     message: `${deleted.count} bazar entries deleted for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`,
@@ -425,11 +508,12 @@ let MarketingsService = class MarketingsService {
             count: deleted.count,
         };
     }
-    async updateDailySummary(date) {
+    async updateDailySummary(messId, date) {
         const start = (0, date_fns_1.startOfDay)(date);
         const end = (0, date_fns_1.endOfDay)(date);
         const marketings = await this.prisma.marketing.findMany({
             where: {
+                messId,
                 date: {
                     gte: start,
                     lte: end,
@@ -441,11 +525,17 @@ let MarketingsService = class MarketingsService {
         previousDay.setDate(previousDay.getDate() - 1);
         const previousStart = (0, date_fns_1.startOfDay)(previousDay);
         const previousSummary = await this.prisma.dailySummary.findUnique({
-            where: { date: previousStart },
+            where: {
+                messId_date: {
+                    messId,
+                    date: previousStart,
+                },
+            },
         });
         const previousRunningCost = previousSummary?.runningMarketCost || 0;
         const meals = await this.prisma.meal.findMany({
             where: {
+                messId,
                 date: {
                     gte: start,
                     lte: end,
@@ -457,11 +547,21 @@ let MarketingsService = class MarketingsService {
         const runningMarketCost = Number(previousRunningCost) + dailyMarketCost;
         const mealRate = runningTotalMeal > 0 ? runningMarketCost / runningTotalMeal : 0;
         const existing = await this.prisma.dailySummary.findUnique({
-            where: { date: start },
+            where: {
+                messId_date: {
+                    messId,
+                    date: start,
+                },
+            },
         });
         if (existing) {
             await this.prisma.dailySummary.update({
-                where: { date: start },
+                where: {
+                    messId_date: {
+                        messId,
+                        date: start,
+                    },
+                },
                 data: {
                     dailyMarketCost,
                     dailyTotalMeal,
@@ -474,6 +574,7 @@ let MarketingsService = class MarketingsService {
         else {
             await this.prisma.dailySummary.create({
                 data: {
+                    messId,
                     date: start,
                     dailyMarketCost,
                     dailyTotalMeal,

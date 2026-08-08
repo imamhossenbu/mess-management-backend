@@ -46,7 +46,6 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
-const register_dto_1 = require("../auth/dto/register.dto");
 const cloudinary_service_1 = require("../cloudinary/cloudinary.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 let UsersService = class UsersService {
@@ -56,29 +55,42 @@ let UsersService = class UsersService {
         this.notificationsService = notificationsService;
     }
     async create(createUserDto) {
-        const existingUser = await this.prisma.user.findFirst({
-            where: {
-                OR: [{ phone: createUserDto.phone }, { email: createUserDto.email }],
-            },
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: createUserDto.email },
         });
         if (existingUser) {
-            throw new common_1.ConflictException("User already exists with this phone or email");
+            throw new common_1.ConflictException("User already exists with this email");
         }
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
         const user = await this.prisma.user.create({
             data: {
                 name: createUserDto.name,
-                phone: createUserDto.phone,
+                phone: createUserDto.phone || "",
                 email: createUserDto.email,
                 password: hashedPassword,
-                role: createUserDto.role || register_dto_1.Role.MEMBER,
-                roomNumber: createUserDto.roomNumber,
-                isActive: createUserDto.isActive !== undefined ? createUserDto.isActive : true,
+                profileImage: null,
+                isActive: true,
+            },
+        });
+        const mess = await this.prisma.mess.create({
+            data: {
+                name: `${user.name}'s Mess`,
+                slug: `mess-${Date.now()}`,
+                description: "My mess",
+                isActive: true,
+            },
+        });
+        const member = await this.prisma.messMember.create({
+            data: {
+                userId: user.id,
+                messId: mess.id,
+                role: "SUPER_ADMIN",
+                isActive: true,
             },
         });
         await this.prisma.userBalance.create({
             data: {
-                userId: user.id,
+                memberId: member.id,
                 balance: 0,
             },
         });
@@ -87,24 +99,9 @@ let UsersService = class UsersService {
             userId: user.id,
             type: "SYSTEM",
             title: "Welcome to the Mess!",
-            message: `Hello ${user.name}, your account has been created successfully with role: ${user.role}`,
+            message: `Hello ${user.name}, your account has been created successfully. Your mess "${mess.name}" has been created.`,
             link: "/profile",
         });
-        const admins = await this.prisma.user.findMany({
-            where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
-                isActive: true,
-            },
-        });
-        for (const admin of admins) {
-            await this.notificationsService.create({
-                userId: admin.id,
-                type: "SYSTEM",
-                title: "New User Registered",
-                message: `${user.name} has joined the mess as ${user.role}`,
-                link: `/users/${user.id}`,
-            });
-        }
         return userWithoutPassword;
     }
     async findAll() {
@@ -114,17 +111,19 @@ let UsersService = class UsersService {
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
                 profileImage: true,
                 isActive: true,
-                joinedDate: true,
-                leftDate: true,
                 createdAt: true,
                 updatedAt: true,
-                balances: {
-                    select: {
-                        balance: true,
+                messMembers: {
+                    include: {
+                        mess: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
             },
@@ -132,13 +131,7 @@ let UsersService = class UsersService {
                 createdAt: "desc",
             },
         });
-        return users.map((user) => ({
-            ...user,
-            balance: user.balances?.[0]?.balance
-                ? Number(user.balances[0].balance)
-                : 0,
-            balances: undefined,
-        }));
+        return users;
     }
     async findOne(id) {
         const user = await this.prisma.user.findUnique({
@@ -148,17 +141,20 @@ let UsersService = class UsersService {
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
                 profileImage: true,
                 isActive: true,
-                joinedDate: true,
-                leftDate: true,
                 createdAt: true,
                 updatedAt: true,
-                balances: {
-                    select: {
-                        balance: true,
+                messMembers: {
+                    include: {
+                        mess: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
+                        },
+                        userBalance: true,
                     },
                 },
             },
@@ -166,25 +162,19 @@ let UsersService = class UsersService {
         if (!user) {
             throw new common_1.NotFoundException(`User with ID ${id} not found`);
         }
-        return {
-            ...user,
-            balance: user.balances?.[0]?.balance
-                ? Number(user.balances[0].balance)
-                : 0,
-            balances: undefined,
-        };
+        return user;
     }
     async update(id, updateUserDto) {
         await this.findOne(id);
-        if (updateUserDto.phone || updateUserDto.email) {
+        if (updateUserDto.email) {
             const existingUser = await this.prisma.user.findFirst({
                 where: {
-                    OR: [{ phone: updateUserDto.phone }, { email: updateUserDto.email }],
+                    email: updateUserDto.email,
                     NOT: { id },
                 },
             });
             if (existingUser) {
-                throw new common_1.ConflictException("Phone or email already taken by another user");
+                throw new common_1.ConflictException("Email already taken by another user");
             }
         }
         const updatedUser = await this.prisma.user.update({
@@ -193,8 +183,6 @@ let UsersService = class UsersService {
                 name: updateUserDto.name,
                 phone: updateUserDto.phone,
                 email: updateUserDto.email,
-                role: updateUserDto.role,
-                roomNumber: updateUserDto.roomNumber,
                 isActive: updateUserDto.isActive,
             },
             select: {
@@ -202,16 +190,19 @@ let UsersService = class UsersService {
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
                 profileImage: true,
                 isActive: true,
-                joinedDate: true,
                 createdAt: true,
                 updatedAt: true,
-                balances: {
-                    select: {
-                        balance: true,
+                messMembers: {
+                    include: {
+                        mess: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
             },
@@ -223,13 +214,7 @@ let UsersService = class UsersService {
             message: "Your profile information has been updated successfully.",
             link: "/profile",
         });
-        return {
-            ...updatedUser,
-            balance: updatedUser.balances?.[0]?.balance
-                ? Number(updatedUser.balances[0].balance)
-                : 0,
-            balances: undefined,
-        };
+        return updatedUser;
     }
     async updateProfile(userId, updateProfileDto) {
         const user = await this.prisma.user.findUnique({
@@ -238,18 +223,15 @@ let UsersService = class UsersService {
         if (!user) {
             throw new common_1.NotFoundException("User not found");
         }
-        if (updateProfileDto.phone || updateProfileDto.email) {
+        if (updateProfileDto.email) {
             const existingUser = await this.prisma.user.findFirst({
                 where: {
-                    OR: [
-                        { phone: updateProfileDto.phone },
-                        { email: updateProfileDto.email },
-                    ],
+                    email: updateProfileDto.email,
                     NOT: { id: userId },
                 },
             });
             if (existingUser) {
-                throw new common_1.ConflictException("Phone or email already taken by another user");
+                throw new common_1.ConflictException("Email already taken by another user");
             }
         }
         const updatedUser = await this.prisma.user.update({
@@ -258,23 +240,25 @@ let UsersService = class UsersService {
                 name: updateProfileDto.name,
                 phone: updateProfileDto.phone,
                 email: updateProfileDto.email,
-                roomNumber: updateProfileDto.roomNumber,
             },
             select: {
                 id: true,
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
                 profileImage: true,
                 isActive: true,
-                joinedDate: true,
                 createdAt: true,
                 updatedAt: true,
-                balances: {
-                    select: {
-                        balance: true,
+                messMembers: {
+                    include: {
+                        mess: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
             },
@@ -286,13 +270,7 @@ let UsersService = class UsersService {
             message: "Your profile information has been updated successfully.",
             link: "/profile",
         });
-        return {
-            ...updatedUser,
-            balance: updatedUser.balances?.[0]?.balance
-                ? Number(updatedUser.balances[0].balance)
-                : 0,
-            balances: undefined,
-        };
+        return updatedUser;
     }
     async updateProfileImage(userId, file) {
         const user = await this.prisma.user.findUnique({
@@ -315,16 +293,19 @@ let UsersService = class UsersService {
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
                 profileImage: true,
                 isActive: true,
-                joinedDate: true,
                 createdAt: true,
                 updatedAt: true,
-                balances: {
-                    select: {
-                        balance: true,
+                messMembers: {
+                    include: {
+                        mess: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
             },
@@ -336,13 +317,7 @@ let UsersService = class UsersService {
             message: "Your profile image has been updated successfully.",
             link: "/profile",
         });
-        return {
-            ...updatedUser,
-            balance: updatedUser.balances?.[0]?.balance
-                ? Number(updatedUser.balances[0].balance)
-                : 0,
-            balances: undefined,
-        };
+        return updatedUser;
     }
     async removeProfileImage(userId) {
         const user = await this.prisma.user.findUnique({
@@ -365,16 +340,19 @@ let UsersService = class UsersService {
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
                 profileImage: true,
                 isActive: true,
-                joinedDate: true,
                 createdAt: true,
                 updatedAt: true,
-                balances: {
-                    select: {
-                        balance: true,
+                messMembers: {
+                    include: {
+                        mess: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
+                        },
                     },
                 },
             },
@@ -386,13 +364,7 @@ let UsersService = class UsersService {
             message: "Your profile image has been removed successfully.",
             link: "/profile",
         });
-        return {
-            ...updatedUser,
-            balance: updatedUser.balances?.[0]?.balance
-                ? Number(updatedUser.balances[0].balance)
-                : 0,
-            balances: undefined,
-        };
+        return updatedUser;
     }
     async remove(id) {
         const user = await this.findOne(id);
@@ -400,16 +372,20 @@ let UsersService = class UsersService {
             where: { id },
             data: {
                 isActive: false,
-                leftDate: new Date(),
             },
             select: {
                 id: true,
                 name: true,
                 phone: true,
                 email: true,
-                role: true,
                 isActive: true,
-                leftDate: true,
+            },
+        });
+        await this.prisma.messMember.updateMany({
+            where: { userId: id },
+            data: {
+                isActive: false,
+                leftDate: new Date(),
             },
         });
         await this.notificationsService.create({
@@ -419,47 +395,23 @@ let UsersService = class UsersService {
             message: "Your account has been deactivated. Please contact admin for more information.",
             link: "/",
         });
-        const admins = await this.prisma.user.findMany({
-            where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
-                isActive: true,
-            },
-        });
-        for (const admin of admins) {
-            await this.notificationsService.create({
-                userId: admin.id,
-                type: "SYSTEM",
-                title: "User Account Deactivated",
-                message: `${user.name}'s account has been deactivated.`,
-                link: `/users/${id}`,
-            });
-        }
         return deactivatedUser;
     }
     async hardDelete(id) {
         const user = await this.findOne(id);
+        await this.prisma.messMember.deleteMany({
+            where: { userId: id },
+        });
+        await this.prisma.userBalance.deleteMany({
+            where: { member: { userId: id } },
+        });
         await this.prisma.user.delete({
             where: { id },
         });
-        const admins = await this.prisma.user.findMany({
-            where: {
-                role: { in: ["SUPER_ADMIN", "MANAGER"] },
-                isActive: true,
-            },
-        });
-        for (const admin of admins) {
-            await this.notificationsService.create({
-                userId: admin.id,
-                type: "SYSTEM",
-                title: "User Account Permanently Deleted",
-                message: `${user.name}'s account has been permanently deleted from the system.`,
-                link: "/users",
-            });
-        }
         return { message: `User with ID ${id} deleted successfully` };
     }
     async findByPhone(phone) {
-        return this.prisma.user.findUnique({
+        return this.prisma.user.findFirst({
             where: { phone },
         });
     }
@@ -469,21 +421,34 @@ let UsersService = class UsersService {
         });
     }
     async updateBalance(userId, amount) {
-        const userBalance = await this.prisma.userBalance.findUnique({
-            where: { userId },
+        const member = await this.prisma.messMember.findFirst({
+            where: { userId, isActive: true },
+            include: { userBalance: true },
         });
-        if (!userBalance) {
-            throw new common_1.NotFoundException(`User balance not found for user ${userId}`);
+        if (!member) {
+            throw new common_1.NotFoundException("User is not a member of any mess");
         }
-        const currentBalance = Number(userBalance.balance);
+        const currentBalance = member.userBalance
+            ? Number(member.userBalance.balance)
+            : 0;
         const newBalance = currentBalance + amount;
-        const updated = await this.prisma.userBalance.update({
-            where: { userId },
-            data: {
-                balance: newBalance,
-                lastUpdated: new Date(),
-            },
-        });
+        if (member.userBalance) {
+            await this.prisma.userBalance.update({
+                where: { memberId: member.id },
+                data: {
+                    balance: newBalance,
+                    lastUpdated: new Date(),
+                },
+            });
+        }
+        else {
+            await this.prisma.userBalance.create({
+                data: {
+                    memberId: member.id,
+                    balance: newBalance,
+                },
+            });
+        }
         if (amount > 0) {
             await this.notificationsService.create({
                 userId: userId,
@@ -503,8 +468,8 @@ let UsersService = class UsersService {
             });
         }
         return {
-            ...updated,
-            balance: Number(updated.balance),
+            userId,
+            balance: newBalance,
         };
     }
 };

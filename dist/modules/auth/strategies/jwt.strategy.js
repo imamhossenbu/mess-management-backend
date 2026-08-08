@@ -31,10 +31,8 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             select: {
                 id: true,
                 name: true,
-                phone: true,
                 email: true,
-                role: true,
-                roomNumber: true,
+                phone: true,
                 profileImage: true,
                 isActive: true,
             },

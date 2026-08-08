@@ -3,43 +3,46 @@ import { CreateShopDebtDto, UpdateShopDebtDto } from "./dto";
 export declare class ShopDebtsController {
     private readonly shopDebtsService;
     constructor(shopDebtsService: ShopDebtsService);
-    create(createShopDebtDto: CreateShopDebtDto): Promise<{
+    create(messId: string, createShopDebtDto: CreateShopDebtDto): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    payDebt(id: string, paidDate?: string): Promise<{
+    payDebt(messId: string, id: string, paidDate?: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    findAll(): Promise<{
+    findAll(messId: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }[]>;
-    getSummary(): Promise<{
+    getSummary(messId: string): Promise<{
         totalDue: number;
         totalPaid: number;
         totalAmount: number;
@@ -50,7 +53,7 @@ export declare class ShopDebtsController {
             shopName: string;
         }[];
     }>;
-    getMonthlySummary(year?: number, month?: number): Promise<{
+    getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
         month: string;
         year: number;
         totalDebt: number;
@@ -58,18 +61,19 @@ export declare class ShopDebtsController {
         currentDue: number;
         debts: {
             id: string;
-            shopName: string;
-            date: Date;
-            itemDetails: string | null;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            status: import(".prisma/client").$Enums.DebtStatus;
-            paidDate: Date | null;
-            note: string | null;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            date: Date;
+            shopName: string;
+            note: string | null;
+            itemDetails: string | null;
+            status: import(".prisma/client").$Enums.DebtStatus;
+            paidDate: Date | null;
         }[];
     }>;
-    getMonthlyReport(year: number, month: number): Promise<{
+    getMonthlyReport(messId: string, year: number, month: number): Promise<{
         month: string;
         year: number;
         totalDebt: number;
@@ -84,67 +88,72 @@ export declare class ShopDebtsController {
         currentDue: number;
         message?: undefined;
     }>;
-    findByShop(shopName: string): Promise<{
+    findByShop(messId: string, shopName: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }[]>;
-    findByDate(date: string): Promise<{
+    findByDate(messId: string, date: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }[]>;
-    findByMonth(year: number, month: number): Promise<{
+    findByMonth(messId: string, year: number, month: number): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }[]>;
-    findOne(id: string): Promise<{
+    findOne(messId: string, id: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    update(id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
+    update(messId: string, id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    remove(id: string): Promise<{
+    remove(messId: string, id: string): Promise<{
         message: string;
     }>;
 }

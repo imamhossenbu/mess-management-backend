@@ -5,91 +5,98 @@ export declare class ShopDebtsService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    create(createShopDebtDto: CreateShopDebtDto): Promise<{
+    create(messId: string, createShopDebtDto: CreateShopDebtDto): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    payDebt(id: string, paidDate?: string): Promise<{
+    payDebt(messId: string, id: string, paidDate?: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    findAll(): Promise<{
+    findAll(messId: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }[]>;
-    findOne(id: string): Promise<{
+    findOne(messId: string, id: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    findByShop(shopName: string): Promise<{
+    findByShop(messId: string, shopName: string): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
-    }[]>;
-    findByDate(date: Date): Promise<{
-        id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
+        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
         status: import(".prisma/client").$Enums.DebtStatus;
         paidDate: Date | null;
-        note: string | null;
+    }[]>;
+    findByDate(messId: string, date: Date): Promise<{
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-    }[]>;
-    findByMonth(year: number, month: number): Promise<{
-        id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
+        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
         status: import(".prisma/client").$Enums.DebtStatus;
         paidDate: Date | null;
-        note: string | null;
+    }[]>;
+    findByMonth(messId: string, year: number, month: number): Promise<{
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }[]>;
-    getSummary(): Promise<{
+    getSummary(messId: string): Promise<{
         totalDue: number;
         totalPaid: number;
         totalAmount: number;
@@ -100,7 +107,7 @@ export declare class ShopDebtsService {
             shopName: string;
         }[];
     }>;
-    getMonthlySummary(year: number, month: number): Promise<{
+    getMonthlySummary(messId: string, year: number, month: number): Promise<{
         month: string;
         year: number;
         totalDebt: number;
@@ -108,34 +115,36 @@ export declare class ShopDebtsService {
         currentDue: number;
         debts: {
             id: string;
-            shopName: string;
-            date: Date;
-            itemDetails: string | null;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            status: import(".prisma/client").$Enums.DebtStatus;
-            paidDate: Date | null;
-            note: string | null;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            date: Date;
+            shopName: string;
+            note: string | null;
+            itemDetails: string | null;
+            status: import(".prisma/client").$Enums.DebtStatus;
+            paidDate: Date | null;
         }[];
     }>;
-    update(id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
+    update(messId: string, id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.DebtStatus;
-        paidDate: Date | null;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
+        shopName: string;
+        note: string | null;
+        itemDetails: string | null;
+        status: import(".prisma/client").$Enums.DebtStatus;
+        paidDate: Date | null;
     }>;
-    remove(id: string): Promise<{
+    remove(messId: string, id: string): Promise<{
         message: string;
     }>;
     private updateMonthlySummary;
-    getMonthlySummaryReport(year: number, month: number): Promise<{
+    getMonthlySummaryReport(messId: string, year: number, month: number): Promise<{
         month: string;
         year: number;
         totalDebt: number;

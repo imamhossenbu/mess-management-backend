@@ -19,8 +19,8 @@ const notifications_service_1 = require("./notifications.service");
 const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
+const register_dto_1 = require("../auth/dto/register.dto");
 let NotificationsController = class NotificationsController {
     constructor(notificationsService) {
         this.notificationsService = notificationsService;
@@ -81,12 +81,6 @@ exports.NotificationsController = NotificationsController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Create a new notification" }),
-    (0, swagger_1.ApiResponse)({
-        status: 201,
-        description: "Notification created successfully",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.CreateNotificationDto]),
@@ -95,12 +89,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("bulk"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Create bulk notifications for multiple users" }),
-    (0, swagger_1.ApiResponse)({
-        status: 201,
-        description: "Bulk notifications created successfully",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 400, description: "Some users not found" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.BulkNotificationDto]),
@@ -109,8 +97,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("bill/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Send bill notification to a user" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
     __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)("amount")),
     __param(2, (0, common_1.Body)("dueDate")),
@@ -121,8 +107,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("payment/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Send payment confirmation notification" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
     __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)("amount")),
     __metadata("design:type", Function),
@@ -132,8 +116,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("meal-reminder/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Send meal reminder notification" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
     __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)("mealType")),
     __metadata("design:type", Function),
@@ -143,7 +125,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("inventory-alert"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Send inventory alert to all admins" }),
     __param(0, (0, common_1.Body)("type")),
     __param(1, (0, common_1.Body)("quantity")),
     __metadata("design:type", Function),
@@ -153,7 +134,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("monthly-summary"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Send monthly summary notification to all users" }),
     __param(0, (0, common_1.Body)("year")),
     __param(1, (0, common_1.Body)("month")),
     __metadata("design:type", Function),
@@ -163,7 +143,6 @@ __decorate([
 __decorate([
     (0, common_1.Post)("email"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Send email notification" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.SendEmailDto]),
@@ -172,12 +151,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Get all notifications" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "List of all notifications",
-        type: [dto_1.NotificationResponseDto],
-    }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -185,12 +158,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)("me"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get my notifications" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "My notifications",
-        type: [dto_1.NotificationResponseDto],
-    }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -199,12 +166,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)("me/unread-count"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get my unread notification count" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Unread count",
-        type: dto_1.UnreadCountDto,
-    }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -213,13 +174,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)("user/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Get notifications by user" }),
-    (0, swagger_1.ApiParam)({ name: "userId", description: "User UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "User notifications",
-        type: [dto_1.NotificationResponseDto],
-    }),
     __param(0, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -228,14 +182,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Get a notification by ID" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Notification UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Notification found",
-        type: dto_1.NotificationResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Notification not found" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -244,14 +190,6 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(":id/read"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    (0, swagger_1.ApiOperation)({ summary: "Mark a notification as read" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Notification UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Notification marked as read",
-        type: dto_1.NotificationResponseDto,
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Notification not found" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -261,8 +199,6 @@ __decorate([
     (0, common_1.Patch)("me/read-all"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Mark all my notifications as read" }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: "All notifications marked as read" }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -272,13 +208,6 @@ __decorate([
     (0, common_1.Delete)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete a notification" }),
-    (0, swagger_1.ApiParam)({ name: "id", description: "Notification UUID" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "Notification deleted successfully",
-    }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: "Notification not found" }),
     __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -288,11 +217,6 @@ __decorate([
     (0, common_1.Delete)("me/all"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete all my notifications" }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: "All notifications deleted successfully",
-    }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -300,7 +224,7 @@ __decorate([
 ], NotificationsController.prototype, "removeAll", null);
 exports.NotificationsController = NotificationsController = __decorate([
     (0, swagger_1.ApiTags)("notifications"),
-    (0, swagger_1.ApiSecurity)("JWT-auth"),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Controller)("notifications"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [notifications_service_1.NotificationsService])

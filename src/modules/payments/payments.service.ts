@@ -8,28 +8,35 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { CreatePaymentDto, UpdatePaymentDto } from "./dto";
 import { PaymentMethod } from "@prisma/client";
 import { startOfDay, endOfDay, format } from "date-fns";
-import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private prisma: PrismaService,
-    private notificationsService: NotificationsService, // ✅ Inject
+    private notificationsService: NotificationsService,
   ) {}
 
   // ==================== CREATE ====================
 
-  async create(createPaymentDto: CreatePaymentDto) {
+  async create(messId: string, createPaymentDto: CreatePaymentDto) {
     const { userId, amount, paymentDate, paymentMethod, note } =
       createPaymentDto;
 
-    // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+    // Check if member exists in this mess
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId,
+        messId,
+        isActive: true,
+      },
+      include: {
+        user: true,
+      },
     });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+    if (!member) {
+      throw new NotFoundException(`User is not a member of this mess`);
     }
 
     const date = paymentDate ? new Date(paymentDate) : new Date();
@@ -37,43 +44,52 @@ export class PaymentsService {
     // Create payment
     const payment = await this.prisma.payment.create({
       data: {
-        userId,
+        messId,
+        memberId: member.id,
         amount,
         paymentDate: date,
         paymentMethod: paymentMethod || PaymentMethod.CASH,
         note,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
     // Update user balance
-    await this.updateUserBalance(userId);
+    await this.updateUserBalance(messId, member.id);
 
     // ✅ Send payment confirmation to user
     await this.notificationsService.sendPaymentConfirmation(userId, amount);
 
-    // ✅ Send notification to all admins
-    const admins = await this.prisma.user.findMany({
+    // ✅ Send notification to all admins of this mess
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "PAYMENT",
         title: "New Payment Received",
-        message: `${user.name} made a payment of ${amount} TK. Method: ${paymentMethod || "CASH"}`,
+        message: `${member.user.name} made a payment of ${amount} TK. Method: ${paymentMethod || "CASH"}`,
         link: `/payments/${payment.id}`,
       });
     }
@@ -83,14 +99,19 @@ export class PaymentsService {
 
   // ==================== FIND ====================
 
-  async findAll() {
+  async findAll(messId: string) {
     return this.prisma.payment.findMany({
+      where: { messId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -100,29 +121,52 @@ export class PaymentsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(messId: string, id: string) {
     const payment = await this.prisma.payment.findUnique({
-      where: { id },
+      where: { id, messId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
     if (!payment) {
-      throw new NotFoundException(`Payment with ID ${id} not found`);
+      throw new NotFoundException(
+        `Payment with ID ${id} not found in this mess`,
+      );
     }
 
     return payment;
   }
 
-  async findByUser(userId: string, startDate?: Date, endDate?: Date) {
-    const where: any = { userId };
+  async findByUser(
+    messId: string,
+    userId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId,
+        messId,
+        isActive: true,
+      },
+    });
+
+    if (!member) {
+      throw new NotFoundException(`User is not a member of this mess`);
+    }
+
+    const where: any = { messId, memberId: member.id };
 
     if (startDate && endDate) {
       where.paymentDate = {
@@ -134,11 +178,15 @@ export class PaymentsService {
     return this.prisma.payment.findMany({
       where,
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -148,23 +196,28 @@ export class PaymentsService {
     });
   }
 
-  async findByDate(date: Date) {
+  async findByDate(messId: string, date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
     return this.prisma.payment.findMany({
       where: {
+        messId,
         paymentDate: {
           gte: start,
           lte: end,
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -174,23 +227,28 @@ export class PaymentsService {
     });
   }
 
-  async findByMonth(year: number, month: number) {
+  async findByMonth(messId: string, year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
     return this.prisma.payment.findMany({
       where: {
+        messId,
         paymentDate: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
         },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -200,24 +258,21 @@ export class PaymentsService {
     });
   }
 
-  async getMonthlySummary(year: number, month: number) {
-    const payments = await this.findByMonth(year, month);
+  async getMonthlySummary(messId: string, year: number, month: number) {
+    const payments = await this.findByMonth(messId, year, month);
 
     const totalAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
-    // ✅ Send notification if monthly payment is low
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
-        isActive: true,
-      },
-    });
-
     // Get total monthly bill for comparison
     const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
     const monthlySummary = await this.prisma.monthlySummary.findMany({
       where: {
-        monthYear: startDate,
+        messId,
+        monthYear: {
+          gte: startOfDay(startDate),
+          lte: endOfDay(endDate),
+        },
       },
     });
 
@@ -227,9 +282,20 @@ export class PaymentsService {
     );
 
     if (totalAmount < totalBill * 0.5 && totalBill > 0) {
+      const admins = await this.prisma.messMember.findMany({
+        where: {
+          messId,
+          role: { in: ["SUPER_ADMIN", "ADMIN"] },
+          isActive: true,
+        },
+        include: {
+          user: true,
+        },
+      });
+
       for (const admin of admins) {
         await this.notificationsService.create({
-          userId: admin.id,
+          userId: admin.userId,
           type: "PAYMENT",
           title: "Low Payment Alert",
           message: `Total payments for ${format(startDate, "MMMM yyyy")} is ${totalAmount} TK, which is less than 50% of total bill (${totalBill} TK).`,
@@ -249,11 +315,16 @@ export class PaymentsService {
 
   // ==================== USER BALANCE ====================
 
-  async getUserBalance(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+  async getUserBalance(messId: string, userId: string) {
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId,
+        messId,
+        isActive: true,
+      },
       include: {
-        balances: true,
+        user: true,
+        userBalance: true,
         payments: {
           orderBy: {
             paymentDate: "desc",
@@ -262,20 +333,21 @@ export class PaymentsService {
       },
     });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+    if (!member) {
+      throw new NotFoundException(`User is not a member of this mess`);
     }
 
-    const totalPaid = user.payments.reduce(
+    const totalPaid = member.payments.reduce(
       (sum, p) => sum + Number(p.amount),
       0,
     );
-    const balance = user.balances?.balance ? Number(user.balances.balance) : 0;
+    const balance = member.userBalance?.balance
+      ? Number(member.userBalance.balance)
+      : 0;
 
-    // ✅ Send notification if user has high due
     if (balance < -5000) {
       await this.notificationsService.create({
-        userId: user.id,
+        userId: member.userId,
         type: "BILL",
         title: "High Due Alert",
         message: `You have a high due balance of ${Math.abs(balance)} TK. Please pay as soon as possible to avoid penalties.`,
@@ -284,19 +356,23 @@ export class PaymentsService {
     }
 
     return {
-      userId: user.id,
-      userName: user.name,
+      userId: member.userId,
+      userName: member.user.name,
       totalPaid,
-      balance, // + = পাওনা, - = বাকি
-      payments: user.payments,
+      balance,
+      payments: member.payments,
     };
   }
 
-  async getAllUserBalances() {
-    const users = await this.prisma.user.findMany({
-      where: { isActive: true },
+  async getAllUserBalances(messId: string) {
+    const members = await this.prisma.messMember.findMany({
+      where: {
+        messId,
+        isActive: true,
+      },
       include: {
-        balances: true,
+        user: true,
+        userBalance: true,
         payments: {
           orderBy: {
             paymentDate: "desc",
@@ -305,15 +381,16 @@ export class PaymentsService {
       },
     });
 
-    const results = users.map((user) => ({
-      userId: user.id,
-      userName: user.name,
-      phone: user.phone,
-      totalPaid: user.payments.reduce((sum, p) => sum + Number(p.amount), 0),
-      balance: user.balances?.balance ? Number(user.balances.balance) : 0,
+    const results = members.map((member) => ({
+      userId: member.userId,
+      userName: member.user.name,
+      phone: member.user.phone || "",
+      totalPaid: member.payments.reduce((sum, p) => sum + Number(p.amount), 0),
+      balance: member.userBalance?.balance
+        ? Number(member.userBalance.balance)
+        : 0,
     }));
 
-    // ✅ Check for users with high due and send notifications
     for (const user of results) {
       if (user.balance < -5000) {
         await this.notificationsService.create({
@@ -331,21 +408,27 @@ export class PaymentsService {
 
   // ==================== UPDATE ====================
 
-  async update(id: string, updatePaymentDto: UpdatePaymentDto) {
+  async update(messId: string, id: string, updatePaymentDto: UpdatePaymentDto) {
     const existing = await this.prisma.payment.findUnique({
-      where: { id },
+      where: { id, messId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
     if (!existing) {
-      throw new NotFoundException(`Payment with ID ${id} not found`);
+      throw new NotFoundException(
+        `Payment with ID ${id} not found in this mess`,
+      );
     }
 
     const oldAmount = Number(existing.amount);
@@ -361,43 +444,48 @@ export class PaymentsService {
         note: updatePaymentDto.note,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Update user balance
-    await this.updateUserBalance(existing.userId);
+    await this.updateUserBalance(messId, existing.memberId);
 
-    // ✅ Send notification for update
     const newAmount = Number(updated.amount);
     await this.notificationsService.create({
-      userId: existing.userId,
+      userId: existing.member.userId,
       type: "PAYMENT",
       title: "Payment Updated",
       message: `Your payment has been updated from ${oldAmount} TK to ${newAmount} TK.`,
       link: `/payments/${id}`,
     });
 
-    // ✅ Notify admins about update
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "PAYMENT",
         title: "Payment Updated",
-        message: `${existing.user.name}'s payment updated from ${oldAmount} TK to ${newAmount} TK.`,
+        message: `${existing.member.user.name}'s payment updated from ${oldAmount} TK to ${newAmount} TK.`,
         link: `/payments/${id}`,
       });
     }
@@ -407,21 +495,27 @@ export class PaymentsService {
 
   // ==================== DELETE ====================
 
-  async remove(id: string) {
+  async remove(messId: string, id: string) {
     const payment = await this.prisma.payment.findUnique({
-      where: { id },
+      where: { id, messId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
     if (!payment) {
-      throw new NotFoundException(`Payment with ID ${id} not found`);
+      throw new NotFoundException(
+        `Payment with ID ${id} not found in this mess`,
+      );
     }
 
     const amount = Number(payment.amount);
@@ -430,32 +524,33 @@ export class PaymentsService {
       where: { id },
     });
 
-    // Update user balance
-    await this.updateUserBalance(payment.userId);
+    await this.updateUserBalance(messId, payment.memberId);
 
-    // ✅ Send notification for deletion
     await this.notificationsService.create({
-      userId: payment.userId,
+      userId: payment.member.userId,
       type: "PAYMENT",
       title: "Payment Deleted",
       message: `Your payment of ${amount} TK has been deleted. Please contact admin if this was a mistake.`,
       link: "/payments",
     });
 
-    // ✅ Notify admins about deletion
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
         isActive: true,
+      },
+      include: {
+        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: admin.userId,
         type: "PAYMENT",
         title: "Payment Deleted",
-        message: `${payment.user.name}'s payment of ${amount} TK has been deleted.`,
+        message: `${payment.member.user.name}'s payment of ${amount} TK has been deleted.`,
         link: "/payments",
       });
     }
@@ -465,22 +560,21 @@ export class PaymentsService {
 
   // ==================== PRIVATE METHODS ====================
 
-  private async updateUserBalance(userId: string) {
-    // Get all payments for this user
+  private async updateUserBalance(messId: string, memberId: string) {
+    // Get all payments for this member
     const payments = await this.prisma.payment.findMany({
-      where: { userId },
+      where: { messId, memberId },
     });
 
     const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
-    // Get user's current balance
     const userBalance = await this.prisma.userBalance.findUnique({
-      where: { userId },
+      where: { memberId },
     });
 
     if (userBalance) {
       await this.prisma.userBalance.update({
-        where: { userId },
+        where: { memberId },
         data: {
           balance: totalPaid,
           lastUpdated: new Date(),
@@ -489,7 +583,7 @@ export class PaymentsService {
     } else {
       await this.prisma.userBalance.create({
         data: {
-          userId,
+          memberId,
           balance: totalPaid,
         },
       });

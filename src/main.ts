@@ -7,7 +7,11 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
+  app.enableCors({
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Mess-Id"],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -21,14 +25,28 @@ async function bootstrap() {
     .setTitle("Mess Management System API")
     .setDescription("Complete API documentation for Mess Management System")
     .setVersion("1.0")
-    .addSecurity("JWT-auth", {
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
-    })
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        name: "JWT",
+        description: "Enter JWT token",
+        in: "header",
+      },
+      "JWT-auth",
+    )
     .addTag("auth", "Authentication endpoints")
     .addTag("users", "User management endpoints")
     .addTag("meals", "Meal management endpoints")
+    .addTag("marketings", "Marketing/Bazar management endpoints")
+    .addTag("inventory", "Inventory management endpoints")
+    .addTag("utility-bills", "Utility bills management endpoints")
+    .addTag("payments", "Payment management endpoints")
+    .addTag("shop-debts", "Shop debt management endpoints")
+    .addTag("monthly-summary", "Monthly summary endpoints")
+    .addTag("dashboard", "Dashboard analytics endpoints")
+    .addTag("notifications", "Notification management endpoints")
     .addTag("health", "Health check endpoints")
     .build();
 
@@ -36,8 +54,6 @@ async function bootstrap() {
   SwaggerModule.setup("api-docs", app, document, {
     swaggerOptions: {
       persistAuthorization: true,
-      tagsSorter: "alpha",
-      operationsSorter: "alpha",
     },
   });
 

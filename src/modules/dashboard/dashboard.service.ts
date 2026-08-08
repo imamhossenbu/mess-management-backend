@@ -9,36 +9,46 @@ import {
   format,
 } from "date-fns";
 import { DashboardStatsDto, MemberDashboardDto, DailySummaryDto } from "./dto";
-import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class DashboardService {
   constructor(
     private prisma: PrismaService,
-    private notificationsService: NotificationsService, // ✅ Inject
+    private notificationsService: NotificationsService,
   ) {}
 
   // ==================== ADMIN DASHBOARD ====================
 
-  async getAdminDashboard(): Promise<DashboardStatsDto> {
+  async getAdminDashboard(messId: string): Promise<DashboardStatsDto> {
     const today = new Date();
     const startToday = startOfDay(today);
     const endToday = endOfDay(today);
     const startMonth = startOfMonth(today);
     const endMonth = endOfMonth(today);
 
-    // 1. Total Members
-    const totalMembers = await this.prisma.user.count();
-    const activeMembers = await this.prisma.user.count({
-      where: { isActive: true },
+    // 1. Total Members in this mess
+    const totalMembers = await this.prisma.messMember.count({
+      where: { messId, isActive: true },
+    });
+    const activeMembers = await this.prisma.messMember.count({
+      where: { messId, isActive: true },
     });
 
     // 2. Today's Meals
     const todayMeals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: startToday,
           lte: endToday,
+        },
+      },
+      include: {
+        member: {
+          include: {
+            user: true,
+          },
         },
       },
     });
@@ -48,6 +58,7 @@ export class DashboardService {
     // 3. This Month's Meals
     const monthMeals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: startMonth,
           lte: endMonth,
@@ -63,6 +74,7 @@ export class DashboardService {
     // 4. This Month's Marketing Cost
     const monthMarketings = await this.prisma.marketing.findMany({
       where: {
+        messId,
         date: {
           gte: startMonth,
           lte: endMonth,
@@ -78,6 +90,7 @@ export class DashboardService {
     // 5. This Month's Utility Bills
     const monthUtilityBills = await this.prisma.utilityBill.findMany({
       where: {
+        messId,
         monthYear: {
           gte: startMonth,
           lte: endMonth,
@@ -93,6 +106,7 @@ export class DashboardService {
     // 6. This Month's Payments
     const monthPayments = await this.prisma.payment.findMany({
       where: {
+        messId,
         paymentDate: {
           gte: startMonth,
           lte: endMonth,
@@ -106,12 +120,19 @@ export class DashboardService {
     );
 
     // 7. Total Due
-    const allBalances = await this.prisma.userBalance.findMany();
+    const allBalances = await this.prisma.userBalance.findMany({
+      where: {
+        member: {
+          messId,
+        },
+      },
+    });
     const totalDue = allBalances.reduce((sum, b) => sum + Number(b.balance), 0);
 
     // 8. Meal Rate
     const dailySummary = await this.prisma.dailySummary.findFirst({
       where: {
+        messId,
         date: {
           gte: startToday,
           lte: endToday,
@@ -125,22 +146,27 @@ export class DashboardService {
     const mealRate = dailySummary?.mealRate || 0;
 
     // 9. Inventory
-    const meatInventory = await this.prisma.inventory.findUnique({
-      where: { type: "MEAT" },
+    const inventories = await this.prisma.inventory.findMany({
+      where: { messId },
     });
-    const fishInventory = await this.prisma.inventory.findUnique({
-      where: { type: "FISH" },
-    });
+
+    const meatInventory = inventories.find((i) => i.type === "MEAT");
+    const fishInventory = inventories.find((i) => i.type === "FISH");
 
     // 10. Recent Activities
     const recentMeals = await this.prisma.meal.findMany({
       take: 5,
+      where: { messId },
       orderBy: { createdAt: "desc" },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -148,12 +174,17 @@ export class DashboardService {
 
     const recentMarketings = await this.prisma.marketing.findMany({
       take: 5,
+      where: { messId },
       orderBy: { createdAt: "desc" },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -161,26 +192,47 @@ export class DashboardService {
 
     const recentPayments = await this.prisma.payment.findMany({
       take: 5,
+      where: { messId },
       orderBy: { createdAt: "desc" },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
-    // ✅ Check if any inventory is low and send notification
+    // ✅ Check if any inventory is low
     const meatQty = meatInventory?.quantity || 0;
     const fishQty = fishInventory?.quantity || 0;
 
+    // Get admins of this mess for notifications
+    const admins = await this.prisma.messMember.findMany({
+      where: {
+        messId,
+        role: { in: ["SUPER_ADMIN", "ADMIN"] },
+        isActive: true,
+      },
+      include: {
+        user: true,
+      },
+    });
+
     if (meatQty < 10) {
-      await this.notificationsService.sendInventoryAlert("MEAT", meatQty);
+      for (const admin of admins) {
+        await this.notificationsService.sendInventoryAlert("MEAT", meatQty);
+      }
     }
     if (fishQty < 10) {
-      await this.notificationsService.sendInventoryAlert("FISH", fishQty);
+      for (const admin of admins) {
+        await this.notificationsService.sendInventoryAlert("FISH", fishQty);
+      }
     }
 
     return {
@@ -199,9 +251,18 @@ export class DashboardService {
         fish: fishQty,
       },
       recentActivities: {
-        meals: recentMeals,
-        marketings: recentMarketings,
-        payments: recentPayments,
+        meals: recentMeals.map((m) => ({
+          ...m,
+          userName: m.member?.user?.name || "Unknown",
+        })),
+        marketings: recentMarketings.map((m) => ({
+          ...m,
+          userName: m.member?.user?.name || "Unknown",
+        })),
+        payments: recentPayments.map((p) => ({
+          ...p,
+          userName: p.member?.user?.name || "Unknown",
+        })),
       },
     };
   }
@@ -213,19 +274,29 @@ export class DashboardService {
     const startMonth = startOfMonth(today);
     const endMonth = endOfMonth(today);
 
-    // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+    // Check if member exists
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId,
+        isActive: true,
+      },
+      include: {
+        user: true,
+        mess: true,
+        userBalance: true,
+      },
     });
 
-    if (!user) {
-      throw new NotFoundException("User not found");
+    if (!member) {
+      throw new NotFoundException("Member not found");
     }
+
+    const messId = member.messId;
 
     // 1. This Month's Meals
     const meals = await this.prisma.meal.findMany({
       where: {
-        userId,
+        memberId: member.id,
         date: {
           gte: startMonth,
           lte: endMonth,
@@ -238,7 +309,7 @@ export class DashboardService {
     // 2. Get monthly summary
     const monthlySummary = await this.prisma.monthlySummary.findFirst({
       where: {
-        userId,
+        memberId: member.id,
         monthYear: {
           gte: startMonth,
           lte: endMonth,
@@ -248,12 +319,12 @@ export class DashboardService {
 
     // 3. Get user balance
     const userBalance = await this.prisma.userBalance.findUnique({
-      where: { userId },
+      where: { memberId: member.id },
     });
 
     // 4. Recent Payments
     const recentPayments = await this.prisma.payment.findMany({
-      where: { userId },
+      where: { memberId: member.id },
       take: 5,
       orderBy: { paymentDate: "desc" },
     });
@@ -262,7 +333,7 @@ export class DashboardService {
     const balance = userBalance ? Number(userBalance.balance) : 0;
     if (balance < 0) {
       await this.notificationsService.create({
-        userId: user.id,
+        userId: member.userId,
         type: "BILL",
         title: "Due Balance Alert",
         message: `You have a due balance of ${Math.abs(balance)} TK. Please pay as soon as possible.`,
@@ -271,8 +342,8 @@ export class DashboardService {
     }
 
     return {
-      userId: user.id,
-      userName: user.name,
+      userId: member.userId,
+      userName: member.user.name,
       totalMealThisMonth,
       mealBillThisMonth: monthlySummary ? Number(monthlySummary.mealBill) : 0,
       utilityShareThisMonth: monthlySummary
@@ -287,7 +358,10 @@ export class DashboardService {
 
   // ==================== DAILY SUMMARY ====================
 
-  async getDailySummary(date?: string): Promise<DailySummaryDto> {
+  async getDailySummary(
+    messId: string,
+    date?: string,
+  ): Promise<DailySummaryDto> {
     const queryDate = date ? new Date(date) : new Date();
     const start = startOfDay(queryDate);
     const end = endOfDay(queryDate);
@@ -295,6 +369,7 @@ export class DashboardService {
     // Get meals
     const meals = await this.prisma.meal.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
@@ -310,6 +385,7 @@ export class DashboardService {
     // Get marketing cost
     const marketings = await this.prisma.marketing.findMany({
       where: {
+        messId,
         date: {
           gte: start,
           lte: end,
@@ -324,7 +400,12 @@ export class DashboardService {
 
     // Get meal rate
     const dailySummary = await this.prisma.dailySummary.findUnique({
-      where: { date: start },
+      where: {
+        messId_date: {
+          messId,
+          date: start,
+        },
+      },
     });
 
     return {
@@ -340,7 +421,11 @@ export class DashboardService {
 
   // ==================== MONTHLY SUMMARY FOR DASHBOARD ====================
 
-  async getMonthlySummaryForDashboard(year?: number, month?: number) {
+  async getMonthlySummaryForDashboard(
+    messId: string,
+    year?: number,
+    month?: number,
+  ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
     const startDate = new Date(queryYear, queryMonth - 1, 1);
@@ -351,6 +436,7 @@ export class DashboardService {
       await Promise.all([
         this.prisma.meal.findMany({
           where: {
+            messId,
             date: {
               gte: startOfDay(startDate),
               lte: endOfDay(endDate),
@@ -359,6 +445,7 @@ export class DashboardService {
         }),
         this.prisma.marketing.findMany({
           where: {
+            messId,
             date: {
               gte: startOfDay(startDate),
               lte: endOfDay(endDate),
@@ -367,6 +454,7 @@ export class DashboardService {
         }),
         this.prisma.utilityBill.findMany({
           where: {
+            messId,
             monthYear: {
               gte: startOfDay(startDate),
               lte: endOfDay(endDate),
@@ -375,6 +463,7 @@ export class DashboardService {
         }),
         this.prisma.payment.findMany({
           where: {
+            messId,
             paymentDate: {
               gte: startOfDay(startDate),
               lte: endOfDay(endDate),
@@ -383,17 +472,22 @@ export class DashboardService {
         }),
         this.prisma.monthlySummary.findMany({
           where: {
+            messId,
             monthYear: {
               gte: startOfDay(startDate),
               lte: endOfDay(endDate),
             },
           },
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                phone: true,
+            member: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                  },
+                },
               },
             },
           },
@@ -421,16 +515,20 @@ export class DashboardService {
 
     // ✅ Send notification if total due is high
     if (totalDue > 5000) {
-      const admins = await this.prisma.user.findMany({
+      const admins = await this.prisma.messMember.findMany({
         where: {
-          role: { in: ["SUPER_ADMIN", "MANAGER"] },
+          messId,
+          role: { in: ["SUPER_ADMIN", "ADMIN"] },
           isActive: true,
+        },
+        include: {
+          user: true,
         },
       });
 
       for (const admin of admins) {
         await this.notificationsService.create({
-          userId: admin.id,
+          userId: admin.userId,
           type: "BILL",
           title: "High Due Alert",
           message: `Total due for ${format(startDate, "MMMM yyyy")} is ${totalDue} TK. Please check.`,
@@ -450,8 +548,8 @@ export class DashboardService {
       totalDue: Number(totalDue),
       mealRate: totalMeals > 0 ? Number(totalMarketingCost / totalMeals) : 0,
       userSummaries: monthlySummaries.map((s) => ({
-        userId: s.userId,
-        userName: s.user.name,
+        userId: s.member.userId,
+        userName: s.member.user.name,
         totalMeal: s.totalMeal,
         totalBill: Number(s.totalBill),
         totalPaid: Number(s.totalPaid),

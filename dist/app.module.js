@@ -13,8 +13,6 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const users_module_1 = require("./modules/users/users.module");
 const meals_module_1 = require("./modules/meals/meals.module");
-const health_module_1 = require("./modules/health/health.module");
-const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
 const marketings_module_1 = require("./modules/marketings/marketings.module");
 const inventory_module_1 = require("./modules/inventory/inventory.module");
 const utility_bills_module_1 = require("./modules/utility-bills/utility-bills.module");
@@ -23,7 +21,14 @@ const payments_module_1 = require("./modules/payments/payments.module");
 const monthly_summary_module_1 = require("./modules/monthly-summary/monthly-summary.module");
 const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
+const mess_module_1 = require("./modules/mess/mess.module");
+const health_module_1 = require("./modules/health/health.module");
+const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
+const mess_middleware_1 = require("./common/middleware/mess.middleware");
 let AppModule = class AppModule {
+    configure(consumer) {
+        consumer.apply(mess_middleware_1.MessMiddleware).forRoutes("*");
+    }
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
@@ -46,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
             monthly_summary_module_1.MonthlySummaryModule,
             dashboard_module_1.DashboardModule,
             notifications_module_1.NotificationsModule,
+            mess_module_1.MessModule,
             health_module_1.HealthModule,
         ],
         controllers: [],

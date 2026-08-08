@@ -3,10 +3,10 @@ import { DashboardStatsDto, MemberDashboardDto, DailySummaryDto } from "./dto";
 export declare class DashboardController {
     private readonly dashboardService;
     constructor(dashboardService: DashboardService);
-    getAdminDashboard(): Promise<DashboardStatsDto>;
+    getAdminDashboard(messId: string): Promise<DashboardStatsDto>;
     getMemberDashboard(req: any): Promise<MemberDashboardDto>;
-    getDailySummary(date?: string): Promise<DailySummaryDto>;
-    getMonthlySummary(year?: number, month?: number): Promise<{
+    getDailySummary(messId: string, date?: string): Promise<DailySummaryDto>;
+    getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
         month: string;
         year: number;
         totalMeals: number;

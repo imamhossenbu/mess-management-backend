@@ -18,7 +18,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiSecurity,
+  ApiBearerAuth,
   ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
@@ -34,11 +34,12 @@ import {
 } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
+import { Roles } from "../../common/roles.decorator";
 import { Role } from "../auth/dto/register.dto";
-import { Roles } from "src/common/roles.decorator";
+import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("meals")
-@ApiSecurity("JWT-auth")
+@ApiBearerAuth("JWT-auth")
 @Controller("meals")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class MealsController {
@@ -46,167 +47,114 @@ export class MealsController {
 
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Create a single meal entry" })
-  @ApiResponse({
-    status: 201,
-    description: "Meal created successfully",
-    type: MealResponseDto,
-  })
-  @ApiResponse({
-    status: 409,
-    description: "Meal already exists for this date",
-  })
-  @ApiResponse({ status: 404, description: "User not found" })
-  async create(@Body() createMealDto: CreateMealDto) {
-    return this.mealsService.create(createMealDto);
+  async create(
+    @CurrentMess() messId: string,
+    @Body() createMealDto: CreateMealDto,
+  ) {
+    return this.mealsService.create(messId, createMealDto);
   }
 
   @Post("bulk")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Bulk meal entry for a date" })
-  @ApiResponse({ status: 201, description: "Bulk meals created successfully" })
-  @ApiResponse({ status: 404, description: "User not found" })
-  async bulkEntry(@Body() bulkMealDto: BulkMealEntryDto) {
-    return this.mealsService.bulkEntry(bulkMealDto);
+  async bulkEntry(
+    @CurrentMess() messId: string,
+    @Body() bulkMealDto: BulkMealEntryDto,
+  ) {
+    return this.mealsService.bulkEntry(messId, bulkMealDto);
   }
 
   @Post("single-meal-type")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({
-    summary: "Entry for a single meal type (morning/lunch/dinner)",
-  })
-  @ApiResponse({ status: 201, description: "Meals updated successfully" })
-  @ApiResponse({ status: 404, description: "User not found" })
-  async singleMealEntry(@Body() singleMealDto: SingleMealEntryDto) {
-    return this.mealsService.singleMealEntry(singleMealDto);
+  async singleMealEntry(
+    @CurrentMess() messId: string,
+    @Body() singleMealDto: SingleMealEntryDto,
+  ) {
+    return this.mealsService.singleMealEntry(messId, singleMealDto);
   }
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get all meals" })
-  @ApiResponse({
-    status: 200,
-    description: "List of all meals",
-    type: [MealResponseDto],
-  })
-  async findAll() {
-    return this.mealsService.findAll();
+  async findAll(@CurrentMess() messId: string) {
+    return this.mealsService.findAll(messId);
   }
 
   @Get("daily")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get daily meal summary" })
-  @ApiQuery({ name: "date", required: false, example: "2026-08-08" })
-  @ApiResponse({
-    status: 200,
-    description: "Daily meal summary",
-    type: DailyMealSummaryDto,
-  })
-  async getDailySummary(@Query("date") date?: string) {
+  async getDailySummary(
+    @CurrentMess() messId: string,
+    @Query("date") date?: string,
+  ) {
     const queryDate = date ? new Date(date) : new Date();
-    return this.mealsService.getDailySummary(queryDate);
+    return this.mealsService.getDailySummary(messId, queryDate);
   }
 
   @Get("monthly")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get monthly meal summary" })
-  @ApiQuery({ name: "year", required: false, example: 2026 })
-  @ApiQuery({ name: "month", required: false, example: 8 })
-  @ApiResponse({
-    status: 200,
-    description: "Monthly meal summary",
-    type: MonthlyMealSummaryDto,
-  })
   async getMonthlySummary(
+    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
-    return this.mealsService.getMonthlySummary(queryYear, queryMonth);
+    return this.mealsService.getMonthlySummary(messId, queryYear, queryMonth);
   }
 
   @Get("user/:userId")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get meals by user ID" })
-  @ApiParam({ name: "userId", description: "User UUID" })
-  @ApiResponse({
-    status: 200,
-    description: "User meals",
-    type: [MealResponseDto],
-  })
-  @ApiResponse({ status: 404, description: "User not found" })
   async findByUser(
+    @CurrentMess() messId: string,
     @Param("userId", ParseUUIDPipe) userId: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.mealsService.findByUser(userId, start, end);
+    return this.mealsService.findByUser(messId, userId, start, end);
   }
 
   @Get("date/:date")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get meals by date" })
-  @ApiParam({ name: "date", example: "2026-08-08" })
-  @ApiResponse({
-    status: 200,
-    description: "Date meals",
-    type: [MealResponseDto],
-  })
-  async findByDate(@Param("date") date: string) {
-    return this.mealsService.findByDate(new Date(date));
+  async findByDate(@CurrentMess() messId: string, @Param("date") date: string) {
+    return this.mealsService.findByDate(messId, new Date(date));
   }
 
   @Get(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get a meal by ID" })
-  @ApiParam({ name: "id", description: "Meal UUID" })
-  @ApiResponse({
-    status: 200,
-    description: "Meal found",
-    type: MealResponseDto,
-  })
-  @ApiResponse({ status: 404, description: "Meal not found" })
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
-    return this.mealsService.findOne(id);
+  async findOne(
+    @CurrentMess() messId: string,
+    @Param("id", ParseUUIDPipe) id: string,
+  ) {
+    return this.mealsService.findOne(messId, id);
   }
 
   @Patch(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Update a meal" })
-  @ApiParam({ name: "id", description: "Meal UUID" })
-  @ApiResponse({
-    status: 200,
-    description: "Meal updated successfully",
-    type: MealResponseDto,
-  })
-  @ApiResponse({ status: 404, description: "Meal not found" })
   async update(
+    @CurrentMess() messId: string,
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateMealDto: UpdateMealDto,
   ) {
-    return this.mealsService.update(id, updateMealDto);
+    return this.mealsService.update(messId, id, updateMealDto);
   }
 
   @Delete(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Delete a meal" })
-  @ApiParam({ name: "id", description: "Meal UUID" })
-  @ApiResponse({ status: 200, description: "Meal deleted successfully" })
-  @ApiResponse({ status: 404, description: "Meal not found" })
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
-    return this.mealsService.remove(id);
+  async remove(
+    @CurrentMess() messId: string,
+    @Param("id", ParseUUIDPipe) id: string,
+  ) {
+    return this.mealsService.remove(messId, id);
   }
 
   @Delete("date/:date")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Delete all meals for a date" })
-  @ApiParam({ name: "date", example: "2026-08-08" })
-  async removeByDate(@Param("date") date: string) {
-    return this.mealsService.removeByDate(new Date(date));
+  async removeByDate(
+    @CurrentMess() messId: string,
+    @Param("date") date: string,
+  ) {
+    return this.mealsService.removeByDate(messId, new Date(date));
   }
 }

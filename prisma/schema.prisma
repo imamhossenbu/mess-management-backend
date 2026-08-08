@@ -6,13 +6,19 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-url      = env("DATABASE_URL")  
+  url      = env("DATABASE_URL")
 }
 
 // ==================== ENUMS ====================
 enum Role {
   SUPER_ADMIN
   MANAGER
+  MEMBER
+}
+
+enum MessRole {
+  SUPER_ADMIN
+  ADMIN
   MEMBER
 }
 
@@ -56,39 +62,88 @@ enum NotificationType {
   SYSTEM
 }
 
+// ==================== MESS ====================
+model Mess {
+  id                String            @id @default(cuid())
+  name              String
+  slug              String            @unique
+  description       String?
+  address           String?
+  phone             String?
+  email             String?
+  logo              String?
+  city              String?
+  country           String?
+  maxMembers        Int               @default(50)
+  isActive          Boolean           @default(true)
+  
+  members           MessMember[]
+  meals             Meal[]
+  marketings        Marketing[]
+  utilityBills      UtilityBill[]
+  shopDebts         ShopDebt[]
+  payments          Payment[]
+  monthlySummaries  MonthlySummary[]
+  inventories       Inventory[]
+  inventoryLogs     InventoryLog[]
+  dailySummaries    DailySummary[]
+  shopMonthlySummaries ShopMonthlySummary[]
+  carryForwards     CarryForward[]
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
 // ==================== USER ====================
 model User {
   id                String            @id @default(cuid())
   name              String
-  phone             String            @unique
-  email             String?           @unique
+  email             String            @unique
+  phone             String?
   password          String
-  role              Role              @default(MEMBER)
-  roomNumber        String?
   profileImage      String?
   isActive          Boolean           @default(true)
+  
+  // Relations
+  messMembers       MessMember[]
+  notifications     Notification[]
+  emailLogs         EmailLog[]
+  utilityBills      UtilityBill[]      @relation("Payer")
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== MESS MEMBER ====================
+model MessMember {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  role              MessRole          @default(MEMBER)
   joinedDate        DateTime          @default(now())
   leftDate          DateTime?
+  isActive          Boolean           @default(true)
   
   // Relations
   meals             Meal[]
   marketings        Marketing[]
   payments          Payment[]
   monthlySummaries  MonthlySummary[]
-  balances          UserBalance?
-  utilityBills      UtilityBill[]    
-    notifications     Notification[]
-  emailLogs         EmailLog[]
+  userBalance       UserBalance?
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@unique([userId, messId])
 }
+
 // ==================== USER BALANCE ====================
 model UserBalance {
   id                String            @id @default(cuid())
-  userId            String            @unique
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  balance           Decimal           @default(0) // + = পাওনা, - = বাকি
+  memberId          String            @unique
+  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  balance           Decimal           @default(0)
   lastUpdated       DateTime          @default(now())
   
   createdAt         DateTime          @default(now())
@@ -98,25 +153,29 @@ model UserBalance {
 // ==================== MEAL ====================
 model Meal {
   id                String            @id @default(cuid())
-  userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  memberId          String
+  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
   date              DateTime
   morning           Boolean           @default(false)
   lunch             Boolean           @default(false)
   dinner            Boolean           @default(false)
-  totalMeal         Int               @default(0) // অটো ক্যালকুলেটেড
+  totalMeal         Int               @default(0)
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@unique([userId, date])
+  @@unique([memberId, date])
 }
 
 // ==================== MARKETING ====================
 model Marketing {
   id                String            @id @default(cuid())
-  userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  memberId          String
+  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
   date              DateTime          @default(now())
   itemName          String
   quantity          String?
@@ -125,15 +184,18 @@ model Marketing {
   shopName          String?
   note              String?
   
- 
   inventoryLogs     InventoryLog[]
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
+
+// ==================== INVENTORY ====================
 model Inventory {
   id                String            @id @default(cuid())
-  type              InventoryType     @unique
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  type              InventoryType
   quantity          Int               @default(0)
   lastUpdated       DateTime          @default(now())
   
@@ -141,10 +203,15 @@ model Inventory {
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@unique([messId, type])
 }
 
+// ==================== INVENTORY LOG ====================
 model InventoryLog {
   id                String            @id @default(cuid())
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
   inventoryId       String
   inventory         Inventory         @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   change            Int
@@ -160,11 +227,13 @@ model InventoryLog {
 // ==================== UTILITY BILL ====================
 model UtilityBill {
   id                String            @id @default(cuid())
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
   billType          BillType
   monthYear         DateTime
   amount            Decimal
-  paidBy            String?           // ✅ user id
-  payer             User?             @relation(fields: [paidBy], references: [id])  
+  paidBy            String?
+  payer             User?             @relation("Payer", fields: [paidBy], references: [id])
   note              String?
   
   createdAt         DateTime          @default(now())
@@ -174,6 +243,8 @@ model UtilityBill {
 // ==================== SHOP DEBT ====================
 model ShopDebt {
   id                String            @id @default(cuid())
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
   shopName          String
   date              DateTime          @default(now())
   itemDetails       String?
@@ -189,18 +260,24 @@ model ShopDebt {
 // ==================== SHOP MONTHLY SUMMARY ====================
 model ShopMonthlySummary {
   id                String            @id @default(cuid())
-  monthYear         DateTime          @unique  
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  monthYear         DateTime
   totalDebt         Decimal           @default(0)
   totalPaid         Decimal           @default(0)
   currentDue        Decimal           @default(0)
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@unique([messId, monthYear])
 }
 
 // ==================== CARRY FORWARD ====================
 model CarryForward {
   id                String            @id @default(cuid())
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
   fromMonth         DateTime
   toMonth           DateTime
   itemName          String
@@ -217,8 +294,10 @@ model CarryForward {
 // ==================== PAYMENT ====================
 model Payment {
   id                String            @id @default(cuid())
-  userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  memberId          String
+  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
   amount            Decimal
   paymentDate       DateTime          @default(now())
   paymentMethod     PaymentMethod     @default(CASH)
@@ -231,8 +310,10 @@ model Payment {
 // ==================== MONTHLY SUMMARY ====================
 model MonthlySummary {
   id                String            @id @default(cuid())
-  userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  memberId          String
+  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
   monthYear         DateTime
   totalMeal         Int               @default(0)
   mealRate          Decimal           @default(0)
@@ -241,19 +322,21 @@ model MonthlySummary {
   totalBill         Decimal           @default(0)
   totalPaid         Decimal           @default(0)
   previousDue       Decimal           @default(0)
-  currentDue        Decimal           @default(0) // + = পাওনা, - = বাকি
+  currentDue        Decimal           @default(0)
   carryToNext       Decimal           @default(0)
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@unique([userId, monthYear])
+  @@unique([memberId, monthYear])
 }
 
 // ==================== DAILY SUMMARY ====================
 model DailySummary {
   id                String            @id @default(cuid())
-  date              DateTime          @unique
+  messId            String
+  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
+  date              DateTime
   dailyMarketCost   Decimal           @default(0)
   dailyTotalMeal    Int               @default(0)
   runningMarketCost Decimal           @default(0)
@@ -262,8 +345,11 @@ model DailySummary {
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@unique([messId, date])
 }
 
+// ==================== NOTIFICATION ====================
 model Notification {
   id                String            @id @default(cuid())
   userId            String
@@ -278,6 +364,7 @@ model Notification {
   updatedAt         DateTime          @updatedAt
 }
 
+// ==================== EMAIL LOG ====================
 model EmailLog {
   id                String            @id @default(cuid())
   userId            String

@@ -8,29 +8,24 @@ import {
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateUserDto, UpdateUserDto, UpdateProfileDto } from "./dto";
-import { Role } from "../auth/dto/register.dto";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
-import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
-    private notificationsService: NotificationsService, // ✅ Inject
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ phone: createUserDto.phone }, { email: createUserDto.email }],
-      },
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: createUserDto.email },
     });
 
     if (existingUser) {
-      throw new ConflictException(
-        "User already exists with this phone or email",
-      );
+      throw new ConflictException("User already exists with this email");
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -38,53 +33,48 @@ export class UsersService {
     const user = await this.prisma.user.create({
       data: {
         name: createUserDto.name,
-        phone: createUserDto.phone,
+        phone: createUserDto.phone || "",
         email: createUserDto.email,
         password: hashedPassword,
-        role: createUserDto.role || Role.MEMBER,
-        roomNumber: createUserDto.roomNumber,
-        isActive:
-          createUserDto.isActive !== undefined ? createUserDto.isActive : true,
-        // profileImage ডিফল্ট null থাকবে
+        profileImage: null,
+        isActive: true,
       },
     });
 
-    // Create user balance
-    await this.prisma.userBalance.create({
+    const mess = await this.prisma.mess.create({
+      data: {
+        name: `${user.name}'s Mess`,
+        slug: `mess-${Date.now()}`,
+        description: "My mess",
+        isActive: true,
+      },
+    });
+
+    const member = await this.prisma.messMember.create({
       data: {
         userId: user.id,
+        messId: mess.id,
+        role: "SUPER_ADMIN",
+        isActive: true,
+      },
+    });
+
+    await this.prisma.userBalance.create({
+      data: {
+        memberId: member.id,
         balance: 0,
       },
     });
 
     const { password, ...userWithoutPassword } = user;
 
-    // ✅ Send welcome notification
     await this.notificationsService.create({
       userId: user.id,
       type: "SYSTEM",
       title: "Welcome to the Mess!",
-      message: `Hello ${user.name}, your account has been created successfully with role: ${user.role}`,
+      message: `Hello ${user.name}, your account has been created successfully. Your mess "${mess.name}" has been created.`,
       link: "/profile",
     });
-
-    // ✅ Notify admins about new user
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
-        isActive: true,
-      },
-    });
-
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "SYSTEM",
-        title: "New User Registered",
-        message: `${user.name} has joined the mess as ${user.role}`,
-        link: `/users/${user.id}`,
-      });
-    }
 
     return userWithoutPassword;
   }
@@ -96,17 +86,19 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
-        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
           },
         },
       },
@@ -115,14 +107,7 @@ export class UsersService {
       },
     });
 
-    // Transform Decimal to number
-    return users.map((user) => ({
-      ...user,
-      balance: user.balances?.[0]?.balance
-        ? Number(user.balances[0].balance)
-        : 0,
-      balances: undefined,
-    }));
+    return users;
   }
 
   async findOne(id: string) {
@@ -133,17 +118,20 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
-        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            userBalance: true,
           },
         },
       },
@@ -153,30 +141,22 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return {
-      ...user,
-      balance: user.balances?.[0]?.balance
-        ? Number(user.balances[0].balance)
-        : 0,
-      balances: undefined,
-    };
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id);
 
-    if (updateUserDto.phone || updateUserDto.email) {
+    if (updateUserDto.email) {
       const existingUser = await this.prisma.user.findFirst({
         where: {
-          OR: [{ phone: updateUserDto.phone }, { email: updateUserDto.email }],
+          email: updateUserDto.email,
           NOT: { id },
         },
       });
 
       if (existingUser) {
-        throw new ConflictException(
-          "Phone or email already taken by another user",
-        );
+        throw new ConflictException("Email already taken by another user");
       }
     }
 
@@ -186,8 +166,6 @@ export class UsersService {
         name: updateUserDto.name,
         phone: updateUserDto.phone,
         email: updateUserDto.email,
-        role: updateUserDto.role,
-        roomNumber: updateUserDto.roomNumber,
         isActive: updateUserDto.isActive,
       },
       select: {
@@ -195,22 +173,24 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
         createdAt: true,
         updatedAt: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
           },
         },
       },
     });
 
-    // ✅ Send notification for profile update
     await this.notificationsService.create({
       userId: id,
       type: "SYSTEM",
@@ -219,13 +199,7 @@ export class UsersService {
       link: "/profile",
     });
 
-    return {
-      ...updatedUser,
-      balance: updatedUser.balances?.[0]?.balance
-        ? Number(updatedUser.balances[0].balance)
-        : 0,
-      balances: undefined,
-    };
+    return updatedUser;
   }
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
@@ -237,21 +211,16 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
-    if (updateProfileDto.phone || updateProfileDto.email) {
+    if (updateProfileDto.email) {
       const existingUser = await this.prisma.user.findFirst({
         where: {
-          OR: [
-            { phone: updateProfileDto.phone },
-            { email: updateProfileDto.email },
-          ],
+          email: updateProfileDto.email,
           NOT: { id: userId },
         },
       });
 
       if (existingUser) {
-        throw new ConflictException(
-          "Phone or email already taken by another user",
-        );
+        throw new ConflictException("Email already taken by another user");
       }
     }
 
@@ -261,29 +230,30 @@ export class UsersService {
         name: updateProfileDto.name,
         phone: updateProfileDto.phone,
         email: updateProfileDto.email,
-        roomNumber: updateProfileDto.roomNumber,
       },
       select: {
         id: true,
         name: true,
         phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
         createdAt: true,
         updatedAt: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
           },
         },
       },
     });
 
-    // ✅ Send notification for profile update
     await this.notificationsService.create({
       userId: userId,
       type: "SYSTEM",
@@ -292,13 +262,7 @@ export class UsersService {
       link: "/profile",
     });
 
-    return {
-      ...updatedUser,
-      balance: updatedUser.balances?.[0]?.balance
-        ? Number(updatedUser.balances[0].balance)
-        : 0,
-      balances: undefined,
-    };
+    return updatedUser;
   }
 
   async updateProfileImage(userId: string, file: any) {
@@ -329,22 +293,24 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
         createdAt: true,
         updatedAt: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
           },
         },
       },
     });
 
-    // ✅ Send notification for profile image update
     await this.notificationsService.create({
       userId: userId,
       type: "SYSTEM",
@@ -353,13 +319,7 @@ export class UsersService {
       link: "/profile",
     });
 
-    return {
-      ...updatedUser,
-      balance: updatedUser.balances?.[0]?.balance
-        ? Number(updatedUser.balances[0].balance)
-        : 0,
-      balances: undefined,
-    };
+    return updatedUser;
   }
 
   async removeProfileImage(userId: string) {
@@ -387,22 +347,24 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
-        role: true,
-        roomNumber: true,
         profileImage: true,
         isActive: true,
-        joinedDate: true,
         createdAt: true,
         updatedAt: true,
-        balances: {
-          select: {
-            balance: true,
+        messMembers: {
+          include: {
+            mess: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
           },
         },
       },
     });
 
-    // ✅ Send notification for profile image removal
     await this.notificationsService.create({
       userId: userId,
       type: "SYSTEM",
@@ -411,13 +373,7 @@ export class UsersService {
       link: "/profile",
     });
 
-    return {
-      ...updatedUser,
-      balance: updatedUser.balances?.[0]?.balance
-        ? Number(updatedUser.balances[0].balance)
-        : 0,
-      balances: undefined,
-    };
+    return updatedUser;
   }
 
   async remove(id: string) {
@@ -427,20 +383,24 @@ export class UsersService {
       where: { id },
       data: {
         isActive: false,
-        leftDate: new Date(),
       },
       select: {
         id: true,
         name: true,
         phone: true,
         email: true,
-        role: true,
         isActive: true,
-        leftDate: true,
       },
     });
 
-    // ✅ Send notification for deactivation
+    await this.prisma.messMember.updateMany({
+      where: { userId: id },
+      data: {
+        isActive: false,
+        leftDate: new Date(),
+      },
+    });
+
     await this.notificationsService.create({
       userId: id,
       type: "SYSTEM",
@@ -450,57 +410,29 @@ export class UsersService {
       link: "/",
     });
 
-    // ✅ Notify admins about deactivation
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
-        isActive: true,
-      },
-    });
-
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "SYSTEM",
-        title: "User Account Deactivated",
-        message: `${user.name}'s account has been deactivated.`,
-        link: `/users/${id}`,
-      });
-    }
-
     return deactivatedUser;
   }
 
   async hardDelete(id: string) {
     const user = await this.findOne(id);
 
+    await this.prisma.messMember.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.prisma.userBalance.deleteMany({
+      where: { member: { userId: id } },
+    });
+
     await this.prisma.user.delete({
       where: { id },
     });
-
-    // ✅ Notify admins about permanent deletion
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: { in: ["SUPER_ADMIN", "MANAGER"] },
-        isActive: true,
-      },
-    });
-
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "SYSTEM",
-        title: "User Account Permanently Deleted",
-        message: `${user.name}'s account has been permanently deleted from the system.`,
-        link: "/users",
-      });
-    }
 
     return { message: `User with ID ${id} deleted successfully` };
   }
 
   async findByPhone(phone: string) {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: { phone },
     });
   }
@@ -512,27 +444,37 @@ export class UsersService {
   }
 
   async updateBalance(userId: string, amount: number) {
-    const userBalance = await this.prisma.userBalance.findUnique({
-      where: { userId },
+    const member = await this.prisma.messMember.findFirst({
+      where: { userId, isActive: true },
+      include: { userBalance: true },
     });
 
-    if (!userBalance) {
-      throw new NotFoundException(`User balance not found for user ${userId}`);
+    if (!member) {
+      throw new NotFoundException("User is not a member of any mess");
     }
 
-    // ✅ Decimal to number conversion
-    const currentBalance = Number(userBalance.balance);
+    const currentBalance = member.userBalance
+      ? Number(member.userBalance.balance)
+      : 0;
     const newBalance = currentBalance + amount;
 
-    const updated = await this.prisma.userBalance.update({
-      where: { userId },
-      data: {
-        balance: newBalance,
-        lastUpdated: new Date(),
-      },
-    });
+    if (member.userBalance) {
+      await this.prisma.userBalance.update({
+        where: { memberId: member.id },
+        data: {
+          balance: newBalance,
+          lastUpdated: new Date(),
+        },
+      });
+    } else {
+      await this.prisma.userBalance.create({
+        data: {
+          memberId: member.id,
+          balance: newBalance,
+        },
+      });
+    }
 
-    // ✅ Send notification for balance update
     if (amount > 0) {
       await this.notificationsService.create({
         userId: userId,
@@ -552,8 +494,8 @@ export class UsersService {
     }
 
     return {
-      ...updated,
-      balance: Number(updated.balance),
+      userId,
+      balance: newBalance,
     };
   }
 }

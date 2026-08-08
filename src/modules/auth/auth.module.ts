@@ -7,7 +7,7 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { GoogleStrategy } from "./strategies/google.strategy";
-import { NotificationsModule } from "../notifications/notifications.module"; // ✅ Import
+import { NotificationsModule } from "../notifications/notifications.module";
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { NotificationsModule } from "../notifications/notifications.module"; // 
         },
       }),
     }),
-    NotificationsModule, // ✅ Add
+    NotificationsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy],

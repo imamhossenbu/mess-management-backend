@@ -1,67 +1,80 @@
 import { AuthService } from "./auth.service";
 import { RegisterDto, LoginDto } from "./dto";
+import { ConfigService } from "@nestjs/config";
 export declare class AuthController {
     private authService;
-    constructor(authService: AuthService);
+    private configService;
+    constructor(authService: AuthService, configService: ConfigService);
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         user: {
-            id: string;
-            name: string;
-            phone: string;
             email: string;
-            role: import(".prisma/client").$Enums.Role;
-            roomNumber: string;
-            profileImage: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            phone: string | null;
+            profileImage: string | null;
+            isActive: boolean;
         };
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
+            email: string;
             id: string;
-            name: string;
-            phone: string;
-            email: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            roomNumber: string | null;
-            profileImage: string | null;
-            isActive: boolean;
-            joinedDate: Date;
-            leftDate: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            phone: string | null;
+            profileImage: string | null;
+            isActive: boolean;
         };
     }>;
     getProfile(req: any): Promise<{
-        balance: number;
-        balances: any;
+        email: string;
         id: string;
         name: string;
         phone: string;
-        email: string;
-        role: import(".prisma/client").$Enums.Role;
-        roomNumber: string;
         profileImage: string;
         isActive: boolean;
-        joinedDate: Date;
-    }>;
-    googleAuth(): Promise<void>;
-    googleAuthRedirect(req: any): Promise<{
-        accessToken: string;
-        user: {
+        messMembers: ({
+            mess: {
+                description: string | null;
+                email: string | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                phone: string | null;
+                isActive: boolean;
+                slug: string;
+                address: string | null;
+                logo: string | null;
+                city: string | null;
+                country: string | null;
+                maxMembers: number;
+            };
+            userBalance: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                balance: import("@prisma/client/runtime/library").Decimal;
+                lastUpdated: Date;
+                memberId: string;
+            };
+        } & {
+            userId: string;
             id: string;
-            name: string;
-            phone: string;
-            email: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            roomNumber: string | null;
-            profileImage: string | null;
-            isActive: boolean;
-            joinedDate: Date;
-            leftDate: Date | null;
             createdAt: Date;
             updatedAt: Date;
-        };
-        isNewUser: boolean;
+            isActive: boolean;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            joinedDate: Date;
+            leftDate: Date | null;
+        })[];
     }>;
+    googleAuth(): Promise<void>;
+    googleAuthRedirect(req: any, res: any): Promise<any>;
 }

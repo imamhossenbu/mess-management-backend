@@ -17,13 +17,10 @@ import { NotificationType } from "@prisma/client";
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  // ==================== CREATE ====================
-
   async create(createNotificationDto: CreateNotificationDto) {
     const { userId, type, title, message, link, isRead } =
       createNotificationDto;
 
-    // Check if user exists
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -56,12 +53,9 @@ export class NotificationsService {
     return notification;
   }
 
-  // ==================== BULK CREATE ====================
-
   async createBulk(bulkNotificationDto: BulkNotificationDto) {
     const { userIds, type, title, message, link } = bulkNotificationDto;
 
-    // Check if all users exist
     const users = await this.prisma.user.findMany({
       where: {
         id: { in: userIds },
@@ -94,8 +88,6 @@ export class NotificationsService {
       notifications,
     };
   }
-
-  // ==================== FIND ====================
 
   async findAll() {
     return this.prisma.notification.findMany({
@@ -183,8 +175,6 @@ export class NotificationsService {
     return { unreadCount: count };
   }
 
-  // ==================== UPDATE ====================
-
   async markAsRead(id: string) {
     const notification = await this.prisma.notification.findUnique({
       where: { id },
@@ -237,8 +227,6 @@ export class NotificationsService {
     };
   }
 
-  // ==================== DELETE ====================
-
   async remove(id: string) {
     const notification = await this.prisma.notification.findUnique({
       where: { id },
@@ -274,12 +262,9 @@ export class NotificationsService {
     };
   }
 
-  // ==================== EMAIL ====================
-
   async sendEmail(sendEmailDto: SendEmailDto) {
     const { email, subject, message, html } = sendEmailDto;
 
-    // Check if user exists
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -287,9 +272,6 @@ export class NotificationsService {
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
-
-    // Here you would integrate with your email service (Nodemailer, SendGrid, etc.)
-    // For now, we'll just log and save to database
 
     const emailLog = await this.prisma.emailLog.create({
       data: {
@@ -302,7 +284,6 @@ export class NotificationsService {
       },
     });
 
-    // Create in-app notification
     await this.create({
       userId: user.id,
       type: NotificationType.EMAIL,
@@ -318,15 +299,13 @@ export class NotificationsService {
     };
   }
 
-  // ==================== SYSTEM NOTIFICATIONS ====================
-
   async sendBillNotification(
     userId: string,
     billAmount: number,
     dueDate: Date,
   ) {
-    const title = "মাসিক বিল";
-    const message = `আপনার এই মাসের বিল ${billAmount} টাকা। শেষ তারিখ: ${dueDate.toLocaleDateString()}`;
+    const title = "Monthly Bill";
+    const message = `Your monthly bill is ${billAmount} TK. Due date: ${dueDate.toLocaleDateString()}`;
 
     return this.create({
       userId,
@@ -339,8 +318,8 @@ export class NotificationsService {
   }
 
   async sendPaymentConfirmation(userId: string, amount: number) {
-    const title = "পেমেন্ট নিশ্চিতকরণ";
-    const message = `আপনার ${amount} টাকার পেমেন্ট গ্রহণ করা হয়েছে।`;
+    const title = "Payment Confirmation";
+    const message = `Your payment of ${amount} TK has been received.`;
 
     return this.create({
       userId,
@@ -353,8 +332,8 @@ export class NotificationsService {
   }
 
   async sendMealReminder(userId: string, mealType: string) {
-    const title = "খাবারের রিমাইন্ডার";
-    const message = `আজকের ${mealType} খাবারের জন্য নিবন্ধন করুন।`;
+    const title = "Meal Reminder";
+    const message = `Please register for today's ${mealType} meal.`;
 
     return this.create({
       userId,
@@ -367,24 +346,33 @@ export class NotificationsService {
   }
 
   async sendInventoryAlert(type: string, quantity: number) {
-    const title = "ইনভেন্টরি এলার্ট";
-    const message = `${type} স্টক প্রায় শেষ! বাকি আছে ${quantity} পিস।`;
+    const title = "Inventory Alert";
+    const message = `${type} stock is running low! Only ${quantity} pieces left.`;
 
-    // Send to all managers and super admins
-    const admins = await this.prisma.user.findMany({
+    const admins = await this.prisma.messMember.findMany({
       where: {
         role: {
-          in: ["SUPER_ADMIN", "MANAGER"],
+          in: ["SUPER_ADMIN", "ADMIN"],
         },
         isActive: true,
       },
+      include: {
+        user: true,
+      },
     });
+
+    if (admins.length === 0) {
+      return {
+        message: "No admins found to send alert",
+        count: 0,
+      };
+    }
 
     const notifications = await this.prisma.$transaction(
       admins.map((admin) =>
         this.prisma.notification.create({
           data: {
-            userId: admin.id,
+            userId: admin.userId,
             type: NotificationType.INVENTORY,
             title,
             message,
@@ -402,14 +390,20 @@ export class NotificationsService {
   }
 
   async sendMonthlySummaryNotification(year: number, month: number) {
-    const title = "মাসিক সারাংশ";
-    const message = `${month}/${year} মাসের সারাংশ তৈরি হয়েছে। বিস্তারিত দেখতে ক্লিক করুন।`;
+    const title = "Monthly Summary";
+    const message = `Summary for ${month}/${year} has been generated. Click to view details.`;
 
-    // Send to all active users
     const users = await this.prisma.user.findMany({
       where: { isActive: true },
       select: { id: true },
     });
+
+    if (users.length === 0) {
+      return {
+        message: "No active users found",
+        count: 0,
+      };
+    }
 
     const notifications = await this.prisma.$transaction(
       users.map((user) =>

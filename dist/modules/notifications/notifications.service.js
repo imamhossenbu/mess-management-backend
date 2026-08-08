@@ -253,8 +253,8 @@ let NotificationsService = class NotificationsService {
         };
     }
     async sendBillNotification(userId, billAmount, dueDate) {
-        const title = "মাসিক বিল";
-        const message = `আপনার এই মাসের বিল ${billAmount} টাকা। শেষ তারিখ: ${dueDate.toLocaleDateString()}`;
+        const title = "Monthly Bill";
+        const message = `Your monthly bill is ${billAmount} TK. Due date: ${dueDate.toLocaleDateString()}`;
         return this.create({
             userId,
             type: client_1.NotificationType.BILL,
@@ -265,8 +265,8 @@ let NotificationsService = class NotificationsService {
         });
     }
     async sendPaymentConfirmation(userId, amount) {
-        const title = "পেমেন্ট নিশ্চিতকরণ";
-        const message = `আপনার ${amount} টাকার পেমেন্ট গ্রহণ করা হয়েছে।`;
+        const title = "Payment Confirmation";
+        const message = `Your payment of ${amount} TK has been received.`;
         return this.create({
             userId,
             type: client_1.NotificationType.PAYMENT,
@@ -277,8 +277,8 @@ let NotificationsService = class NotificationsService {
         });
     }
     async sendMealReminder(userId, mealType) {
-        const title = "খাবারের রিমাইন্ডার";
-        const message = `আজকের ${mealType} খাবারের জন্য নিবন্ধন করুন।`;
+        const title = "Meal Reminder";
+        const message = `Please register for today's ${mealType} meal.`;
         return this.create({
             userId,
             type: client_1.NotificationType.MEAL,
@@ -289,19 +289,28 @@ let NotificationsService = class NotificationsService {
         });
     }
     async sendInventoryAlert(type, quantity) {
-        const title = "ইনভেন্টরি এলার্ট";
-        const message = `${type} স্টক প্রায় শেষ! বাকি আছে ${quantity} পিস।`;
-        const admins = await this.prisma.user.findMany({
+        const title = "Inventory Alert";
+        const message = `${type} stock is running low! Only ${quantity} pieces left.`;
+        const admins = await this.prisma.messMember.findMany({
             where: {
                 role: {
-                    in: ["SUPER_ADMIN", "MANAGER"],
+                    in: ["SUPER_ADMIN", "ADMIN"],
                 },
                 isActive: true,
             },
+            include: {
+                user: true,
+            },
         });
+        if (admins.length === 0) {
+            return {
+                message: "No admins found to send alert",
+                count: 0,
+            };
+        }
         const notifications = await this.prisma.$transaction(admins.map((admin) => this.prisma.notification.create({
             data: {
-                userId: admin.id,
+                userId: admin.userId,
                 type: client_1.NotificationType.INVENTORY,
                 title,
                 message,
@@ -315,12 +324,18 @@ let NotificationsService = class NotificationsService {
         };
     }
     async sendMonthlySummaryNotification(year, month) {
-        const title = "মাসিক সারাংশ";
-        const message = `${month}/${year} মাসের সারাংশ তৈরি হয়েছে। বিস্তারিত দেখতে ক্লিক করুন।`;
+        const title = "Monthly Summary";
+        const message = `Summary for ${month}/${year} has been generated. Click to view details.`;
         const users = await this.prisma.user.findMany({
             where: { isActive: true },
             select: { id: true },
         });
+        if (users.length === 0) {
+            return {
+                message: "No active users found",
+                count: 0,
+            };
+        }
         const notifications = await this.prisma.$transaction(users.map((user) => this.prisma.notification.create({
             data: {
                 userId: user.id,

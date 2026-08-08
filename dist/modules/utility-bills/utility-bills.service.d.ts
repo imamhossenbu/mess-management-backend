@@ -5,7 +5,7 @@ export declare class UtilityBillsService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    create(createUtilityBillDto: CreateUtilityBillDto): Promise<{
+    create(messId: string, createUtilityBillDto: CreateUtilityBillDto): Promise<{
         payer: {
             id: string;
             name: string;
@@ -13,15 +13,16 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        billType: import(".prisma/client").$Enums.BillType;
-        monthYear: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         paidBy: string | null;
     }>;
-    findAll(): Promise<({
+    findAll(messId: string): Promise<({
         payer: {
             id: string;
             name: string;
@@ -29,15 +30,16 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        billType: import(".prisma/client").$Enums.BillType;
-        monthYear: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         paidBy: string | null;
     })[]>;
-    findOne(id: string): Promise<{
+    findOne(messId: string, id: string): Promise<{
         payer: {
             id: string;
             name: string;
@@ -45,15 +47,16 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        billType: import(".prisma/client").$Enums.BillType;
-        monthYear: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         paidBy: string | null;
     }>;
-    findByMonth(year: number, month: number): Promise<({
+    findByMonth(messId: string, year: number, month: number): Promise<({
         payer: {
             id: string;
             name: string;
@@ -61,15 +64,16 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        billType: import(".prisma/client").$Enums.BillType;
-        monthYear: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         paidBy: string | null;
     })[]>;
-    getMonthlySummary(year: number, month: number): Promise<{
+    getMonthlySummary(messId: string, year: number, month: number): Promise<{
         month: string;
         year: number;
         totalCurrent: number;
@@ -88,16 +92,17 @@ export declare class UtilityBillsService {
             };
         } & {
             id: string;
-            billType: import(".prisma/client").$Enums.BillType;
-            monthYear: Date;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            billType: import(".prisma/client").$Enums.BillType;
+            monthYear: Date;
             paidBy: string | null;
         })[];
     }>;
-    getSummary(): Promise<{
+    getSummary(messId: string): Promise<{
         totalCurrent: number;
         totalWifi: number;
         totalRent: number;
@@ -107,7 +112,7 @@ export declare class UtilityBillsService {
         perPersonShare: number;
         totalMembers: number;
     }>;
-    update(id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
+    update(messId: string, id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
         payer: {
             id: string;
             name: string;
@@ -115,18 +120,19 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        billType: import(".prisma/client").$Enums.BillType;
-        monthYear: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         paidBy: string | null;
     }>;
-    remove(id: string): Promise<{
+    remove(messId: string, id: string): Promise<{
         message: string;
     }>;
-    removeByMonth(year: number, month: number): Promise<{
+    removeByMonth(messId: string, year: number, month: number): Promise<{
         message: string;
         count: number;
     }>;

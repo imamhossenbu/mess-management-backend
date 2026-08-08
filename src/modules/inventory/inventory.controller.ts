@@ -4,16 +4,17 @@ import {
   Get,
   Post,
   Body,
+  Patch,
   Param,
+  Delete,
   UseGuards,
   Query,
-  Patch,
 } from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiSecurity,
+  ApiBearerAuth,
   ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
@@ -28,12 +29,13 @@ import {
 } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
+import { Roles } from "../../common/roles.decorator";
 import { Role } from "../auth/dto/register.dto";
 import { InventoryType } from "@prisma/client";
-import { Roles } from "src/common/roles.decorator";
+import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("inventory")
-@ApiSecurity("JWT-auth")
+@ApiBearerAuth("JWT-auth")
 @Controller("inventory")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class InventoryController {
@@ -41,106 +43,75 @@ export class InventoryController {
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get all inventory" })
-  @ApiResponse({
-    status: 200,
-    description: "List of all inventory",
-    type: [InventoryResponseDto],
-  })
-  async getAll() {
-    return this.inventoryService.getAllInventory();
+  async getAll(@CurrentMess() messId: string) {
+    return this.inventoryService.getAllInventory(messId);
   }
 
   @Get("summary")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get inventory summary (meat + fish)" })
-  @ApiResponse({
-    status: 200,
-    description: "Inventory summary",
-    type: InventorySummaryDto,
-  })
-  async getSummary() {
-    return this.inventoryService.getSummary();
+  async getSummary(@CurrentMess() messId: string) {
+    return this.inventoryService.getSummary(messId);
   }
 
   @Get("type/:type")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Get inventory by type" })
-  @ApiParam({ name: "type", enum: InventoryType })
-  @ApiResponse({
-    status: 200,
-    description: "Inventory found",
-    type: InventoryResponseDto,
-  })
-  async getByType(@Param("type") type: InventoryType) {
-    return this.inventoryService.getInventory(type);
+  async getByType(
+    @CurrentMess() messId: string,
+    @Param("type") type: InventoryType,
+  ) {
+    return this.inventoryService.getInventory(messId, type);
   }
 
   @Get("logs")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Get inventory logs" })
-  @ApiQuery({ name: "type", enum: InventoryType, required: false })
-  @ApiResponse({
-    status: 200,
-    description: "Inventory logs",
-    type: [InventoryLogResponseDto],
-  })
-  async getLogs(@Query("type") type?: InventoryType) {
-    return this.inventoryService.getLogs(type);
+  async getLogs(
+    @CurrentMess() messId: string,
+    @Query("type") type?: InventoryType,
+  ) {
+    return this.inventoryService.getLogs(messId, type);
   }
 
   @Get("check/:type")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Check inventory availability" })
-  @ApiParam({ name: "type", enum: InventoryType })
-  @ApiQuery({ name: "quantity", type: Number, example: 5 })
   async checkAvailability(
+    @CurrentMess() messId: string,
     @Param("type") type: InventoryType,
     @Query("quantity") quantity: number,
   ) {
-    return this.inventoryService.checkAvailability(type, quantity);
+    return this.inventoryService.checkAvailability(messId, type, quantity);
   }
 
   @Post("add")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Add inventory (বাজার করলে)" })
-  @ApiResponse({
-    status: 201,
-    description: "Inventory added successfully",
-    type: InventoryResponseDto,
-  })
-  async add(@Body() addInventoryDto: AddInventoryDto) {
-    return this.inventoryService.addInventory(addInventoryDto);
+  async add(
+    @CurrentMess() messId: string,
+    @Body() addInventoryDto: AddInventoryDto,
+  ) {
+    return this.inventoryService.addInventory(messId, addInventoryDto);
   }
 
   @Post("remove")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Remove inventory (রান্নায় ব্যবহার করলে)" })
-  @ApiResponse({
-    status: 201,
-    description: "Inventory removed successfully",
-    type: InventoryResponseDto,
-  })
-  async remove(@Body() removeInventoryDto: RemoveInventoryDto) {
-    return this.inventoryService.removeInventory(removeInventoryDto);
+  async remove(
+    @CurrentMess() messId: string,
+    @Body() removeInventoryDto: RemoveInventoryDto,
+  ) {
+    return this.inventoryService.removeInventory(messId, removeInventoryDto);
   }
 
   @Patch("set")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Set inventory manually (স্টক চেক করে আপডেট)" })
-  @ApiResponse({
-    status: 200,
-    description: "Inventory set successfully",
-    type: InventoryResponseDto,
-  })
-  async set(@Body() setInventoryDto: SetInventoryDto) {
-    return this.inventoryService.setInventory(setInventoryDto);
+  async set(
+    @CurrentMess() messId: string,
+    @Body() setInventoryDto: SetInventoryDto,
+  ) {
+    return this.inventoryService.setInventory(messId, setInventoryDto);
   }
 
   @Post("bulk-add")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Bulk add inventory" })
   async bulkAdd(
+    @CurrentMess() messId: string,
     @Body()
     items: {
       type: InventoryType;
@@ -149,15 +120,15 @@ export class InventoryController {
       note?: string;
     }[],
   ) {
-    return this.inventoryService.bulkAdd(items);
+    return this.inventoryService.bulkAdd(messId, items);
   }
 
   @Post("bulk-remove")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Bulk remove inventory" })
   async bulkRemove(
+    @CurrentMess() messId: string,
     @Body() items: { type: InventoryType; quantity: number; note?: string }[],
   ) {
-    return this.inventoryService.bulkRemove(items);
+    return this.inventoryService.bulkRemove(messId, items);
   }
 }

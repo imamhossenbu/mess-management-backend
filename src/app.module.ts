@@ -12,6 +12,7 @@ import { InventoryModule } from "./modules/inventory/inventory.module";
 import { UtilityBillsModule } from "./modules/utility-bills/utility-bills.module";
 import { ShopDebtsModule } from "./modules/shop-debts/shop-debts.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
+import { MonthlySummaryModule } from "./modules/monthly-summary/monthly-summary.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PaymentsModule } from "./modules/payments/payments.module";
     UtilityBillsModule,
     ShopDebtsModule,
     PaymentsModule,
+    MonthlySummaryModule,
     HealthModule,
   ],
   controllers: [],

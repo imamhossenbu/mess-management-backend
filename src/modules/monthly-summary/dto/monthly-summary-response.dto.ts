@@ -1,0 +1,80 @@
+// src/modules/monthly-summary/dto/monthly-summary-response.dto.ts
+import { ApiProperty } from "@nestjs/swagger";
+
+export class UserMonthlySummaryDto {
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
+  userName: string;
+
+  @ApiProperty()
+  phone: string;
+
+  @ApiProperty()
+  totalMeal: number;
+
+  @ApiProperty()
+  mealRate: number;
+
+  @ApiProperty()
+  mealBill: number;
+
+  @ApiProperty()
+  utilityShare: number;
+
+  @ApiProperty()
+  totalBill: number;
+
+  @ApiProperty()
+  totalPaid: number;
+
+  @ApiProperty()
+  previousDue: number;
+
+  @ApiProperty()
+  currentDue: number; // + = পাওনা, - = বাকি
+
+  @ApiProperty()
+  carryToNext: number;
+}
+
+export class MonthlySummaryResponseDto {
+  @ApiProperty()
+  month: string;
+
+  @ApiProperty()
+  year: number;
+
+  @ApiProperty()
+  totalMeals: number;
+
+  @ApiProperty()
+  mealRate: number;
+
+  @ApiProperty()
+  totalMealBill: number;
+
+  @ApiProperty()
+  totalUtilityBill: number;
+
+  @ApiProperty()
+  totalBill: number;
+
+  @ApiProperty()
+  totalPaid: number;
+
+  @ApiProperty()
+  totalDue: number;
+
+  @ApiProperty({ type: [UserMonthlySummaryDto] })
+  userSummaries: UserMonthlySummaryDto[];
+}
+
+export class GenerateMonthlySummaryDto {
+  @ApiProperty({ example: 2026 })
+  year: number;
+
+  @ApiProperty({ example: 8 })
+  month: number;
+}

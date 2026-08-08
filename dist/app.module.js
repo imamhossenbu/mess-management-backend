@@ -20,6 +20,7 @@ const inventory_module_1 = require("./modules/inventory/inventory.module");
 const utility_bills_module_1 = require("./modules/utility-bills/utility-bills.module");
 const shop_debts_module_1 = require("./modules/shop-debts/shop-debts.module");
 const payments_module_1 = require("./modules/payments/payments.module");
+const monthly_summary_module_1 = require("./modules/monthly-summary/monthly-summary.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             utility_bills_module_1.UtilityBillsModule,
             shop_debts_module_1.ShopDebtsModule,
             payments_module_1.PaymentsModule,
+            monthly_summary_module_1.MonthlySummaryModule,
             health_module_1.HealthModule,
         ],
         controllers: [],

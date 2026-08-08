@@ -8,10 +8,14 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { CreatePaymentDto, UpdatePaymentDto } from "./dto";
 import { PaymentMethod } from "@prisma/client";
 import { startOfDay, endOfDay, format } from "date-fns";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class PaymentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService, // ✅ Inject
+  ) {}
 
   // ==================== CREATE ====================
 
@@ -52,6 +56,27 @@ export class PaymentsService {
 
     // Update user balance
     await this.updateUserBalance(userId);
+
+    // ✅ Send payment confirmation to user
+    await this.notificationsService.sendPaymentConfirmation(userId, amount);
+
+    // ✅ Send notification to all admins
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "PAYMENT",
+        title: "New Payment Received",
+        message: `${user.name} made a payment of ${amount} TK. Method: ${paymentMethod || "CASH"}`,
+        link: `/payments/${payment.id}`,
+      });
+    }
 
     return payment;
   }
@@ -180,6 +205,39 @@ export class PaymentsService {
 
     const totalAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
+    // ✅ Send notification if monthly payment is low
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    // Get total monthly bill for comparison
+    const startDate = new Date(year, month - 1, 1);
+    const monthlySummary = await this.prisma.monthlySummary.findMany({
+      where: {
+        monthYear: startDate,
+      },
+    });
+
+    const totalBill = monthlySummary.reduce(
+      (sum, s) => sum + Number(s.totalBill),
+      0,
+    );
+
+    if (totalAmount < totalBill * 0.5 && totalBill > 0) {
+      for (const admin of admins) {
+        await this.notificationsService.create({
+          userId: admin.id,
+          type: "PAYMENT",
+          title: "Low Payment Alert",
+          message: `Total payments for ${format(startDate, "MMMM yyyy")} is ${totalAmount} TK, which is less than 50% of total bill (${totalBill} TK).`,
+          link: "/payments",
+        });
+      }
+    }
+
     return {
       month: format(new Date(year, month - 1, 1), "MMMM"),
       year,
@@ -214,6 +272,17 @@ export class PaymentsService {
     );
     const balance = user.balances?.balance ? Number(user.balances.balance) : 0;
 
+    // ✅ Send notification if user has high due
+    if (balance < -5000) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "BILL",
+        title: "High Due Alert",
+        message: `You have a high due balance of ${Math.abs(balance)} TK. Please pay as soon as possible to avoid penalties.`,
+        link: "/payments",
+      });
+    }
+
     return {
       userId: user.id,
       userName: user.name,
@@ -236,13 +305,28 @@ export class PaymentsService {
       },
     });
 
-    return users.map((user) => ({
+    const results = users.map((user) => ({
       userId: user.id,
       userName: user.name,
       phone: user.phone,
       totalPaid: user.payments.reduce((sum, p) => sum + Number(p.amount), 0),
       balance: user.balances?.balance ? Number(user.balances.balance) : 0,
     }));
+
+    // ✅ Check for users with high due and send notifications
+    for (const user of results) {
+      if (user.balance < -5000) {
+        await this.notificationsService.create({
+          userId: user.userId,
+          type: "BILL",
+          title: "High Due Alert",
+          message: `You have a high due balance of ${Math.abs(user.balance)} TK. Please pay as soon as possible.`,
+          link: "/payments",
+        });
+      }
+    }
+
+    return results;
   }
 
   // ==================== UPDATE ====================
@@ -250,11 +334,21 @@ export class PaymentsService {
   async update(id: string, updatePaymentDto: UpdatePaymentDto) {
     const existing = await this.prisma.payment.findUnique({
       where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!existing) {
       throw new NotFoundException(`Payment with ID ${id} not found`);
     }
+
+    const oldAmount = Number(existing.amount);
 
     const updated = await this.prisma.payment.update({
       where: { id },
@@ -280,6 +374,34 @@ export class PaymentsService {
     // Update user balance
     await this.updateUserBalance(existing.userId);
 
+    // ✅ Send notification for update
+    const newAmount = Number(updated.amount);
+    await this.notificationsService.create({
+      userId: existing.userId,
+      type: "PAYMENT",
+      title: "Payment Updated",
+      message: `Your payment has been updated from ${oldAmount} TK to ${newAmount} TK.`,
+      link: `/payments/${id}`,
+    });
+
+    // ✅ Notify admins about update
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "PAYMENT",
+        title: "Payment Updated",
+        message: `${existing.user.name}'s payment updated from ${oldAmount} TK to ${newAmount} TK.`,
+        link: `/payments/${id}`,
+      });
+    }
+
     return updated;
   }
 
@@ -288,11 +410,21 @@ export class PaymentsService {
   async remove(id: string) {
     const payment = await this.prisma.payment.findUnique({
       where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!payment) {
       throw new NotFoundException(`Payment with ID ${id} not found`);
     }
+
+    const amount = Number(payment.amount);
 
     await this.prisma.payment.delete({
       where: { id },
@@ -300,6 +432,33 @@ export class PaymentsService {
 
     // Update user balance
     await this.updateUserBalance(payment.userId);
+
+    // ✅ Send notification for deletion
+    await this.notificationsService.create({
+      userId: payment.userId,
+      type: "PAYMENT",
+      title: "Payment Deleted",
+      message: `Your payment of ${amount} TK has been deleted. Please contact admin if this was a mistake.`,
+      link: "/payments",
+    });
+
+    // ✅ Notify admins about deletion
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "PAYMENT",
+        title: "Payment Deleted",
+        message: `${payment.user.name}'s payment of ${amount} TK has been deleted.`,
+        link: "/payments",
+      });
+    }
 
     return { message: `Payment with ID ${id} deleted successfully` };
   }

@@ -1,8 +1,10 @@
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateUtilityBillDto, UpdateUtilityBillDto } from "./dto";
+import { NotificationsService } from "../notifications/notifications.service";
 export declare class UtilityBillsService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService);
     create(createUtilityBillDto: CreateUtilityBillDto): Promise<{
         payer: {
             id: string;
@@ -11,12 +13,12 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
         monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
     }>;
     findAll(): Promise<({
@@ -27,12 +29,12 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
         monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
     })[]>;
     findOne(id: string): Promise<{
@@ -43,12 +45,12 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
         monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
     }>;
     findByMonth(year: number, month: number): Promise<({
@@ -59,12 +61,12 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
         monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
     })[]>;
     getMonthlySummary(year: number, month: number): Promise<{
@@ -86,12 +88,12 @@ export declare class UtilityBillsService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             billType: import(".prisma/client").$Enums.BillType;
             monthYear: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
+            createdAt: Date;
+            updatedAt: Date;
             paidBy: string | null;
         })[];
     }>;
@@ -113,12 +115,12 @@ export declare class UtilityBillsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
         monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
     }>;
     remove(id: string): Promise<{

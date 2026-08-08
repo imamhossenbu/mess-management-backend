@@ -11,16 +11,16 @@ export declare class MarketingsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     findAll(): Promise<({
         user: {
@@ -30,16 +30,16 @@ export declare class MarketingsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     })[]>;
     getDailySummary(date?: string): Promise<{
         date: string;
@@ -56,16 +56,16 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            quantity: string | null;
             date: Date;
             itemName: string;
+            quantity: string | null;
+            amount: import("@prisma/client/runtime/library").Decimal;
             paymentType: import(".prisma/client").$Enums.PaymentType;
             shopName: string | null;
             note: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         })[];
     }>;
     getMonthlySummary(year?: number, month?: number): Promise<{
@@ -90,16 +90,16 @@ export declare class MarketingsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     })[]>;
     findByDate(date: string): Promise<({
         user: {
@@ -109,16 +109,16 @@ export declare class MarketingsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     })[]>;
     findOne(id: string): Promise<{
         user: {
@@ -128,16 +128,16 @@ export declare class MarketingsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     update(id: string, updateMarketingDto: UpdateMarketingDto): Promise<{
         user: {
@@ -147,16 +147,16 @@ export declare class MarketingsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     remove(id: string): Promise<{
         message: string;

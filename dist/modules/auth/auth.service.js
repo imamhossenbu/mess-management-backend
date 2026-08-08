@@ -48,10 +48,12 @@ const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 const register_dto_1 = require("./dto/register.dto");
+const notifications_service_1 = require("../notifications/notifications.service");
 let AuthService = class AuthService {
-    constructor(prisma, jwtService) {
+    constructor(prisma, jwtService, notificationsService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
+        this.notificationsService = notificationsService;
     }
     async register(dto) {
         const existingUser = await this.prisma.user.findFirst({
@@ -88,6 +90,28 @@ let AuthService = class AuthService {
                 balance: 0,
             },
         });
+        await this.notificationsService.create({
+            userId: user.id,
+            type: "SYSTEM",
+            title: "Welcome to Mess Management System",
+            message: `Hello ${user.name}, welcome to the mess management system. Your account has been successfully created with role: ${user.role}`,
+            link: "/profile",
+        });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "New User Registered",
+                message: `${user.name} has registered as ${user.role}`,
+                link: `/users/${user.id}`,
+            });
+        }
         const token = this.generateToken(user);
         return { accessToken: token, user };
     }
@@ -105,6 +129,13 @@ let AuthService = class AuthService {
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException("Invalid credentials");
         }
+        await this.notificationsService.create({
+            userId: user.id,
+            type: "SYSTEM",
+            title: "Login Notification",
+            message: `You have successfully logged in at ${new Date().toLocaleString()}`,
+            link: "/profile",
+        });
         const { password, ...userWithoutPassword } = user;
         const token = this.generateToken(user);
         return { accessToken: token, user: userWithoutPassword };
@@ -145,7 +176,9 @@ let AuthService = class AuthService {
             let user = await this.prisma.user.findUnique({
                 where: { email: googleUser.email },
             });
+            let isNewUser = false;
             if (!user) {
+                isNewUser = true;
                 const randomPassword = Math.random().toString(36).slice(-8);
                 const hashedPassword = await bcrypt.hash(randomPassword, 10);
                 user = await this.prisma.user.create({
@@ -164,13 +197,44 @@ let AuthService = class AuthService {
                         balance: 0,
                     },
                 });
+                await this.notificationsService.create({
+                    userId: user.id,
+                    type: "SYSTEM",
+                    title: "Welcome! Google Login",
+                    message: `Hello ${user.name}, welcome to the mess management system. You have signed in with Google.`,
+                    link: "/profile",
+                });
+                const admins = await this.prisma.user.findMany({
+                    where: {
+                        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                        isActive: true,
+                    },
+                });
+                for (const admin of admins) {
+                    await this.notificationsService.create({
+                        userId: admin.id,
+                        type: "SYSTEM",
+                        title: "New Google User Registered",
+                        message: `${user.name} has registered via Google`,
+                        link: `/users/${user.id}`,
+                    });
+                }
+            }
+            else {
+                await this.notificationsService.create({
+                    userId: user.id,
+                    type: "SYSTEM",
+                    title: "Google Login Notification",
+                    message: `You have successfully logged in via Google at ${new Date().toLocaleString()}`,
+                    link: "/profile",
+                });
             }
             const token = this.generateToken(user);
             const { password, ...userWithoutPassword } = user;
             return {
                 accessToken: token,
                 user: userWithoutPassword,
-                isNewUser: user.createdAt === user.updatedAt,
+                isNewUser,
             };
         }
         catch (error) {
@@ -186,6 +250,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        notifications_service_1.NotificationsService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

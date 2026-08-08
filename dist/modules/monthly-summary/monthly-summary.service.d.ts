@@ -1,8 +1,10 @@
 import { PrismaService } from "../../prisma/prisma.service";
 import { UserMonthlySummaryDto, MonthlySummaryResponseDto } from "./dto";
+import { NotificationsService } from "../notifications/notifications.service";
 export declare class MonthlySummaryService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService);
     generateMonthlySummary(year: number, month: number): Promise<{
         month: string;
         year: number;
@@ -32,11 +34,11 @@ export declare class MonthlySummaryService {
             phone: string;
         };
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }[]>;
     getAllMonthlySummaries(): Promise<{
         mealRate: number;
@@ -53,12 +55,33 @@ export declare class MonthlySummaryService {
             phone: string;
         };
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }[]>;
+    updateMonthlySummary(id: string, updateDto: any): Promise<{
+        mealRate: number;
+        mealBill: number;
+        utilityShare: number;
+        totalBill: number;
+        totalPaid: number;
+        previousDue: number;
+        currentDue: number;
+        carryToNext: number;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
+        id: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        monthYear: Date;
+        totalMeal: number;
+    }>;
     deleteMonthlySummary(year: number, month: number): Promise<{
         message: string;
         count: number;

@@ -13,9 +13,11 @@ exports.MealsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const date_fns_1 = require("date-fns");
+const notifications_service_1 = require("../notifications/notifications.service");
 let MealsService = class MealsService {
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async create(createMealDto) {
         const user = await this.prisma.user.findUnique({
@@ -63,6 +65,20 @@ let MealsService = class MealsService {
             },
         });
         await this.updateDailySummary(date);
+        const mealType = [];
+        if (morning)
+            mealType.push("Morning");
+        if (lunch)
+            mealType.push("Lunch");
+        if (dinner)
+            mealType.push("Dinner");
+        await this.notificationsService.create({
+            userId: createMealDto.userId,
+            type: "MEAL",
+            title: "Meal Entry Added",
+            message: `Your meal entry for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")} has been added (${mealType.join(", ")}). Total: ${totalMeal} meal(s)`,
+            link: "/meals",
+        });
         return meal;
     }
     async bulkEntry(bulkMealDto) {
@@ -132,6 +148,41 @@ let MealsService = class MealsService {
                 },
             },
         });
+        for (const userId of uniqueUserIds) {
+            const morning = morningSet.has(userId);
+            const lunch = lunchSet.has(userId);
+            const dinner = dinnerSet.has(userId);
+            const mealType = [];
+            if (morning)
+                mealType.push("Morning");
+            if (lunch)
+                mealType.push("Lunch");
+            if (dinner)
+                mealType.push("Dinner");
+            const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+            await this.notificationsService.create({
+                userId,
+                type: "MEAL",
+                title: "Meal Entry Added",
+                message: `Your meal entry for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")} has been added (${mealType.join(", ")}). Total: ${totalMeal} meal(s)`,
+                link: "/meals",
+            });
+        }
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "MEAL",
+                title: "Bulk Meal Entry",
+                message: `Bulk meal entry completed for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}. Total: ${uniqueUserIds.length} users, ${mealsWithUsers.reduce((sum, m) => sum + m.totalMeal, 0)} meals`,
+                link: "/meals",
+            });
+        }
         return {
             date: (0, date_fns_1.format)(date, "yyyy-MM-dd"),
             totalUsers: mealsWithUsers.length,
@@ -223,6 +274,15 @@ let MealsService = class MealsService {
                 },
             },
         });
+        for (const userId of singleMealDto.userIds) {
+            await this.notificationsService.create({
+                userId,
+                type: "MEAL",
+                title: `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Meal Updated`,
+                message: `Your ${mealType} meal for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")} has been recorded.`,
+                link: "/meals",
+            });
+        }
         return {
             date: (0, date_fns_1.format)(date, "yyyy-MM-dd"),
             mealType,
@@ -457,6 +517,20 @@ let MealsService = class MealsService {
             },
         });
         await this.updateDailySummary(meal.date);
+        const mealType = [];
+        if (morning)
+            mealType.push("Morning");
+        if (lunch)
+            mealType.push("Lunch");
+        if (dinner)
+            mealType.push("Dinner");
+        await this.notificationsService.create({
+            userId: existing.userId,
+            type: "MEAL",
+            title: "Meal Entry Updated",
+            message: `Your meal entry for ${(0, date_fns_1.format)(meal.date, "yyyy-MM-dd")} has been updated. New: ${mealType.join(", ")}. Total: ${totalMeal} meal(s)`,
+            link: "/meals",
+        });
         return meal;
     }
     async remove(id) {
@@ -470,6 +544,13 @@ let MealsService = class MealsService {
             where: { id },
         });
         await this.updateDailySummary(meal.date);
+        await this.notificationsService.create({
+            userId: meal.userId,
+            type: "MEAL",
+            title: "Meal Entry Deleted",
+            message: `Your meal entry for ${(0, date_fns_1.format)(meal.date, "yyyy-MM-dd")} has been deleted.`,
+            link: "/meals",
+        });
         return { message: `Meal with ID ${id} deleted successfully` };
     }
     async removeByDate(date) {
@@ -484,6 +565,21 @@ let MealsService = class MealsService {
             },
         });
         await this.updateDailySummary(date);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "MEAL",
+                title: "Bulk Meal Deletion",
+                message: `${deleted.count} meal entries deleted for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`,
+                link: "/meals",
+            });
+        }
         return {
             message: `Deleted ${deleted.count} meals for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`,
             count: deleted.count,
@@ -541,6 +637,7 @@ let MealsService = class MealsService {
 exports.MealsService = MealsService;
 exports.MealsService = MealsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], MealsService);
 //# sourceMappingURL=meals.service.js.map

@@ -11,14 +11,14 @@ export declare class MealsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     bulkEntry(bulkMealDto: BulkMealEntryDto): Promise<{
         date: string;
@@ -37,14 +37,14 @@ export declare class MealsController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
             date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         })[];
     }>;
     singleMealEntry(singleMealDto: SingleMealEntryDto): Promise<{
@@ -65,14 +65,14 @@ export declare class MealsController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
             date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         })[];
     }>;
     findAll(): Promise<({
@@ -83,14 +83,14 @@ export declare class MealsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     })[]>;
     getDailySummary(date?: string): Promise<{
         date: string;
@@ -110,14 +110,14 @@ export declare class MealsController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
             date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         })[];
     }>;
     getMonthlySummary(year?: number, month?: number): Promise<{
@@ -145,14 +145,14 @@ export declare class MealsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     })[]>;
     findByDate(date: string): Promise<({
         user: {
@@ -162,14 +162,14 @@ export declare class MealsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     })[]>;
     findOne(id: string): Promise<{
         user: {
@@ -179,14 +179,14 @@ export declare class MealsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     update(id: string, updateMealDto: UpdateMealDto): Promise<{
         user: {
@@ -196,14 +196,14 @@ export declare class MealsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     remove(id: string): Promise<{
         message: string;

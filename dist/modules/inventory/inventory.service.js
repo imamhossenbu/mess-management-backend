@@ -13,9 +13,11 @@ exports.InventoryService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const notifications_service_1 = require("../notifications/notifications.service");
 let InventoryService = class InventoryService {
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async getAllInventory() {
         let meat = await this.prisma.inventory.findUnique({
@@ -241,6 +243,24 @@ let InventoryService = class InventoryService {
                 note: note || `${quantity} পিস যোগ করা হয়েছে`,
             },
         });
+        const updatedInventory = await this.getInventory(type);
+        if (updatedInventory.quantity > 50) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "INVENTORY",
+                    title: "Stock Level High",
+                    message: `${type} stock is now ${updatedInventory.quantity} pieces. Consider reducing purchases.`,
+                    link: "/inventory",
+                });
+            }
+        }
         return updated;
     }
     async removeInventory(removeInventoryDto) {
@@ -272,6 +292,10 @@ let InventoryService = class InventoryService {
                 note: note || `${quantity} পিস ব্যবহার করা হয়েছে`,
             },
         });
+        const updatedInventory = await this.getInventory(type);
+        if (updatedInventory.quantity < 10) {
+            await this.notificationsService.sendInventoryAlert(type, updatedInventory.quantity);
+        }
         return updated;
     }
     async setInventory(setInventoryDto) {
@@ -305,12 +329,48 @@ let InventoryService = class InventoryService {
                 },
             });
         }
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "INVENTORY",
+                title: "Inventory Manually Updated",
+                message: `${type} stock has been manually set to ${quantity} pieces.`,
+                link: "/inventory",
+            });
+        }
+        if (quantity < 10) {
+            await this.notificationsService.sendInventoryAlert(type, quantity);
+        }
         return updated;
     }
     async checkAvailability(type, requiredQuantity) {
         const inventory = await this.getInventory(type);
+        const isAvailable = inventory.quantity >= requiredQuantity;
+        if (!isAvailable) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "INVENTORY",
+                    title: "Stock Check Alert",
+                    message: `${type} stock check failed. Required: ${requiredQuantity}, Available: ${inventory.quantity}`,
+                    link: "/inventory",
+                });
+            }
+        }
         return {
-            available: inventory.quantity >= requiredQuantity,
+            available: isAvailable,
             availableQuantity: inventory.quantity,
             requiredQuantity,
             type,
@@ -328,6 +388,22 @@ let InventoryService = class InventoryService {
                 results.push({ success: false, type: item.type, error: errorMessage });
             }
         }
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        const successCount = results.filter((r) => r.success).length;
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "INVENTORY",
+                title: "Bulk Inventory Add",
+                message: `${successCount} items added to inventory successfully.`,
+                link: "/inventory",
+            });
+        }
         return results;
     }
     async bulkRemove(items) {
@@ -342,12 +418,29 @@ let InventoryService = class InventoryService {
                 results.push({ success: false, type: item.type, error: errorMessage });
             }
         }
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        const successCount = results.filter((r) => r.success).length;
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "INVENTORY",
+                title: "Bulk Inventory Remove",
+                message: `${successCount} items removed from inventory successfully.`,
+                link: "/inventory",
+            });
+        }
         return results;
     }
 };
 exports.InventoryService = InventoryService;
 exports.InventoryService = InventoryService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], InventoryService);
 //# sourceMappingURL=inventory.service.js.map

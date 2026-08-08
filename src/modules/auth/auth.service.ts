@@ -9,12 +9,14 @@ import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RegisterDto, LoginDto } from "./dto";
 import { Role } from "./dto/register.dto";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private notificationsService: NotificationsService, // ✅ Inject
   ) {}
 
   async register(dto: RegisterDto) {
@@ -63,6 +65,33 @@ export class AuthService {
       },
     });
 
+    // ✅ Send welcome notification to new user
+    await this.notificationsService.create({
+      userId: user.id,
+      type: "SYSTEM",
+      title: "Welcome to Mess Management System",
+      message: `Hello ${user.name}, welcome to the mess management system. Your account has been successfully created with role: ${user.role}`,
+      link: "/profile",
+    });
+
+    // ✅ Send notification to all admins about new user
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "SYSTEM",
+        title: "New User Registered",
+        message: `${user.name} has registered as ${user.role}`,
+        link: `/users/${user.id}`,
+      });
+    }
+
     // Generate token
     const token = this.generateToken(user);
 
@@ -87,6 +116,15 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException("Invalid credentials");
     }
+
+    // ✅ Send login notification
+    await this.notificationsService.create({
+      userId: user.id,
+      type: "SYSTEM",
+      title: "Login Notification",
+      message: `You have successfully logged in at ${new Date().toLocaleString()}`,
+      link: "/profile",
+    });
 
     const { password, ...userWithoutPassword } = user;
 
@@ -136,7 +174,10 @@ export class AuthService {
         where: { email: googleUser.email },
       });
 
+      let isNewUser = false;
+
       if (!user) {
+        isNewUser = true;
         // Create new user with random password
         const randomPassword = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
@@ -159,6 +200,42 @@ export class AuthService {
             balance: 0,
           },
         });
+
+        // ✅ Send welcome notification for Google login
+        await this.notificationsService.create({
+          userId: user.id,
+          type: "SYSTEM",
+          title: "Welcome! Google Login",
+          message: `Hello ${user.name}, welcome to the mess management system. You have signed in with Google.`,
+          link: "/profile",
+        });
+
+        // ✅ Notify admins about new Google user
+        const admins = await this.prisma.user.findMany({
+          where: {
+            role: { in: ["SUPER_ADMIN", "MANAGER"] },
+            isActive: true,
+          },
+        });
+
+        for (const admin of admins) {
+          await this.notificationsService.create({
+            userId: admin.id,
+            type: "SYSTEM",
+            title: "New Google User Registered",
+            message: `${user.name} has registered via Google`,
+            link: `/users/${user.id}`,
+          });
+        }
+      } else {
+        // ✅ Send Google login notification for existing user
+        await this.notificationsService.create({
+          userId: user.id,
+          type: "SYSTEM",
+          title: "Google Login Notification",
+          message: `You have successfully logged in via Google at ${new Date().toLocaleString()}`,
+          link: "/profile",
+        });
       }
 
       // Generate token
@@ -170,7 +247,7 @@ export class AuthService {
       return {
         accessToken: token,
         user: userWithoutPassword,
-        isNewUser: user.createdAt === user.updatedAt,
+        isNewUser,
       };
     } catch (error) {
       throw new UnauthorizedException("Google login failed");

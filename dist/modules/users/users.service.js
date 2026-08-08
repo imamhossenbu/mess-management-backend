@@ -48,10 +48,12 @@ const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 const register_dto_1 = require("../auth/dto/register.dto");
 const cloudinary_service_1 = require("../cloudinary/cloudinary.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let UsersService = class UsersService {
-    constructor(prisma, cloudinaryService) {
+    constructor(prisma, cloudinaryService, notificationsService) {
         this.prisma = prisma;
         this.cloudinaryService = cloudinaryService;
+        this.notificationsService = notificationsService;
     }
     async create(createUserDto) {
         const existingUser = await this.prisma.user.findFirst({
@@ -81,6 +83,28 @@ let UsersService = class UsersService {
             },
         });
         const { password, ...userWithoutPassword } = user;
+        await this.notificationsService.create({
+            userId: user.id,
+            type: "SYSTEM",
+            title: "Welcome to the Mess!",
+            message: `Hello ${user.name}, your account has been created successfully with role: ${user.role}`,
+            link: "/profile",
+        });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "New User Registered",
+                message: `${user.name} has joined the mess as ${user.role}`,
+                link: `/users/${user.id}`,
+            });
+        }
         return userWithoutPassword;
     }
     async findAll() {
@@ -192,6 +216,13 @@ let UsersService = class UsersService {
                 },
             },
         });
+        await this.notificationsService.create({
+            userId: id,
+            type: "SYSTEM",
+            title: "Profile Updated",
+            message: "Your profile information has been updated successfully.",
+            link: "/profile",
+        });
         return {
             ...updatedUser,
             balance: updatedUser.balances?.[0]?.balance
@@ -248,6 +279,13 @@ let UsersService = class UsersService {
                 },
             },
         });
+        await this.notificationsService.create({
+            userId: userId,
+            type: "SYSTEM",
+            title: "Profile Updated",
+            message: "Your profile information has been updated successfully.",
+            link: "/profile",
+        });
         return {
             ...updatedUser,
             balance: updatedUser.balances?.[0]?.balance
@@ -290,6 +328,13 @@ let UsersService = class UsersService {
                     },
                 },
             },
+        });
+        await this.notificationsService.create({
+            userId: userId,
+            type: "SYSTEM",
+            title: "Profile Image Updated",
+            message: "Your profile image has been updated successfully.",
+            link: "/profile",
         });
         return {
             ...updatedUser,
@@ -334,6 +379,13 @@ let UsersService = class UsersService {
                 },
             },
         });
+        await this.notificationsService.create({
+            userId: userId,
+            type: "SYSTEM",
+            title: "Profile Image Removed",
+            message: "Your profile image has been removed successfully.",
+            link: "/profile",
+        });
         return {
             ...updatedUser,
             balance: updatedUser.balances?.[0]?.balance
@@ -343,7 +395,7 @@ let UsersService = class UsersService {
         };
     }
     async remove(id) {
-        await this.findOne(id);
+        const user = await this.findOne(id);
         const deactivatedUser = await this.prisma.user.update({
             where: { id },
             data: {
@@ -360,13 +412,50 @@ let UsersService = class UsersService {
                 leftDate: true,
             },
         });
+        await this.notificationsService.create({
+            userId: id,
+            type: "SYSTEM",
+            title: "Account Deactivated",
+            message: "Your account has been deactivated. Please contact admin for more information.",
+            link: "/",
+        });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "User Account Deactivated",
+                message: `${user.name}'s account has been deactivated.`,
+                link: `/users/${id}`,
+            });
+        }
         return deactivatedUser;
     }
     async hardDelete(id) {
-        await this.findOne(id);
+        const user = await this.findOne(id);
         await this.prisma.user.delete({
             where: { id },
         });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "User Account Permanently Deleted",
+                message: `${user.name}'s account has been permanently deleted from the system.`,
+                link: "/users",
+            });
+        }
         return { message: `User with ID ${id} deleted successfully` };
     }
     async findByPhone(phone) {
@@ -395,6 +484,24 @@ let UsersService = class UsersService {
                 lastUpdated: new Date(),
             },
         });
+        if (amount > 0) {
+            await this.notificationsService.create({
+                userId: userId,
+                type: "PAYMENT",
+                title: "Balance Updated",
+                message: `${amount} TK has been added to your balance. Current balance: ${newBalance} TK`,
+                link: "/payments",
+            });
+        }
+        else if (amount < 0) {
+            await this.notificationsService.create({
+                userId: userId,
+                type: "PAYMENT",
+                title: "Balance Updated",
+                message: `${Math.abs(amount)} TK has been deducted from your balance. Current balance: ${newBalance} TK`,
+                link: "/payments",
+            });
+        }
         return {
             ...updated,
             balance: Number(updated.balance),
@@ -405,6 +512,7 @@ exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        cloudinary_service_1.CloudinaryService])
+        cloudinary_service_1.CloudinaryService,
+        notifications_service_1.NotificationsService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

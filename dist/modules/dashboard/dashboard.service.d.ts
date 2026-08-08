@@ -1,8 +1,10 @@
 import { PrismaService } from "../../prisma/prisma.service";
 import { DashboardStatsDto, MemberDashboardDto, DailySummaryDto } from "./dto";
+import { NotificationsService } from "../notifications/notifications.service";
 export declare class DashboardService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService);
     getAdminDashboard(): Promise<DashboardStatsDto>;
     getMemberDashboard(userId: string): Promise<MemberDashboardDto>;
     getDailySummary(date?: string): Promise<DailySummaryDto>;

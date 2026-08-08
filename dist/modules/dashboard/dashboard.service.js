@@ -13,9 +13,11 @@ exports.DashboardService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const date_fns_1 = require("date-fns");
+const notifications_service_1 = require("../notifications/notifications.service");
 let DashboardService = class DashboardService {
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async getAdminDashboard() {
         const today = new Date();
@@ -128,6 +130,14 @@ let DashboardService = class DashboardService {
                 },
             },
         });
+        const meatQty = meatInventory?.quantity || 0;
+        const fishQty = fishInventory?.quantity || 0;
+        if (meatQty < 10) {
+            await this.notificationsService.sendInventoryAlert("MEAT", meatQty);
+        }
+        if (fishQty < 10) {
+            await this.notificationsService.sendInventoryAlert("FISH", fishQty);
+        }
         return {
             totalMembers,
             activeMembers,
@@ -140,8 +150,8 @@ let DashboardService = class DashboardService {
             totalDue: Number(totalDue),
             mealRate: Number(mealRate),
             inventory: {
-                meat: meatInventory?.quantity || 0,
-                fish: fishInventory?.quantity || 0,
+                meat: meatQty,
+                fish: fishQty,
             },
             recentActivities: {
                 meals: recentMeals,
@@ -187,6 +197,16 @@ let DashboardService = class DashboardService {
             take: 5,
             orderBy: { paymentDate: "desc" },
         });
+        const balance = userBalance ? Number(userBalance.balance) : 0;
+        if (balance < 0) {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "BILL",
+                title: "Due Balance Alert",
+                message: `You have a due balance of ${Math.abs(balance)} TK. Please pay as soon as possible.`,
+                link: "/payments",
+            });
+        }
         return {
             userId: user.id,
             userName: user.name,
@@ -197,7 +217,7 @@ let DashboardService = class DashboardService {
                 : 0,
             totalBillThisMonth: monthlySummary ? Number(monthlySummary.totalBill) : 0,
             totalPaidThisMonth: monthlySummary ? Number(monthlySummary.totalPaid) : 0,
-            currentBalance: userBalance ? Number(userBalance.balance) : 0,
+            currentBalance: balance,
             recentPayments,
         };
     }
@@ -300,6 +320,23 @@ let DashboardService = class DashboardService {
         const totalUtilityCost = utilityBills.reduce((sum, b) => sum + Number(b.amount), 0);
         const totalPayments = payments.reduce((sum, p) => sum + Number(p.amount), 0);
         const totalDue = monthlySummaries.reduce((sum, s) => sum + Number(s.currentDue), 0);
+        if (totalDue > 5000) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "BILL",
+                    title: "High Due Alert",
+                    message: `Total due for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} is ${totalDue} TK. Please check.`,
+                    link: "/monthly-summary",
+                });
+            }
+        }
         return {
             month: (0, date_fns_1.format)(startDate, "MMMM"),
             year: queryYear,
@@ -324,6 +361,7 @@ let DashboardService = class DashboardService {
 exports.DashboardService = DashboardService;
 exports.DashboardService = DashboardService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], DashboardService);
 //# sourceMappingURL=dashboard.service.js.map

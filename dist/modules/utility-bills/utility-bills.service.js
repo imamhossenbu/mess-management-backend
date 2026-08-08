@@ -14,9 +14,11 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
+const notifications_service_1 = require("../notifications/notifications.service");
 let UtilityBillsService = class UtilityBillsService {
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async create(createUtilityBillDto) {
         const { billType, monthYear, amount, paidBy, note } = createUtilityBillDto;
@@ -59,6 +61,40 @@ let UtilityBillsService = class UtilityBillsService {
                 },
             },
         });
+        const users = await this.prisma.user.findMany({
+            where: { isActive: true },
+        });
+        const billTypeLabels = {
+            CURRENT: "Electricity",
+            WIFI: "Internet",
+            RENT: "Rent",
+            WATER: "Water",
+            KHALA: "Cook",
+        };
+        for (const user of users) {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "BILL",
+                title: `New ${billTypeLabels[billType] || billType} Bill Added`,
+                message: `${(0, date_fns_1.format)(monthDate, "MMMM yyyy")} ${billTypeLabels[billType] || billType} bill of ${amount} TK has been added.`,
+                link: "/utility-bills",
+            });
+        }
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "BILL",
+                title: "Utility Bill Added",
+                message: `${billTypeLabels[billType] || billType} bill of ${amount} TK added for ${(0, date_fns_1.format)(monthDate, "MMMM yyyy")}`,
+                link: `/utility-bills/${bill.id}`,
+            });
+        }
         return bill;
     }
     async findAll() {
@@ -141,6 +177,23 @@ let UtilityBillsService = class UtilityBillsService {
             .reduce((sum, b) => sum + Number(b.amount), 0);
         const totalAmount = totalCurrent + totalWifi + totalRent + totalWater + totalKhala;
         const perPersonShare = activeMembers > 0 ? totalAmount / activeMembers : 0;
+        if (totalAmount > 50000) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "BILL",
+                    title: "High Utility Bill Alert",
+                    message: `Total utility bill for ${(0, date_fns_1.format)(new Date(year, month - 1, 1), "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
+                    link: "/utility-bills",
+                });
+            }
+        }
         return {
             month: (0, date_fns_1.format)(new Date(year, month - 1, 1), "MMMM"),
             year,
@@ -190,6 +243,14 @@ let UtilityBillsService = class UtilityBillsService {
     async update(id, updateUtilityBillDto) {
         const existing = await this.prisma.utilityBill.findUnique({
             where: { id },
+            include: {
+                payer: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
         });
         if (!existing) {
             throw new common_1.NotFoundException(`Utility bill with ID ${id} not found`);
@@ -202,7 +263,7 @@ let UtilityBillsService = class UtilityBillsService {
                 throw new common_1.NotFoundException(`User with ID ${updateUtilityBillDto.paidBy} not found`);
             }
         }
-        return this.prisma.utilityBill.update({
+        const updated = await this.prisma.utilityBill.update({
             where: { id },
             data: {
                 billType: updateUtilityBillDto.billType,
@@ -220,10 +281,38 @@ let UtilityBillsService = class UtilityBillsService {
                 },
             },
         });
+        const billTypeLabels = {
+            CURRENT: "Electricity",
+            WIFI: "Internet",
+            RENT: "Rent",
+            WATER: "Water",
+            KHALA: "Cook",
+        };
+        const users = await this.prisma.user.findMany({
+            where: { isActive: true },
+        });
+        for (const user of users) {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "BILL",
+                title: `Utility Bill Updated`,
+                message: `${billTypeLabels[existing.billType] || existing.billType} bill for ${(0, date_fns_1.format)(existing.monthYear, "MMMM yyyy")} has been updated to ${updated.amount} TK.`,
+                link: "/utility-bills",
+            });
+        }
+        return updated;
     }
     async remove(id) {
         const bill = await this.prisma.utilityBill.findUnique({
             where: { id },
+            include: {
+                payer: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
         });
         if (!bill) {
             throw new common_1.NotFoundException(`Utility bill with ID ${id} not found`);
@@ -231,6 +320,25 @@ let UtilityBillsService = class UtilityBillsService {
         await this.prisma.utilityBill.delete({
             where: { id },
         });
+        const billTypeLabels = {
+            CURRENT: "Electricity",
+            WIFI: "Internet",
+            RENT: "Rent",
+            WATER: "Water",
+            KHALA: "Cook",
+        };
+        const users = await this.prisma.user.findMany({
+            where: { isActive: true },
+        });
+        for (const user of users) {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "BILL",
+                title: `Utility Bill Deleted`,
+                message: `${billTypeLabels[bill.billType] || bill.billType} bill for ${(0, date_fns_1.format)(bill.monthYear, "MMMM yyyy")} has been deleted.`,
+                link: "/utility-bills",
+            });
+        }
         return { message: `Utility bill with ID ${id} deleted successfully` };
     }
     async removeByMonth(year, month) {
@@ -244,6 +352,20 @@ let UtilityBillsService = class UtilityBillsService {
                 },
             },
         });
+        if (deleted.count > 0) {
+            const users = await this.prisma.user.findMany({
+                where: { isActive: true },
+            });
+            for (const user of users) {
+                await this.notificationsService.create({
+                    userId: user.id,
+                    type: "BILL",
+                    title: `Utility Bills Deleted`,
+                    message: `${deleted.count} utility bills for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} have been deleted.`,
+                    link: "/utility-bills",
+                });
+            }
+        }
         return {
             message: `Deleted ${deleted.count} utility bills for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")}`,
             count: deleted.count,
@@ -253,6 +375,7 @@ let UtilityBillsService = class UtilityBillsService {
 exports.UtilityBillsService = UtilityBillsService;
 exports.UtilityBillsService = UtilityBillsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], UtilityBillsService);
 //# sourceMappingURL=utility-bills.service.js.map

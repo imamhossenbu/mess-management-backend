@@ -13,10 +13,14 @@ import {
   UpdateMealDto,
 } from "./dto";
 import { startOfDay, endOfDay, format, getMonth, getYear } from "date-fns";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class MealsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService, // ✅ Inject
+  ) {}
 
   // ==================== CREATE ====================
 
@@ -81,6 +85,20 @@ export class MealsService {
 
     // Update daily summary
     await this.updateDailySummary(date);
+
+    // ✅ Send notification to user about meal entry
+    const mealType = [];
+    if (morning) mealType.push("Morning");
+    if (lunch) mealType.push("Lunch");
+    if (dinner) mealType.push("Dinner");
+
+    await this.notificationsService.create({
+      userId: createMealDto.userId,
+      type: "MEAL",
+      title: "Meal Entry Added",
+      message: `Your meal entry for ${format(date, "yyyy-MM-dd")} has been added (${mealType.join(", ")}). Total: ${totalMeal} meal(s)`,
+      link: "/meals",
+    });
 
     return meal;
   }
@@ -176,6 +194,44 @@ export class MealsService {
         },
       },
     });
+
+    // ✅ Send bulk notification to all users
+    for (const userId of uniqueUserIds) {
+      const morning = morningSet.has(userId);
+      const lunch = lunchSet.has(userId);
+      const dinner = dinnerSet.has(userId);
+      const mealType = [];
+      if (morning) mealType.push("Morning");
+      if (lunch) mealType.push("Lunch");
+      if (dinner) mealType.push("Dinner");
+      const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+
+      await this.notificationsService.create({
+        userId,
+        type: "MEAL",
+        title: "Meal Entry Added",
+        message: `Your meal entry for ${format(date, "yyyy-MM-dd")} has been added (${mealType.join(", ")}). Total: ${totalMeal} meal(s)`,
+        link: "/meals",
+      });
+    }
+
+    // ✅ Send notification to admins about bulk entry
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "MEAL",
+        title: "Bulk Meal Entry",
+        message: `Bulk meal entry completed for ${format(date, "yyyy-MM-dd")}. Total: ${uniqueUserIds.length} users, ${mealsWithUsers.reduce((sum, m) => sum + m.totalMeal, 0)} meals`,
+        link: "/meals",
+      });
+    }
 
     return {
       date: format(date, "yyyy-MM-dd"),
@@ -297,6 +353,17 @@ export class MealsService {
         },
       },
     });
+
+    // ✅ Send notifications
+    for (const userId of singleMealDto.userIds) {
+      await this.notificationsService.create({
+        userId,
+        type: "MEAL",
+        title: `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Meal Updated`,
+        message: `Your ${mealType} meal for ${format(date, "yyyy-MM-dd")} has been recorded.`,
+        link: "/meals",
+      });
+    }
 
     return {
       date: format(date, "yyyy-MM-dd"),
@@ -579,6 +646,20 @@ export class MealsService {
     // Update daily summary
     await this.updateDailySummary(meal.date);
 
+    // ✅ Send notification for update
+    const mealType = [];
+    if (morning) mealType.push("Morning");
+    if (lunch) mealType.push("Lunch");
+    if (dinner) mealType.push("Dinner");
+
+    await this.notificationsService.create({
+      userId: existing.userId,
+      type: "MEAL",
+      title: "Meal Entry Updated",
+      message: `Your meal entry for ${format(meal.date, "yyyy-MM-dd")} has been updated. New: ${mealType.join(", ")}. Total: ${totalMeal} meal(s)`,
+      link: "/meals",
+    });
+
     return meal;
   }
 
@@ -600,6 +681,15 @@ export class MealsService {
     // Update daily summary
     await this.updateDailySummary(meal.date);
 
+    // ✅ Send notification for deletion
+    await this.notificationsService.create({
+      userId: meal.userId,
+      type: "MEAL",
+      title: "Meal Entry Deleted",
+      message: `Your meal entry for ${format(meal.date, "yyyy-MM-dd")} has been deleted.`,
+      link: "/meals",
+    });
+
     return { message: `Meal with ID ${id} deleted successfully` };
   }
 
@@ -618,6 +708,24 @@ export class MealsService {
 
     // Update daily summary
     await this.updateDailySummary(date);
+
+    // ✅ Send notification for bulk deletion
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "MEAL",
+        title: "Bulk Meal Deletion",
+        message: `${deleted.count} meal entries deleted for ${format(date, "yyyy-MM-dd")}`,
+        link: "/meals",
+      });
+    }
 
     return {
       message: `Deleted ${deleted.count} meals for ${format(date, "yyyy-MM-dd")}`,

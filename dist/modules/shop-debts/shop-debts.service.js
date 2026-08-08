@@ -14,9 +14,11 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
+const notifications_service_1 = require("../notifications/notifications.service");
 let ShopDebtsService = class ShopDebtsService {
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async create(createShopDebtDto) {
         const { shopName, date, itemDetails, amount, status, note } = createShopDebtDto;
@@ -32,6 +34,39 @@ let ShopDebtsService = class ShopDebtsService {
             },
         });
         await this.updateMonthlySummary(debtDate);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "New Shop Debt Added",
+                message: `${shopName}: ${amount} TK debt added for ${(0, date_fns_1.format)(debtDate, "yyyy-MM-dd")}`,
+                link: `/shop-debts/${debt.id}`,
+            });
+        }
+        const shopDebts = await this.prisma.shopDebt.findMany({
+            where: {
+                shopName,
+                status: client_1.DebtStatus.DUE,
+            },
+        });
+        const totalShopDebt = shopDebts.reduce((sum, d) => sum + Number(d.amount), 0);
+        if (totalShopDebt > 10000) {
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "SYSTEM",
+                    title: "High Shop Debt Alert",
+                    message: `${shopName} has total due of ${totalShopDebt} TK. Please review.`,
+                    link: `/shop-debts/shop/${shopName}`,
+                });
+            }
+        }
         return debt;
     }
     async payDebt(id, paidDate) {
@@ -52,6 +87,21 @@ let ShopDebtsService = class ShopDebtsService {
             },
         });
         await this.updateMonthlySummary(debt.date);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "Shop Debt Paid",
+                message: `${debt.shopName}: ${debt.amount} TK debt has been paid.`,
+                link: `/shop-debts/${id}`,
+            });
+        }
         return updated;
     }
     async findAll() {
@@ -146,6 +196,23 @@ let ShopDebtsService = class ShopDebtsService {
             shopName,
             ...data,
         }));
+        if (totalDue > 20000) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "SYSTEM",
+                    title: "High Total Shop Debt Alert",
+                    message: `Total shop debt is ${totalDue} TK across all shops. Please review.`,
+                    link: "/shop-debts",
+                });
+            }
+        }
         return {
             totalDue,
             totalPaid,
@@ -192,6 +259,21 @@ let ShopDebtsService = class ShopDebtsService {
             },
         });
         await this.updateMonthlySummary(existing.date);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "Shop Debt Updated",
+                message: `${existing.shopName}: Debt updated. New amount: ${updated.amount} TK`,
+                link: `/shop-debts/${id}`,
+            });
+        }
         return updated;
     }
     async remove(id) {
@@ -205,6 +287,21 @@ let ShopDebtsService = class ShopDebtsService {
             where: { id },
         });
         await this.updateMonthlySummary(debt.date);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "Shop Debt Deleted",
+                message: `${debt.shopName}: ${debt.amount} TK debt has been deleted.`,
+                link: "/shop-debts",
+            });
+        }
         return { message: `Shop debt with ID ${id} deleted successfully` };
     }
     async updateMonthlySummary(date) {
@@ -281,6 +378,7 @@ let ShopDebtsService = class ShopDebtsService {
 exports.ShopDebtsService = ShopDebtsService;
 exports.ShopDebtsService = ShopDebtsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], ShopDebtsService);
 //# sourceMappingURL=shop-debts.service.js.map

@@ -9,10 +9,14 @@ import {
   format,
 } from "date-fns";
 import { DashboardStatsDto, MemberDashboardDto, DailySummaryDto } from "./dto";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class DashboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService, // ✅ Inject
+  ) {}
 
   // ==================== ADMIN DASHBOARD ====================
 
@@ -168,6 +172,17 @@ export class DashboardService {
       },
     });
 
+    // ✅ Check if any inventory is low and send notification
+    const meatQty = meatInventory?.quantity || 0;
+    const fishQty = fishInventory?.quantity || 0;
+
+    if (meatQty < 10) {
+      await this.notificationsService.sendInventoryAlert("MEAT", meatQty);
+    }
+    if (fishQty < 10) {
+      await this.notificationsService.sendInventoryAlert("FISH", fishQty);
+    }
+
     return {
       totalMembers,
       activeMembers,
@@ -180,8 +195,8 @@ export class DashboardService {
       totalDue: Number(totalDue),
       mealRate: Number(mealRate),
       inventory: {
-        meat: meatInventory?.quantity || 0,
-        fish: fishInventory?.quantity || 0,
+        meat: meatQty,
+        fish: fishQty,
       },
       recentActivities: {
         meals: recentMeals,
@@ -243,6 +258,18 @@ export class DashboardService {
       orderBy: { paymentDate: "desc" },
     });
 
+    // ✅ Check if user has due balance
+    const balance = userBalance ? Number(userBalance.balance) : 0;
+    if (balance < 0) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "BILL",
+        title: "Due Balance Alert",
+        message: `You have a due balance of ${Math.abs(balance)} TK. Please pay as soon as possible.`,
+        link: "/payments",
+      });
+    }
+
     return {
       userId: user.id,
       userName: user.name,
@@ -253,7 +280,7 @@ export class DashboardService {
         : 0,
       totalBillThisMonth: monthlySummary ? Number(monthlySummary.totalBill) : 0,
       totalPaidThisMonth: monthlySummary ? Number(monthlySummary.totalPaid) : 0,
-      currentBalance: userBalance ? Number(userBalance.balance) : 0,
+      currentBalance: balance,
       recentPayments,
     };
   }
@@ -391,6 +418,26 @@ export class DashboardService {
       (sum, s) => sum + Number(s.currentDue),
       0,
     );
+
+    // ✅ Send notification if total due is high
+    if (totalDue > 5000) {
+      const admins = await this.prisma.user.findMany({
+        where: {
+          role: { in: ["SUPER_ADMIN", "MANAGER"] },
+          isActive: true,
+        },
+      });
+
+      for (const admin of admins) {
+        await this.notificationsService.create({
+          userId: admin.id,
+          type: "BILL",
+          title: "High Due Alert",
+          message: `Total due for ${format(startDate, "MMMM yyyy")} is ${totalDue} TK. Please check.`,
+          link: "/monthly-summary",
+        });
+      }
+    }
 
     return {
       month: format(startDate, "MMMM"),

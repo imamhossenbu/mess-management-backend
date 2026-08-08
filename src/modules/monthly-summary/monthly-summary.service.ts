@@ -7,10 +7,14 @@ import {
 import { PrismaService } from "../../prisma/prisma.service";
 import { startOfDay, endOfDay, format, getMonth, getYear } from "date-fns";
 import { UserMonthlySummaryDto, MonthlySummaryResponseDto } from "./dto";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class MonthlySummaryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService, // ✅ Inject
+  ) {}
 
   // ==================== GENERATE MONTHLY SUMMARY ====================
 
@@ -175,6 +179,60 @@ export class MonthlySummaryService {
       totalMarketCost,
       totalUtilityCost,
     });
+
+    // ✅ Send monthly summary notification to all users
+    await this.notificationsService.sendMonthlySummaryNotification(year, month);
+
+    // ✅ Send individual bill notifications to all users
+    for (const summary of userSummaries) {
+      // Send bill notification
+      await this.notificationsService.sendBillNotification(
+        summary.userId,
+        summary.totalBill,
+        new Date(year, month, 15), // Due date: 15th of next month
+      );
+
+      // Send payment reminder if user has due
+      if (summary.currentDue > 0) {
+        await this.notificationsService.create({
+          userId: summary.userId,
+          type: "BILL",
+          title: "Payment Reminder",
+          message: `You have a due balance of ${summary.currentDue} TK for ${format(startDate, "MMMM yyyy")}. Please pay by 15th of next month.`,
+          link: "/payments",
+        });
+      }
+
+      // Send positive balance notification
+      if (summary.currentDue < 0) {
+        await this.notificationsService.create({
+          userId: summary.userId,
+          type: "BILL",
+          title: "Positive Balance",
+          message: `You have a positive balance of ${Math.abs(summary.currentDue)} TK for ${format(startDate, "MMMM yyyy")}. This will be adjusted in next month's bill.`,
+          link: "/payments",
+        });
+      }
+    }
+
+    // ✅ Send summary notification to admins
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    const totalDue = userSummaries.reduce((sum, u) => sum + u.currentDue, 0);
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "SUMMARY",
+        title: `Monthly Summary Generated - ${format(startDate, "MMMM yyyy")}`,
+        message: `Monthly summary generated. Total meals: ${totalMeals}, Total bill: ${Number(totalMeals * mealRate + totalUtilityCost)} TK, Total due: ${totalDue} TK`,
+        link: `/monthly-summary?year=${year}&month=${month}`,
+      });
+    }
 
     // 13. Return response
     return {
@@ -404,10 +462,101 @@ export class MonthlySummaryService {
     }));
   }
 
+  // ==================== UPDATE ====================
+
+  async updateMonthlySummary(id: string, updateDto: any) {
+    const existing = await this.prisma.monthlySummary.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Monthly summary with ID ${id} not found`);
+    }
+
+    const updated = await this.prisma.monthlySummary.update({
+      where: { id },
+      data: {
+        totalMeal: updateDto.totalMeal,
+        mealRate: updateDto.mealRate,
+        mealBill: updateDto.mealBill,
+        utilityShare: updateDto.utilityShare,
+        totalBill: updateDto.totalBill,
+        totalPaid: updateDto.totalPaid,
+        previousDue: updateDto.previousDue,
+        currentDue: updateDto.currentDue,
+        carryToNext: updateDto.carryToNext,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    // ✅ Send notification for update
+    await this.notificationsService.create({
+      userId: existing.userId,
+      type: "SUMMARY",
+      title: "Monthly Summary Updated",
+      message: `Your monthly summary for ${format(existing.monthYear, "MMMM yyyy")} has been updated. New total bill: ${Number(updated.totalBill)} TK`,
+      link: `/monthly-summary?year=${existing.monthYear.getFullYear()}&month=${existing.monthYear.getMonth() + 1}`,
+    });
+
+    // Update user balance if currentDue changed
+    if (updateDto.currentDue !== undefined) {
+      await this.prisma.userBalance.update({
+        where: { userId: existing.userId },
+        data: {
+          balance: updateDto.currentDue,
+          lastUpdated: new Date(),
+        },
+      });
+    }
+
+    return {
+      ...updated,
+      mealRate: Number(updated.mealRate),
+      mealBill: Number(updated.mealBill),
+      utilityShare: Number(updated.utilityShare),
+      totalBill: Number(updated.totalBill),
+      totalPaid: Number(updated.totalPaid),
+      previousDue: Number(updated.previousDue),
+      currentDue: Number(updated.currentDue),
+      carryToNext: Number(updated.carryToNext),
+    };
+  }
+
   // ==================== DELETE MONTHLY SUMMARY ====================
 
   async deleteMonthlySummary(year: number, month: number) {
     const monthYear = new Date(year, month - 1, 1);
+
+    // Get users who will be affected
+    const summaries = await this.prisma.monthlySummary.findMany({
+      where: {
+        monthYear: monthYear,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
 
     const deleted = await this.prisma.monthlySummary.deleteMany({
       where: {
@@ -419,6 +568,35 @@ export class MonthlySummaryService {
       throw new NotFoundException(
         `No summary found for ${format(monthYear, "MMMM yyyy")}`,
       );
+    }
+
+    // ✅ Send notification to affected users
+    for (const summary of summaries) {
+      await this.notificationsService.create({
+        userId: summary.userId,
+        type: "SUMMARY",
+        title: "Monthly Summary Deleted",
+        message: `Your monthly summary for ${format(monthYear, "MMMM yyyy")} has been deleted. Please contact admin if this was a mistake.`,
+        link: "/monthly-summary",
+      });
+    }
+
+    // ✅ Send notification to admins
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "SUMMARY",
+        title: "Monthly Summary Deleted",
+        message: `${deleted.count} summaries deleted for ${format(monthYear, "MMMM yyyy")}`,
+        link: "/monthly-summary",
+      });
     }
 
     return {

@@ -15,10 +15,12 @@ const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
 const inventory_service_1 = require("../inventory/inventory.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let MarketingsService = class MarketingsService {
-    constructor(prisma, inventoryService) {
+    constructor(prisma, inventoryService, notificationsService) {
         this.prisma = prisma;
         this.inventoryService = inventoryService;
+        this.notificationsService = notificationsService;
     }
     async create(createMarketingDto) {
         const user = await this.prisma.user.findUnique({
@@ -68,6 +70,28 @@ let MarketingsService = class MarketingsService {
             }
         }
         await this.updateDailySummary(date);
+        await this.notificationsService.create({
+            userId: createMarketingDto.userId,
+            type: "SYSTEM",
+            title: "Bazar Entry Added",
+            message: `You have added a bazar entry: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,
+            link: "/marketings",
+        });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "New Bazar Entry",
+                message: `${user.name} added bazar: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,
+                link: `/marketings/${marketing.id}`,
+            });
+        }
         return marketing;
     }
     async findAll() {
@@ -185,6 +209,23 @@ let MarketingsService = class MarketingsService {
         const totalSelf = items
             .filter((item) => item.paymentType === client_1.PaymentType.SELF)
             .reduce((sum, item) => sum + Number(item.amount), 0);
+        if (totalAmount > 10000) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "SYSTEM",
+                    title: "High Bazar Spending Alert",
+                    message: `Total bazar cost for today is ${totalAmount} TK. Please review.`,
+                    link: "/marketings",
+                });
+            }
+        }
         return {
             date: (0, date_fns_1.format)(date, "yyyy-MM-dd"),
             totalAmount,
@@ -243,6 +284,23 @@ let MarketingsService = class MarketingsService {
             totalAmount: data.totalAmount,
             count: data.count,
         }));
+        if (totalAmount > 50000) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "SYSTEM",
+                    title: "High Monthly Bazar Spending",
+                    message: `Total bazar cost for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
+                    link: "/marketings/monthly",
+                });
+            }
+        }
         return {
             month: (0, date_fns_1.format)(new Date(year, month - 1, 1), "MMMM"),
             year,
@@ -269,7 +327,7 @@ let MarketingsService = class MarketingsService {
                 throw new common_1.NotFoundException(`User with ID ${updateMarketingDto.userId} not found`);
             }
         }
-        return this.prisma.marketing.update({
+        const updated = await this.prisma.marketing.update({
             where: { id },
             data: {
                 userId: updateMarketingDto.userId,
@@ -290,6 +348,22 @@ let MarketingsService = class MarketingsService {
                 },
             },
         });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "Bazar Entry Updated",
+                message: `Bazar entry ${existing.itemName} has been updated by ${updated.user.name}`,
+                link: `/marketings/${id}`,
+            });
+        }
+        return updated;
     }
     async remove(id) {
         const marketing = await this.prisma.marketing.findUnique({
@@ -301,6 +375,21 @@ let MarketingsService = class MarketingsService {
         await this.prisma.marketing.delete({
             where: { id },
         });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "SYSTEM",
+                title: "Bazar Entry Deleted",
+                message: `Bazar entry ${marketing.itemName} (${marketing.amount} TK) has been deleted.`,
+                link: "/marketings",
+            });
+        }
         return { message: `Marketing with ID ${id} deleted successfully` };
     }
     async removeByDate(date) {
@@ -314,6 +403,23 @@ let MarketingsService = class MarketingsService {
                 },
             },
         });
+        if (deleted.count > 0) {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                    isActive: true,
+                },
+            });
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "SYSTEM",
+                    title: "Bulk Bazar Deletion",
+                    message: `${deleted.count} bazar entries deleted for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`,
+                    link: "/marketings",
+                });
+            }
+        }
         return {
             message: `Deleted ${deleted.count} marketing entries for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`,
             count: deleted.count,
@@ -383,6 +489,7 @@ exports.MarketingsService = MarketingsService;
 exports.MarketingsService = MarketingsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        inventory_service_1.InventoryService])
+        inventory_service_1.InventoryService,
+        notifications_service_1.NotificationsService])
 ], MarketingsService);
 //# sourceMappingURL=marketings.service.js.map

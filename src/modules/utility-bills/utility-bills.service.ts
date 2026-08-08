@@ -8,10 +8,14 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { CreateUtilityBillDto, UpdateUtilityBillDto } from "./dto";
 import { BillType } from "@prisma/client";
 import { startOfDay, endOfDay, format, getMonth, getYear } from "date-fns";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class UtilityBillsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService, // ✅ Inject
+  ) {}
 
   // ==================== CREATE ====================
 
@@ -65,6 +69,47 @@ export class UtilityBillsService {
         },
       },
     });
+
+    // ✅ Send notification to all users
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    const billTypeLabels = {
+      CURRENT: "Electricity",
+      WIFI: "Internet",
+      RENT: "Rent",
+      WATER: "Water",
+      KHALA: "Cook",
+    };
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "BILL",
+        title: `New ${billTypeLabels[billType] || billType} Bill Added`,
+        message: `${format(monthDate, "MMMM yyyy")} ${billTypeLabels[billType] || billType} bill of ${amount} TK has been added.`,
+        link: "/utility-bills",
+      });
+    }
+
+    // ✅ Send notification to admins
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "BILL",
+        title: "Utility Bill Added",
+        message: `${billTypeLabels[billType] || billType} bill of ${amount} TK added for ${format(monthDate, "MMMM yyyy")}`,
+        link: `/utility-bills/${bill.id}`,
+      });
+    }
 
     return bill;
   }
@@ -167,6 +212,26 @@ export class UtilityBillsService {
       totalCurrent + totalWifi + totalRent + totalWater + totalKhala;
     const perPersonShare = activeMembers > 0 ? totalAmount / activeMembers : 0;
 
+    // ✅ Send notification if total utility bill is too high
+    if (totalAmount > 50000) {
+      const admins = await this.prisma.user.findMany({
+        where: {
+          role: { in: ["SUPER_ADMIN", "MANAGER"] },
+          isActive: true,
+        },
+      });
+
+      for (const admin of admins) {
+        await this.notificationsService.create({
+          userId: admin.id,
+          type: "BILL",
+          title: "High Utility Bill Alert",
+          message: `Total utility bill for ${format(new Date(year, month - 1, 1), "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
+          link: "/utility-bills",
+        });
+      }
+    }
+
     return {
       month: format(new Date(year, month - 1, 1), "MMMM"),
       year,
@@ -229,6 +294,14 @@ export class UtilityBillsService {
   async update(id: string, updateUtilityBillDto: UpdateUtilityBillDto) {
     const existing = await this.prisma.utilityBill.findUnique({
       where: { id },
+      include: {
+        payer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!existing) {
@@ -247,7 +320,7 @@ export class UtilityBillsService {
       }
     }
 
-    return this.prisma.utilityBill.update({
+    const updated = await this.prisma.utilityBill.update({
       where: { id },
       data: {
         billType: updateUtilityBillDto.billType,
@@ -265,6 +338,31 @@ export class UtilityBillsService {
         },
       },
     });
+
+    // ✅ Send notification for update
+    const billTypeLabels = {
+      CURRENT: "Electricity",
+      WIFI: "Internet",
+      RENT: "Rent",
+      WATER: "Water",
+      KHALA: "Cook",
+    };
+
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "BILL",
+        title: `Utility Bill Updated`,
+        message: `${billTypeLabels[existing.billType] || existing.billType} bill for ${format(existing.monthYear, "MMMM yyyy")} has been updated to ${updated.amount} TK.`,
+        link: "/utility-bills",
+      });
+    }
+
+    return updated;
   }
 
   // ==================== DELETE ====================
@@ -272,6 +370,14 @@ export class UtilityBillsService {
   async remove(id: string) {
     const bill = await this.prisma.utilityBill.findUnique({
       where: { id },
+      include: {
+        payer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!bill) {
@@ -281,6 +387,29 @@ export class UtilityBillsService {
     await this.prisma.utilityBill.delete({
       where: { id },
     });
+
+    // ✅ Send notification for deletion
+    const billTypeLabels = {
+      CURRENT: "Electricity",
+      WIFI: "Internet",
+      RENT: "Rent",
+      WATER: "Water",
+      KHALA: "Cook",
+    };
+
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "BILL",
+        title: `Utility Bill Deleted`,
+        message: `${billTypeLabels[bill.billType] || bill.billType} bill for ${format(bill.monthYear, "MMMM yyyy")} has been deleted.`,
+        link: "/utility-bills",
+      });
+    }
 
     return { message: `Utility bill with ID ${id} deleted successfully` };
   }
@@ -297,6 +426,23 @@ export class UtilityBillsService {
         },
       },
     });
+
+    // ✅ Send notification for bulk deletion
+    if (deleted.count > 0) {
+      const users = await this.prisma.user.findMany({
+        where: { isActive: true },
+      });
+
+      for (const user of users) {
+        await this.notificationsService.create({
+          userId: user.id,
+          type: "BILL",
+          title: `Utility Bills Deleted`,
+          message: `${deleted.count} utility bills for ${format(startDate, "MMMM yyyy")} have been deleted.`,
+          link: "/utility-bills",
+        });
+      }
+    }
 
     return {
       message: `Deleted ${deleted.count} utility bills for ${format(startDate, "MMMM yyyy")}`,

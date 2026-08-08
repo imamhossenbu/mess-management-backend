@@ -7,10 +7,14 @@ import {
 import { PrismaService } from "../../prisma/prisma.service";
 import { InventoryType } from "@prisma/client";
 import { AddInventoryDto, RemoveInventoryDto, SetInventoryDto } from "./dto";
+import { NotificationsService } from "../notifications/notifications.service"; // ✅ Import
 
 @Injectable()
 export class InventoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService, // ✅ Inject
+  ) {}
 
   // ==================== GET ====================
 
@@ -261,6 +265,27 @@ export class InventoryService {
       },
     });
 
+    // ✅ Check if stock is high after adding (notification for admins)
+    const updatedInventory = await this.getInventory(type);
+    if (updatedInventory.quantity > 50) {
+      const admins = await this.prisma.user.findMany({
+        where: {
+          role: { in: ["SUPER_ADMIN", "MANAGER"] },
+          isActive: true,
+        },
+      });
+
+      for (const admin of admins) {
+        await this.notificationsService.create({
+          userId: admin.id,
+          type: "INVENTORY",
+          title: "Stock Level High",
+          message: `${type} stock is now ${updatedInventory.quantity} pieces. Consider reducing purchases.`,
+          link: "/inventory",
+        });
+      }
+    }
+
     return updated;
   }
 
@@ -303,6 +328,15 @@ export class InventoryService {
         note: note || `${quantity} পিস ব্যবহার করা হয়েছে`,
       },
     });
+
+    // ✅ Check if stock is low after removing
+    const updatedInventory = await this.getInventory(type);
+    if (updatedInventory.quantity < 10) {
+      await this.notificationsService.sendInventoryAlert(
+        type,
+        updatedInventory.quantity,
+      );
+    }
 
     return updated;
   }
@@ -347,6 +381,29 @@ export class InventoryService {
       });
     }
 
+    // ✅ Send notification for manual update
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "INVENTORY",
+        title: "Inventory Manually Updated",
+        message: `${type} stock has been manually set to ${quantity} pieces.`,
+        link: "/inventory",
+      });
+    }
+
+    // ✅ Check if stock is low after manual update
+    if (quantity < 10) {
+      await this.notificationsService.sendInventoryAlert(type, quantity);
+    }
+
     return updated;
   }
 
@@ -354,8 +411,30 @@ export class InventoryService {
 
   async checkAvailability(type: InventoryType, requiredQuantity: number) {
     const inventory = await this.getInventory(type);
+    const isAvailable = inventory.quantity >= requiredQuantity;
+
+    // ✅ Send notification if checking low stock
+    if (!isAvailable) {
+      const admins = await this.prisma.user.findMany({
+        where: {
+          role: { in: ["SUPER_ADMIN", "MANAGER"] },
+          isActive: true,
+        },
+      });
+
+      for (const admin of admins) {
+        await this.notificationsService.create({
+          userId: admin.id,
+          type: "INVENTORY",
+          title: "Stock Check Alert",
+          message: `${type} stock check failed. Required: ${requiredQuantity}, Available: ${inventory.quantity}`,
+          link: "/inventory",
+        });
+      }
+    }
+
     return {
-      available: inventory.quantity >= requiredQuantity,
+      available: isAvailable,
       availableQuantity: inventory.quantity,
       requiredQuantity,
       type,
@@ -384,6 +463,26 @@ export class InventoryService {
         results.push({ success: false, type: item.type, error: errorMessage });
       }
     }
+
+    // ✅ Send bulk add notification to admins
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    const successCount = results.filter((r) => r.success).length;
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "INVENTORY",
+        title: "Bulk Inventory Add",
+        message: `${successCount} items added to inventory successfully.`,
+        link: "/inventory",
+      });
+    }
+
     return results;
   }
 
@@ -402,6 +501,26 @@ export class InventoryService {
         results.push({ success: false, type: item.type, error: errorMessage });
       }
     }
+
+    // ✅ Send bulk remove notification to admins
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: { in: ["SUPER_ADMIN", "MANAGER"] },
+        isActive: true,
+      },
+    });
+
+    const successCount = results.filter((r) => r.success).length;
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "INVENTORY",
+        title: "Bulk Inventory Remove",
+        message: `${successCount} items removed from inventory successfully.`,
+        link: "/inventory",
+      });
+    }
+
     return results;
   }
 }

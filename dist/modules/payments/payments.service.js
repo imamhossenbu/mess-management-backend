@@ -14,9 +14,11 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
+const notifications_service_1 = require("../notifications/notifications.service");
 let PaymentsService = class PaymentsService {
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async create(createPaymentDto) {
         const { userId, amount, paymentDate, paymentMethod, note } = createPaymentDto;
@@ -46,6 +48,22 @@ let PaymentsService = class PaymentsService {
             },
         });
         await this.updateUserBalance(userId);
+        await this.notificationsService.sendPaymentConfirmation(userId, amount);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "PAYMENT",
+                title: "New Payment Received",
+                message: `${user.name} made a payment of ${amount} TK. Method: ${paymentMethod || "CASH"}`,
+                link: `/payments/${payment.id}`,
+            });
+        }
         return payment;
     }
     async findAll() {
@@ -157,6 +175,30 @@ let PaymentsService = class PaymentsService {
     async getMonthlySummary(year, month) {
         const payments = await this.findByMonth(year, month);
         const totalAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        const startDate = new Date(year, month - 1, 1);
+        const monthlySummary = await this.prisma.monthlySummary.findMany({
+            where: {
+                monthYear: startDate,
+            },
+        });
+        const totalBill = monthlySummary.reduce((sum, s) => sum + Number(s.totalBill), 0);
+        if (totalAmount < totalBill * 0.5 && totalBill > 0) {
+            for (const admin of admins) {
+                await this.notificationsService.create({
+                    userId: admin.id,
+                    type: "PAYMENT",
+                    title: "Low Payment Alert",
+                    message: `Total payments for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} is ${totalAmount} TK, which is less than 50% of total bill (${totalBill} TK).`,
+                    link: "/payments",
+                });
+            }
+        }
         return {
             month: (0, date_fns_1.format)(new Date(year, month - 1, 1), "MMMM"),
             year,
@@ -182,6 +224,15 @@ let PaymentsService = class PaymentsService {
         }
         const totalPaid = user.payments.reduce((sum, p) => sum + Number(p.amount), 0);
         const balance = user.balances?.balance ? Number(user.balances.balance) : 0;
+        if (balance < -5000) {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "BILL",
+                title: "High Due Alert",
+                message: `You have a high due balance of ${Math.abs(balance)} TK. Please pay as soon as possible to avoid penalties.`,
+                link: "/payments",
+            });
+        }
         return {
             userId: user.id,
             userName: user.name,
@@ -202,21 +253,42 @@ let PaymentsService = class PaymentsService {
                 },
             },
         });
-        return users.map((user) => ({
+        const results = users.map((user) => ({
             userId: user.id,
             userName: user.name,
             phone: user.phone,
             totalPaid: user.payments.reduce((sum, p) => sum + Number(p.amount), 0),
             balance: user.balances?.balance ? Number(user.balances.balance) : 0,
         }));
+        for (const user of results) {
+            if (user.balance < -5000) {
+                await this.notificationsService.create({
+                    userId: user.userId,
+                    type: "BILL",
+                    title: "High Due Alert",
+                    message: `You have a high due balance of ${Math.abs(user.balance)} TK. Please pay as soon as possible.`,
+                    link: "/payments",
+                });
+            }
+        }
+        return results;
     }
     async update(id, updatePaymentDto) {
         const existing = await this.prisma.payment.findUnique({
             where: { id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
         });
         if (!existing) {
             throw new common_1.NotFoundException(`Payment with ID ${id} not found`);
         }
+        const oldAmount = Number(existing.amount);
         const updated = await this.prisma.payment.update({
             where: { id },
             data: {
@@ -238,19 +310,73 @@ let PaymentsService = class PaymentsService {
             },
         });
         await this.updateUserBalance(existing.userId);
+        const newAmount = Number(updated.amount);
+        await this.notificationsService.create({
+            userId: existing.userId,
+            type: "PAYMENT",
+            title: "Payment Updated",
+            message: `Your payment has been updated from ${oldAmount} TK to ${newAmount} TK.`,
+            link: `/payments/${id}`,
+        });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "PAYMENT",
+                title: "Payment Updated",
+                message: `${existing.user.name}'s payment updated from ${oldAmount} TK to ${newAmount} TK.`,
+                link: `/payments/${id}`,
+            });
+        }
         return updated;
     }
     async remove(id) {
         const payment = await this.prisma.payment.findUnique({
             where: { id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
         });
         if (!payment) {
             throw new common_1.NotFoundException(`Payment with ID ${id} not found`);
         }
+        const amount = Number(payment.amount);
         await this.prisma.payment.delete({
             where: { id },
         });
         await this.updateUserBalance(payment.userId);
+        await this.notificationsService.create({
+            userId: payment.userId,
+            type: "PAYMENT",
+            title: "Payment Deleted",
+            message: `Your payment of ${amount} TK has been deleted. Please contact admin if this was a mistake.`,
+            link: "/payments",
+        });
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: { in: ["SUPER_ADMIN", "MANAGER"] },
+                isActive: true,
+            },
+        });
+        for (const admin of admins) {
+            await this.notificationsService.create({
+                userId: admin.id,
+                type: "PAYMENT",
+                title: "Payment Deleted",
+                message: `${payment.user.name}'s payment of ${amount} TK has been deleted.`,
+                link: "/payments",
+            });
+        }
         return { message: `Payment with ID ${id} deleted successfully` };
     }
     async updateUserBalance(userId) {
@@ -283,6 +409,7 @@ let PaymentsService = class PaymentsService {
 exports.PaymentsService = PaymentsService;
 exports.PaymentsService = PaymentsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], PaymentsService);
 //# sourceMappingURL=payments.service.js.map

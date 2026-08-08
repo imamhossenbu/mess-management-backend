@@ -6,7 +6,10 @@ import {
   Get,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import {
   ApiTags,
   ApiOperation,
@@ -35,6 +38,7 @@ export class AuthController {
   }
 
   @Post("login")
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Login user" })
   @ApiResponse({
     status: 200,
@@ -48,11 +52,27 @@ export class AuthController {
 
   @Get("profile")
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth("JWT-auth")
   @ApiOperation({ summary: "Get current user profile" })
   @ApiResponse({ status: 200, description: "Profile fetched successfully" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async getProfile(@Request() req) {
     return this.authService.getProfile(req.user.id);
+  }
+
+  @Get("google")
+  @ApiOperation({ summary: "Google OAuth login (redirects to Google)" })
+  @UseGuards(AuthGuard("google"))
+  async googleAuth() {
+    // Redirects to Google
+  }
+
+  @Get("google/callback")
+  @ApiOperation({
+    summary: "Google OAuth callback (redirect back from Google)",
+  })
+  @UseGuards(AuthGuard("google"))
+  async googleAuthRedirect(@Request() req) {
+    return this.authService.googleLogin(req.user);
   }
 }

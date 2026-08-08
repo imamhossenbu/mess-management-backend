@@ -12,6 +12,7 @@ export declare class AuthController {
             email: string;
             role: import(".prisma/client").$Enums.Role;
             roomNumber: string;
+            profileImage: string;
         };
     }>;
     login(dto: LoginDto): Promise<{
@@ -32,16 +33,35 @@ export declare class AuthController {
         };
     }>;
     getProfile(req: any): Promise<{
+        balance: number;
+        balances: any;
         id: string;
         name: string;
         phone: string;
         email: string;
         role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        profileImage: string;
         isActive: boolean;
         joinedDate: Date;
-        balances: {
-            balance: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    googleAuth(): Promise<void>;
+    googleAuthRedirect(req: any): Promise<{
+        accessToken: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+            email: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            roomNumber: string | null;
+            profileImage: string | null;
+            isActive: boolean;
+            joinedDate: Date;
+            leftDate: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        isNewUser: boolean;
     }>;
 }

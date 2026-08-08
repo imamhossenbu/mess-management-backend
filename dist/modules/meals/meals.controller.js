@@ -249,7 +249,7 @@ __decorate([
 ], MealsController.prototype, "removeByDate", null);
 exports.MealsController = MealsController = __decorate([
     (0, swagger_1.ApiTags)("meals"),
-    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Controller)("meals"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [meals_service_1.MealsService])

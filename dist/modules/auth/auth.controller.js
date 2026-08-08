@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
+const passport_1 = require("@nestjs/passport");
 const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
 const dto_1 = require("./dto");
@@ -31,6 +32,11 @@ let AuthController = class AuthController {
     }
     async getProfile(req) {
         return this.authService.getProfile(req.user.id);
+    }
+    async googleAuth() {
+    }
+    async googleAuthRedirect(req) {
+        return this.authService.googleLogin(req.user);
     }
 };
 exports.AuthController = AuthController;
@@ -50,6 +56,7 @@ __decorate([
 ], AuthController.prototype, "register", null);
 __decorate([
     (0, common_1.Post)("login"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Login user" }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -65,7 +72,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)("profile"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, swagger_1.ApiOperation)({ summary: "Get current user profile" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "Profile fetched successfully" }),
     (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
@@ -74,6 +81,25 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Get)("google"),
+    (0, swagger_1.ApiOperation)({ summary: "Google OAuth login (redirects to Google)" }),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)("google")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "googleAuth", null);
+__decorate([
+    (0, common_1.Get)("google/callback"),
+    (0, swagger_1.ApiOperation)({
+        summary: "Google OAuth callback (redirect back from Google)",
+    }),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)("google")),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "googleAuthRedirect", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)("auth"),
     (0, common_1.Controller)("auth"),

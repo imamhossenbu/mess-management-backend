@@ -64,18 +64,6 @@ export declare class UsersController {
         createdAt: Date;
         updatedAt: Date;
     }>;
-    remove(id: string): Promise<{
-        id: string;
-        name: string;
-        phone: string;
-        email: string;
-        role: import(".prisma/client").$Enums.Role;
-        isActive: boolean;
-        leftDate: Date;
-    }>;
-    hardDelete(id: string): Promise<{
-        message: string;
-    }>;
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number;
         balances: any;
@@ -120,5 +108,17 @@ export declare class UsersController {
         joinedDate: Date;
         createdAt: Date;
         updatedAt: Date;
+    }>;
+    remove(id: string): Promise<{
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        isActive: boolean;
+        leftDate: Date;
+    }>;
+    hardDelete(id: string): Promise<{
+        message: string;
     }>;
 }

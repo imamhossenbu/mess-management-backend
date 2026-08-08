@@ -19,6 +19,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         email: string;
         role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        profileImage: string;
         isActive: boolean;
     }>;
 }

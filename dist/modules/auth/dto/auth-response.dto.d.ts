@@ -7,5 +7,6 @@ export declare class AuthResponseDto {
         email?: string;
         role: string;
         roomNumber?: string;
+        profileImage?: string;
     };
 }

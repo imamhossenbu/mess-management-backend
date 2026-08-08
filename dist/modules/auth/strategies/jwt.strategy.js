@@ -37,6 +37,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
                 email: true,
                 role: true,
                 roomNumber: true,
+                profileImage: true,
                 isActive: true,
             },
         });

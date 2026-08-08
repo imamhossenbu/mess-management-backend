@@ -1,7 +1,6 @@
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../../prisma/prisma.service";
-import { LoginDto } from "./dto/login.dto";
-import { RegisterDto } from "./dto/register.dto";
+import { RegisterDto, LoginDto } from "./dto";
 export declare class AuthService {
     private prisma;
     private jwtService;
@@ -15,6 +14,7 @@ export declare class AuthService {
             email: string;
             role: import(".prisma/client").$Enums.Role;
             roomNumber: string;
+            profileImage: string;
         };
     }>;
     login(dto: LoginDto): Promise<{
@@ -35,17 +35,35 @@ export declare class AuthService {
         };
     }>;
     getProfile(userId: string): Promise<{
+        balance: number;
+        balances: any;
         id: string;
         name: string;
         phone: string;
         email: string;
         role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        profileImage: string;
         isActive: boolean;
         joinedDate: Date;
-        balances: {
-            balance: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    googleLogin(googleUser: any): Promise<{
+        accessToken: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+            email: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            roomNumber: string | null;
+            profileImage: string | null;
+            isActive: boolean;
+            joinedDate: Date;
+            leftDate: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        isNewUser: boolean;
     }>;
     private generateToken;
 }

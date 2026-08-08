@@ -35,21 +35,20 @@ import {
 } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
+
 import { Role } from "../auth/dto/register.dto";
 import { Roles } from "../../common/roles.decorator";
 
 @ApiTags("users")
-@ApiBearerAuth()
+@ApiBearerAuth("JWT-auth") // ✅ main.ts এর সাথে মিলান
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // ==================== ADMIN ENDPOINTS ====================
-
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Create a new user (Admin/Manager only)" })
+  @ApiOperation({ summary: "Create a new user" })
   @ApiResponse({
     status: 201,
     description: "User created successfully",
@@ -57,28 +56,28 @@ export class UsersController {
   })
   @ApiResponse({ status: 409, description: "User already exists" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 403, description: "Forbidden - Insufficient role" })
+  @ApiResponse({ status: 403, description: "Forbidden" })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Get all users (Admin/Manager only)" })
+  @ApiOperation({ summary: "Get all users" })
   @ApiResponse({
     status: 200,
     description: "List of all users",
     type: [UserResponseDto],
   })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 403, description: "Forbidden - Insufficient role" })
+  @ApiResponse({ status: 403, description: "Forbidden" })
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Get a user by ID (Admin/Manager only)" })
+  @ApiOperation({ summary: "Get a user by ID" })
   @ApiParam({ name: "id", description: "User UUID" })
   @ApiResponse({
     status: 200,
@@ -87,14 +86,14 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: "User not found" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 403, description: "Forbidden - Insufficient role" })
+  @ApiResponse({ status: 403, description: "Forbidden" })
   async findOne(@Param("id", ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Update a user (Admin/Manager only)" })
+  @ApiOperation({ summary: "Update a user" })
   @ApiParam({ name: "id", description: "User UUID" })
   @ApiResponse({
     status: 200,
@@ -104,7 +103,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: "User not found" })
   @ApiResponse({ status: 409, description: "Phone or email already taken" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 403, description: "Forbidden - Insufficient role" })
+  @ApiResponse({ status: 403, description: "Forbidden" })
   async update(
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -112,36 +111,9 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(":id")
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: "Soft delete a user (Super Admin only)" })
-  @ApiParam({ name: "id", description: "User UUID" })
-  @ApiResponse({ status: 200, description: "User deactivated successfully" })
-  @ApiResponse({ status: 404, description: "User not found" })
-  @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 403, description: "Forbidden - Super Admin only" })
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
-    return this.usersService.remove(id);
-  }
-
-  @Delete(":id/hard")
-  @Roles(Role.SUPER_ADMIN)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Hard delete a user (Super Admin only)" })
-  @ApiParam({ name: "id", description: "User UUID" })
-  @ApiResponse({ status: 200, description: "User deleted permanently" })
-  @ApiResponse({ status: 404, description: "User not found" })
-  @ApiResponse({ status: 401, description: "Unauthorized" })
-  @ApiResponse({ status: 403, description: "Forbidden - Super Admin only" })
-  async hardDelete(@Param("id", ParseUUIDPipe) id: string) {
-    return this.usersService.hardDelete(id);
-  }
-
-  // ==================== PROFILE ENDPOINTS (Authenticated Users) ====================
-
   @Patch("profile")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  @ApiOperation({ summary: "Update own profile (any authenticated user)" })
+  @ApiOperation({ summary: "Update own profile" })
   @ApiResponse({
     status: 200,
     description: "Profile updated successfully",
@@ -199,5 +171,30 @@ export class UsersController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async removeProfileImage(@Request() req) {
     return this.usersService.removeProfileImage(req.user.id);
+  }
+
+  @Delete(":id")
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: "Soft delete a user" })
+  @ApiParam({ name: "id", description: "User UUID" })
+  @ApiResponse({ status: 200, description: "User deactivated successfully" })
+  @ApiResponse({ status: 404, description: "User not found" })
+  @ApiResponse({ status: 401, description: "Unauthorized" })
+  @ApiResponse({ status: 403, description: "Forbidden - Super Admin only" })
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
+    return this.usersService.remove(id);
+  }
+
+  @Delete(":id/hard")
+  @Roles(Role.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Hard delete a user" })
+  @ApiParam({ name: "id", description: "User UUID" })
+  @ApiResponse({ status: 200, description: "User deleted permanently" })
+  @ApiResponse({ status: 404, description: "User not found" })
+  @ApiResponse({ status: 401, description: "Unauthorized" })
+  @ApiResponse({ status: 403, description: "Forbidden - Super Admin only" })
+  async hardDelete(@Param("id", ParseUUIDPipe) id: string) {
+    return this.usersService.hardDelete(id);
   }
 }

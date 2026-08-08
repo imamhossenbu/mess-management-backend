@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
+const register_dto_1 = require("./dto/register.dto");
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -70,7 +71,7 @@ let AuthService = class AuthService {
                 phone: dto.phone,
                 email: dto.email,
                 password: hashedPassword,
-                role: dto.role || "MEMBER",
+                role: dto.role || register_dto_1.Role.MEMBER,
                 roomNumber: dto.roomNumber,
             },
             select: {
@@ -80,6 +81,7 @@ let AuthService = class AuthService {
                 email: true,
                 role: true,
                 roomNumber: true,
+                profileImage: true,
             },
         });
         await this.prisma.userBalance.create({
@@ -119,6 +121,7 @@ let AuthService = class AuthService {
                 email: true,
                 role: true,
                 roomNumber: true,
+                profileImage: true,
                 isActive: true,
                 joinedDate: true,
                 balances: {
@@ -131,7 +134,50 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException("User not found");
         }
-        return user;
+        return {
+            ...user,
+            balance: user.balances?.[0]?.balance
+                ? Number(user.balances[0].balance)
+                : 0,
+            balances: undefined,
+        };
+    }
+    async googleLogin(googleUser) {
+        try {
+            let user = await this.prisma.user.findUnique({
+                where: { email: googleUser.email },
+            });
+            if (!user) {
+                const randomPassword = Math.random().toString(36).slice(-8);
+                const hashedPassword = await bcrypt.hash(randomPassword, 10);
+                user = await this.prisma.user.create({
+                    data: {
+                        name: googleUser.name,
+                        email: googleUser.email,
+                        phone: "",
+                        password: hashedPassword,
+                        role: register_dto_1.Role.MEMBER,
+                        profileImage: googleUser.picture || null,
+                    },
+                });
+                await this.prisma.userBalance.create({
+                    data: {
+                        userId: user.id,
+                        balance: 0,
+                    },
+                });
+            }
+            const token = this.generateToken(user);
+            const { password, ...userWithoutPassword } = user;
+            return {
+                accessToken: token,
+                user: userWithoutPassword,
+                isNewUser: user.createdAt === user.updatedAt,
+            };
+        }
+        catch (error) {
+            throw new common_1.UnauthorizedException("Google login failed");
+        }
     }
     generateToken(user) {
         const payload = { sub: user.id, phone: user.phone, role: user.role };

@@ -38,7 +38,7 @@ import { Role } from "../auth/dto/register.dto";
 import { Roles } from "../../common/roles.decorator";
 
 @ApiTags("meals")
-@ApiBearerAuth()
+@ApiBearerAuth("JWT-auth")
 @Controller("meals")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class MealsController {

@@ -45,6 +45,14 @@ import { MessMiddleware } from "./common/middleware/mess.middleware";
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(MessMiddleware).forRoutes("*");
+    consumer
+      .apply(MessMiddleware)
+      .exclude(
+        { path: "auth/(.*)", method: RequestMethod.ALL },
+        { path: "health/(.*)", method: RequestMethod.ALL },
+        { path: "mess", method: RequestMethod.POST },
+        { path: "mess/user/messes", method: RequestMethod.GET },
+      )
+      .forRoutes("*");
   }
 }

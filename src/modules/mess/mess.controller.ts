@@ -35,21 +35,19 @@ import { Role } from "../auth/dto/register.dto";
 @ApiTags("mess")
 @ApiBearerAuth("JWT-auth")
 @Controller("mess")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard) // ✅ JWT + Roles Guard
 export class MessController {
   constructor(private readonly messService: MessService) {}
 
-  // ==================== CREATE (No messId needed) ====================
-
+  // ✅ Create - Any logged in user (SUPER_ADMIN, MANAGER, MEMBER)
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER) // ✅ All roles
   @ApiOperation({ summary: "Create a new mess" })
   async create(@Request() req, @Body() createMessDto: CreateMessDto) {
     return this.messService.create(req.user.id, createMessDto);
   }
 
-  // ==================== GET USER MESSES (No messId needed) ====================
-
+  // ✅ Get User Messes - Any logged in user
   @Get("user/messes")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   @ApiOperation({ summary: "Get all messes for the current user" })
@@ -57,8 +55,7 @@ export class MessController {
     return this.messService.getUserMesses(req.user.id);
   }
 
-  // ==================== FIND (messId needed from header) ====================
-
+  // ✅ Get Mess Details - Any logged in user (must be member)
   @Get(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   @ApiOperation({ summary: "Get mess details" })
@@ -67,10 +64,9 @@ export class MessController {
     return this.messService.findOne(id);
   }
 
-  // ==================== UPDATE (messId needed) ====================
-
+  // ✅ Update Mess - Only SUPER_ADMIN
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN) // ✅ Only SUPER_ADMIN
   @ApiOperation({ summary: "Update mess details" })
   @ApiParam({ name: "id", description: "Mess ID" })
   async update(
@@ -80,10 +76,9 @@ export class MessController {
     return this.messService.update(id, updateMessDto);
   }
 
-  // ==================== DELETE (messId needed) ====================
-
+  // ✅ Delete Mess - Only SUPER_ADMIN
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN) // ✅ Only SUPER_ADMIN
   @ApiOperation({ summary: "Delete a mess" })
   @ApiParam({ name: "id", description: "Mess ID" })
   @HttpCode(HttpStatus.OK)
@@ -91,8 +86,7 @@ export class MessController {
     return this.messService.remove(id);
   }
 
-  // ==================== MEMBERS (messId needed) ====================
-
+  // ✅ Get Members - Any logged in user (must be member)
   @Get(":id/members")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   @ApiOperation({ summary: "Get all members of a mess" })
@@ -101,8 +95,9 @@ export class MessController {
     return this.messService.getMembers(id);
   }
 
+  // ✅ Add Member - Only SUPER_ADMIN
   @Post(":id/members")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN) // ✅ Only SUPER_ADMIN
   @ApiOperation({ summary: "Add a member to the mess" })
   @ApiParam({ name: "id", description: "Mess ID" })
   async addMember(
@@ -116,8 +111,9 @@ export class MessController {
     );
   }
 
+  // ✅ Remove Member - Only SUPER_ADMIN
   @Delete(":id/members/:userId")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN) // ✅ Only SUPER_ADMIN
   @ApiOperation({ summary: "Remove a member from the mess" })
   @ApiParam({ name: "id", description: "Mess ID" })
   @ApiParam({ name: "userId", description: "User ID" })
@@ -129,8 +125,9 @@ export class MessController {
     return this.messService.removeMember(id, userId);
   }
 
+  // ✅ Update Member Role - Only SUPER_ADMIN
   @Patch(":id/members/:userId/role")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN) // ✅ Only SUPER_ADMIN
   @ApiOperation({ summary: "Update member role" })
   @ApiParam({ name: "id", description: "Mess ID" })
   @ApiParam({ name: "userId", description: "User ID" })

@@ -8,6 +8,8 @@ import { MealsModule } from "./modules/meals/meals.module";
 import { HealthModule } from "./modules/health/health.module";
 import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
 import { MarketingsModule } from "./modules/marketings/marketings.module";
+import { InventoryModule } from "./modules/inventory/inventory.module";
+import { UtilityBillsModule } from "./modules/utility-bills/utility-bills.module";
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { MarketingsModule } from "./modules/marketings/marketings.module";
     UsersModule,
     MealsModule,
     MarketingsModule,
+     InventoryModule,
+    UtilityBillsModule,
     HealthModule,
   ],
   controllers: [],

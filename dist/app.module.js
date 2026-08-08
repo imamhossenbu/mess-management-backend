@@ -16,6 +16,8 @@ const meals_module_1 = require("./modules/meals/meals.module");
 const health_module_1 = require("./modules/health/health.module");
 const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
 const marketings_module_1 = require("./modules/marketings/marketings.module");
+const inventory_module_1 = require("./modules/inventory/inventory.module");
+const utility_bills_module_1 = require("./modules/utility-bills/utility-bills.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -32,6 +34,8 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             meals_module_1.MealsModule,
             marketings_module_1.MarketingsModule,
+            inventory_module_1.InventoryModule,
+            utility_bills_module_1.UtilityBillsModule,
             health_module_1.HealthModule,
         ],
         controllers: [],

@@ -13,8 +13,8 @@ export declare class MealsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         userId: string;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -39,8 +39,8 @@ export declare class MealsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
             userId: string;
+            date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
@@ -67,8 +67,8 @@ export declare class MealsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
             userId: string;
+            date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
@@ -85,8 +85,8 @@ export declare class MealsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         userId: string;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -112,8 +112,8 @@ export declare class MealsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
             userId: string;
+            date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
@@ -147,8 +147,8 @@ export declare class MealsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         userId: string;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -164,8 +164,8 @@ export declare class MealsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         userId: string;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -181,8 +181,8 @@ export declare class MealsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         userId: string;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -198,8 +198,8 @@ export declare class MealsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         userId: string;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;

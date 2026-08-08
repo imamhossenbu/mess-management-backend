@@ -55,7 +55,7 @@ model User {
   password          String
   role              Role              @default(MEMBER)
   roomNumber        String?
-  profileImage      String?           // ✅ এই লাইন যোগ করুন
+  profileImage      String?
   isActive          Boolean           @default(true)
   joinedDate        DateTime          @default(now())
   leftDate          DateTime?
@@ -66,6 +66,7 @@ model User {
   payments          Payment[]
   monthlySummaries  MonthlySummary[]
   balances          UserBalance?
+  utilityBills      UtilityBill[]     // ✅ এই লাইন যোগ করুন
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -150,7 +151,8 @@ model UtilityBill {
   billType          BillType
   monthYear         DateTime
   amount            Decimal
-  paidBy            String?
+  paidBy            String?           // ✅ user id
+  payer             User?             @relation(fields: [paidBy], references: [id])  
   note              String?
   
   createdAt         DateTime          @default(now())

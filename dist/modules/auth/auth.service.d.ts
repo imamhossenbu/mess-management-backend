@@ -21,8 +21,6 @@ export declare class AuthService {
         accessToken: string;
         user: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             phone: string;
             email: string | null;
@@ -32,6 +30,8 @@ export declare class AuthService {
             isActive: boolean;
             joinedDate: Date;
             leftDate: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     getProfile(userId: string): Promise<{
@@ -51,8 +51,6 @@ export declare class AuthService {
         accessToken: string;
         user: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
             phone: string;
             email: string | null;
@@ -62,6 +60,8 @@ export declare class AuthService {
             isActive: boolean;
             joinedDate: Date;
             leftDate: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
         isNewUser: boolean;
     }>;

@@ -49,8 +49,6 @@ const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 const register_dto_1 = require("./dto/register.dto");
 let AuthService = class AuthService {
-    prisma;
-    jwtService;
     constructor(prisma, jwtService) {
         this.prisma = prisma;
         this.jwtService = jwtService;

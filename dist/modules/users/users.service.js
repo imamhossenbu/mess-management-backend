@@ -49,8 +49,6 @@ const prisma_service_1 = require("../../prisma/prisma.service");
 const register_dto_1 = require("../auth/dto/register.dto");
 const cloudinary_service_1 = require("../cloudinary/cloudinary.service");
 let UsersService = class UsersService {
-    prisma;
-    cloudinaryService;
     constructor(prisma, cloudinaryService) {
         this.prisma = prisma;
         this.cloudinaryService = cloudinaryService;

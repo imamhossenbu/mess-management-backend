@@ -6,24 +6,24 @@ export declare class AuthController {
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         user: {
-            id: string;
             name: string;
             phone: string;
             email: string;
-            role: import(".prisma/client").$Enums.Role;
             roomNumber: string;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
             profileImage: string;
         };
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
-            id: string;
             name: string;
             phone: string;
             email: string | null;
-            role: import(".prisma/client").$Enums.Role;
             roomNumber: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
             profileImage: string | null;
             isActive: boolean;
             joinedDate: Date;
@@ -35,12 +35,12 @@ export declare class AuthController {
     getProfile(req: any): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -49,12 +49,12 @@ export declare class AuthController {
     googleAuthRedirect(req: any): Promise<{
         accessToken: string;
         user: {
-            id: string;
             name: string;
             phone: string;
             email: string | null;
-            role: import(".prisma/client").$Enums.Role;
             roomNumber: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
             profileImage: string | null;
             isActive: boolean;
             joinedDate: Date;

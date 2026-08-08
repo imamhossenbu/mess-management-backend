@@ -22,7 +22,6 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
 let MealsController = class MealsController {
-    mealsService;
     constructor(mealsService) {
         this.mealsService = mealsService;
     }
@@ -72,7 +71,7 @@ exports.MealsController = MealsController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Create a single meal entry (Admin/Manager only)" }),
+    (0, swagger_1.ApiOperation)({ summary: "Create a single meal entry" }),
     (0, swagger_1.ApiResponse)({
         status: 201,
         description: "Meal created successfully",
@@ -91,7 +90,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)("bulk"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Bulk meal entry for a date (Admin/Manager only)" }),
+    (0, swagger_1.ApiOperation)({ summary: "Bulk meal entry for a date" }),
     (0, swagger_1.ApiResponse)({ status: 201, description: "Bulk meals created successfully" }),
     (0, swagger_1.ApiResponse)({ status: 404, description: "User not found" }),
     __param(0, (0, common_1.Body)()),
@@ -209,7 +208,7 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    (0, swagger_1.ApiOperation)({ summary: "Update a meal (Admin/Manager only)" }),
+    (0, swagger_1.ApiOperation)({ summary: "Update a meal" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Meal UUID" }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -227,7 +226,7 @@ __decorate([
     (0, common_1.Delete)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete a meal (Admin/Manager only)" }),
+    (0, swagger_1.ApiOperation)({ summary: "Delete a meal" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Meal UUID" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "Meal deleted successfully" }),
     (0, swagger_1.ApiResponse)({ status: 404, description: "Meal not found" }),
@@ -240,7 +239,7 @@ __decorate([
     (0, common_1.Delete)("date/:date"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: "Delete all meals for a date (Admin/Manager only)" }),
+    (0, swagger_1.ApiOperation)({ summary: "Delete all meals for a date" }),
     (0, swagger_1.ApiParam)({ name: "date", example: "2026-08-08" }),
     __param(0, (0, common_1.Param)("date")),
     __metadata("design:type", Function),
@@ -249,7 +248,7 @@ __decorate([
 ], MealsController.prototype, "removeByDate", null);
 exports.MealsController = MealsController = __decorate([
     (0, swagger_1.ApiTags)("meals"),
-    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
+    (0, swagger_1.ApiSecurity)("JWT-auth"),
     (0, common_1.Controller)("meals"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [meals_service_1.MealsService])

@@ -8,24 +8,24 @@ export declare class AuthService {
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         user: {
-            id: string;
             name: string;
             phone: string;
             email: string;
-            role: import(".prisma/client").$Enums.Role;
             roomNumber: string;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
             profileImage: string;
         };
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
-            id: string;
             name: string;
             phone: string;
             email: string | null;
-            role: import(".prisma/client").$Enums.Role;
             roomNumber: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
             profileImage: string | null;
             isActive: boolean;
             joinedDate: Date;
@@ -37,12 +37,12 @@ export declare class AuthService {
     getProfile(userId: string): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -50,12 +50,12 @@ export declare class AuthService {
     googleLogin(googleUser: any): Promise<{
         accessToken: string;
         user: {
-            id: string;
             name: string;
             phone: string;
             email: string | null;
-            role: import(".prisma/client").$Enums.Role;
             roomNumber: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
             profileImage: string | null;
             isActive: boolean;
             joinedDate: Date;

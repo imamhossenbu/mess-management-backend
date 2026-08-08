@@ -6,12 +6,12 @@ export declare class UsersService {
     private cloudinaryService;
     constructor(prisma: PrismaService, cloudinaryService: CloudinaryService);
     create(createUserDto: CreateUserDto): Promise<{
-        id: string;
         name: string;
         phone: string;
         email: string | null;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string | null;
         isActive: boolean;
         joinedDate: Date;
@@ -22,12 +22,12 @@ export declare class UsersService {
     findAll(): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -38,12 +38,12 @@ export declare class UsersService {
     findOne(id: string): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -54,12 +54,12 @@ export declare class UsersService {
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -69,12 +69,12 @@ export declare class UsersService {
     updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -84,12 +84,12 @@ export declare class UsersService {
     updateProfileImage(userId: string, file: any): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -99,12 +99,12 @@ export declare class UsersService {
     removeProfileImage(userId: string): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -112,11 +112,11 @@ export declare class UsersService {
         updatedAt: Date;
     }>;
     remove(id: string): Promise<{
-        id: string;
         name: string;
         phone: string;
         email: string;
         role: import(".prisma/client").$Enums.Role;
+        id: string;
         isActive: boolean;
         leftDate: Date;
     }>;
@@ -124,13 +124,13 @@ export declare class UsersService {
         message: string;
     }>;
     findByPhone(phone: string): Promise<{
-        id: string;
         name: string;
         phone: string;
         email: string | null;
         password: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string | null;
         isActive: boolean;
         joinedDate: Date;
@@ -139,13 +139,13 @@ export declare class UsersService {
         updatedAt: Date;
     }>;
     findByEmail(email: string): Promise<{
-        id: string;
         name: string;
         phone: string;
         email: string | null;
         password: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string | null;
         isActive: boolean;
         joinedDate: Date;
@@ -158,7 +158,7 @@ export declare class UsersService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         lastUpdated: Date;
+        userId: string;
     }>;
 }

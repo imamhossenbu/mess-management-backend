@@ -20,7 +20,6 @@ const auth_service_1 = require("./auth.service");
 const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 let AuthController = class AuthController {
-    authService;
     constructor(authService) {
         this.authService = authService;
     }
@@ -72,7 +71,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)("profile"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
+    (0, swagger_1.ApiSecurity)("JWT-auth"),
     (0, swagger_1.ApiOperation)({ summary: "Get current user profile" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "Profile fetched successfully" }),
     (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),

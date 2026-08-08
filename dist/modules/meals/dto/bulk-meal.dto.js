@@ -13,10 +13,6 @@ exports.SingleMealEntryDto = exports.BulkMealEntryDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class BulkMealEntryDto {
-    date;
-    morningUserIds;
-    lunchUserIds;
-    dinnerUserIds;
 }
 exports.BulkMealEntryDto = BulkMealEntryDto;
 __decorate([
@@ -46,9 +42,6 @@ __decorate([
     __metadata("design:type", Array)
 ], BulkMealEntryDto.prototype, "dinnerUserIds", void 0);
 class SingleMealEntryDto {
-    date;
-    mealType;
-    userIds;
 }
 exports.SingleMealEntryDto = SingleMealEntryDto;
 __decorate([

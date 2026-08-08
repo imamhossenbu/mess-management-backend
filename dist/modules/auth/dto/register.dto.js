@@ -19,12 +19,6 @@ var Role;
     Role["MEMBER"] = "MEMBER";
 })(Role || (exports.Role = Role = {}));
 class RegisterDto {
-    name;
-    phone;
-    email;
-    password;
-    roomNumber;
-    role;
 }
 exports.RegisterDto = RegisterDto;
 __decorate([

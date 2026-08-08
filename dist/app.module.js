@@ -11,7 +11,10 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./modules/auth/auth.module");
-const health_1 = require("./modules/health");
+const users_module_1 = require("./modules/users/users.module");
+const meals_module_1 = require("./modules/meals/meals.module");
+const health_module_1 = require("./modules/health/health.module");
+const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -23,8 +26,11 @@ exports.AppModule = AppModule = __decorate([
                 envFilePath: ".env",
             }),
             prisma_module_1.PrismaModule,
+            cloudinary_module_1.CloudinaryModule,
             auth_module_1.AuthModule,
-            health_1.HealthModule,
+            users_module_1.UsersModule,
+            meals_module_1.MealsModule,
+            health_module_1.HealthModule,
         ],
         controllers: [],
         providers: [],

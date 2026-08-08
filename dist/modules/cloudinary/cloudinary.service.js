@@ -14,7 +14,6 @@ const common_1 = require("@nestjs/common");
 const cloudinary_1 = require("cloudinary");
 const config_1 = require("@nestjs/config");
 let CloudinaryService = class CloudinaryService {
-    configService;
     constructor(configService) {
         this.configService = configService;
         cloudinary_1.v2.config({

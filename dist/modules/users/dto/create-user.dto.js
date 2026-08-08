@@ -14,13 +14,6 @@ const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const register_dto_1 = require("../../auth/dto/register.dto");
 class CreateUserDto {
-    name;
-    phone;
-    email;
-    password;
-    roomNumber;
-    role;
-    isActive;
 }
 exports.CreateUserDto = CreateUserDto;
 __decorate([

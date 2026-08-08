@@ -4,12 +4,12 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     create(createUserDto: CreateUserDto): Promise<{
-        id: string;
         name: string;
         phone: string;
         email: string | null;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string | null;
         isActive: boolean;
         joinedDate: Date;
@@ -20,12 +20,12 @@ export declare class UsersController {
     findAll(): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -36,12 +36,12 @@ export declare class UsersController {
     findOne(id: string): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -52,12 +52,12 @@ export declare class UsersController {
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -67,12 +67,12 @@ export declare class UsersController {
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -82,12 +82,12 @@ export declare class UsersController {
     uploadProfileImage(req: any, file: any): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -97,12 +97,12 @@ export declare class UsersController {
     removeProfileImage(req: any): Promise<{
         balance: number;
         balances: any;
-        id: string;
         name: string;
         phone: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
         roomNumber: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -110,11 +110,11 @@ export declare class UsersController {
         updatedAt: Date;
     }>;
     remove(id: string): Promise<{
-        id: string;
         name: string;
         phone: string;
         email: string;
         role: import(".prisma/client").$Enums.Role;
+        id: string;
         isActive: boolean;
         leftDate: Date;
     }>;

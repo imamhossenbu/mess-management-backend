@@ -23,7 +23,6 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const register_dto_1 = require("../auth/dto/register.dto");
 const roles_decorator_1 = require("../../common/roles.decorator");
 let UsersController = class UsersController {
-    usersService;
     constructor(usersService) {
         this.usersService = usersService;
     }
@@ -224,7 +223,7 @@ __decorate([
 ], UsersController.prototype, "hardDelete", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)("users"),
-    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
+    (0, swagger_1.ApiSecurity)("JWT-auth"),
     (0, common_1.Controller)("users"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [users_service_1.UsersService])

@@ -21,7 +21,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
+  ApiSecurity,
   ApiParam,
   ApiConsumes,
   ApiBody,
@@ -35,12 +35,11 @@ import {
 } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
-
 import { Role } from "../auth/dto/register.dto";
-import { Roles } from "../../common/roles.decorator";
+import { Roles } from "src/common/roles.decorator";
 
 @ApiTags("users")
-@ApiBearerAuth("JWT-auth") // ✅ main.ts এর সাথে মিলান
+@ApiSecurity("JWT-auth")
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {

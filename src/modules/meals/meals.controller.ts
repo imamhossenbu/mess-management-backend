@@ -18,7 +18,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
+  ApiSecurity,
   ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
@@ -35,20 +35,18 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Role } from "../auth/dto/register.dto";
-import { Roles } from "../../common/roles.decorator";
+import { Roles } from "src/common/roles.decorator";
 
 @ApiTags("meals")
-@ApiBearerAuth("JWT-auth")
+@ApiSecurity("JWT-auth")
 @Controller("meals")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class MealsController {
   constructor(private readonly mealsService: MealsService) {}
 
-  // ==================== CREATE ====================
-
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Create a single meal entry (Admin/Manager only)" })
+  @ApiOperation({ summary: "Create a single meal entry" })
   @ApiResponse({
     status: 201,
     description: "Meal created successfully",
@@ -65,7 +63,7 @@ export class MealsController {
 
   @Post("bulk")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Bulk meal entry for a date (Admin/Manager only)" })
+  @ApiOperation({ summary: "Bulk meal entry for a date" })
   @ApiResponse({ status: 201, description: "Bulk meals created successfully" })
   @ApiResponse({ status: 404, description: "User not found" })
   async bulkEntry(@Body() bulkMealDto: BulkMealEntryDto) {
@@ -82,8 +80,6 @@ export class MealsController {
   async singleMealEntry(@Body() singleMealDto: SingleMealEntryDto) {
     return this.mealsService.singleMealEntry(singleMealDto);
   }
-
-  // ==================== FIND ====================
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
@@ -177,11 +173,9 @@ export class MealsController {
     return this.mealsService.findOne(id);
   }
 
-  // ==================== UPDATE ====================
-
   @Patch(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: "Update a meal (Admin/Manager only)" })
+  @ApiOperation({ summary: "Update a meal" })
   @ApiParam({ name: "id", description: "Meal UUID" })
   @ApiResponse({
     status: 200,
@@ -196,12 +190,10 @@ export class MealsController {
     return this.mealsService.update(id, updateMealDto);
   }
 
-  // ==================== DELETE ====================
-
   @Delete(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Delete a meal (Admin/Manager only)" })
+  @ApiOperation({ summary: "Delete a meal" })
   @ApiParam({ name: "id", description: "Meal UUID" })
   @ApiResponse({ status: 200, description: "Meal deleted successfully" })
   @ApiResponse({ status: 404, description: "Meal not found" })
@@ -212,7 +204,7 @@ export class MealsController {
   @Delete("date/:date")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Delete all meals for a date (Admin/Manager only)" })
+  @ApiOperation({ summary: "Delete all meals for a date" })
   @ApiParam({ name: "date", example: "2026-08-08" })
   async removeByDate(@Param("date") date: string) {
     return this.mealsService.removeByDate(new Date(date));

@@ -13,10 +13,6 @@ exports.UpdateProfileDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class UpdateProfileDto {
-    name;
-    phone;
-    email;
-    roomNumber;
 }
 exports.UpdateProfileDto = UpdateProfileDto;
 __decorate([

@@ -16,14 +16,11 @@ async function bootstrap() {
         .setTitle("Mess Management System API")
         .setDescription("Complete API documentation for Mess Management System")
         .setVersion("1.0")
-        .addBearerAuth({
+        .addSecurity("JWT-auth", {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
-        name: "JWT",
-        description: "Enter JWT token",
-        in: "header",
-    }, "JWT-auth")
+    })
         .addTag("auth", "Authentication endpoints")
         .addTag("users", "User management endpoints")
         .addTag("meals", "Meal management endpoints")
@@ -33,6 +30,8 @@ async function bootstrap() {
     swagger_1.SwaggerModule.setup("api-docs", app, document, {
         swaggerOptions: {
             persistAuthorization: true,
+            tagsSorter: "alpha",
+            operationsSorter: "alpha",
         },
     });
     const port = process.env.PORT || 5001;

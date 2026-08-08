@@ -12,19 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class UserResponseDto {
-    id;
-    name;
-    phone;
-    email;
-    role;
-    roomNumber;
-    profileImage;
-    isActive;
-    joinedDate;
-    leftDate;
-    balance;
-    createdAt;
-    updatedAt;
 }
 exports.UserResponseDto = UserResponseDto;
 __decorate([

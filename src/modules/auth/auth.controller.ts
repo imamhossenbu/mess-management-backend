@@ -14,7 +14,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
+  ApiSecurity,
 } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { RegisterDto, LoginDto, AuthResponseDto } from "./dto";
@@ -52,7 +52,7 @@ export class AuthController {
 
   @Get("profile")
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth("JWT-auth")
+  @ApiSecurity("JWT-auth")
   @ApiOperation({ summary: "Get current user profile" })
   @ApiResponse({ status: 200, description: "Profile fetched successfully" })
   @ApiResponse({ status: 401, description: "Unauthorized" })

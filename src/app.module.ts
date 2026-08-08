@@ -3,35 +3,23 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
-import { HealthModule } from "./modules/health";
+import { UsersModule } from "./modules/users/users.module";
+import { MealsModule } from "./modules/meals/meals.module";
+import { HealthModule } from "./modules/health/health.module";
+import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
 
 @Module({
   imports: [
-    // Config Module - Global
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ".env",
     }),
-
-    // Prisma Module - Global
     PrismaModule,
-
-    // Auth Module
+    CloudinaryModule,
     AuthModule,
-
-     // Health Module
+    UsersModule,
+    MealsModule,
     HealthModule,
-
-    // অন্যান্য মডিউল পরে যোগ করা হবে:
-    // UsersModule,
-    // MealsModule,
-    // MarketingsModule,
-    // InventoryModule,
-    // UtilityBillsModule,
-    // ShopDebtsModule,
-    // PaymentsModule,
-    // MonthlySummaryModule,
-    // DashboardModule,
   ],
   controllers: [],
   providers: [],

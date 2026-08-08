@@ -12,16 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MonthlyMealSummaryDto = exports.DailyMealSummaryDto = exports.MealResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class MealResponseDto {
-    id;
-    userId;
-    userName;
-    date;
-    morning;
-    lunch;
-    dinner;
-    totalMeal;
-    createdAt;
-    updatedAt;
 }
 exports.MealResponseDto = MealResponseDto;
 __decorate([
@@ -65,12 +55,6 @@ __decorate([
     __metadata("design:type", Date)
 ], MealResponseDto.prototype, "updatedAt", void 0);
 class DailyMealSummaryDto {
-    date;
-    totalMorning;
-    totalLunch;
-    totalDinner;
-    totalMeals;
-    meals;
 }
 exports.DailyMealSummaryDto = DailyMealSummaryDto;
 __decorate([
@@ -98,13 +82,6 @@ __decorate([
     __metadata("design:type", Array)
 ], DailyMealSummaryDto.prototype, "meals", void 0);
 class MonthlyMealSummaryDto {
-    month;
-    year;
-    totalMeals;
-    totalMorning;
-    totalLunch;
-    totalDinner;
-    userSummaries;
 }
 exports.MonthlyMealSummaryDto = MonthlyMealSummaryDto;
 __decorate([

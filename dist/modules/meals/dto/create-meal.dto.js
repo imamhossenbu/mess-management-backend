@@ -13,11 +13,6 @@ exports.CreateMealDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class CreateMealDto {
-    userId;
-    date;
-    morning;
-    lunch;
-    dinner;
 }
 exports.CreateMealDto = CreateMealDto;
 __decorate([

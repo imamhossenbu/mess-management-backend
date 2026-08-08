@@ -14,7 +14,6 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const prisma_service_1 = require("../../prisma/prisma.service");
 let HealthController = class HealthController {
-    prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }

@@ -112,14 +112,15 @@ model Marketing {
   shopName          String?
   note              String?
   
+ 
+  inventoryLogs     InventoryLog[]
+  
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
-
-// ==================== INVENTORY ====================
 model Inventory {
   id                String            @id @default(cuid())
-  type              InventoryType
+  type              InventoryType     @unique
   quantity          Int               @default(0)
   lastUpdated       DateTime          @default(now())
   
@@ -129,13 +130,14 @@ model Inventory {
   updatedAt         DateTime          @updatedAt
 }
 
-// ==================== INVENTORY LOG ====================
 model InventoryLog {
   id                String            @id @default(cuid())
   inventoryId       String
   inventory         Inventory         @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
-  change            Int               // + বা -
+  change            Int
   reason            String
+  marketingId       String?
+  marketing         Marketing?        @relation(fields: [marketingId], references: [id])
   note              String?
   date              DateTime          @default(now())
   

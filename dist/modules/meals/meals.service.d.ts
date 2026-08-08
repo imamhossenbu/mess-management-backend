@@ -5,16 +5,16 @@ export declare class MealsService {
     constructor(prisma: PrismaService);
     create(createMealDto: CreateMealDto): Promise<{
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
+        userId: string;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -31,16 +31,16 @@ export declare class MealsService {
         };
         meals: ({
             user: {
+                id: string;
                 name: string;
                 phone: string;
-                id: string;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             date: Date;
+            userId: string;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
@@ -59,16 +59,16 @@ export declare class MealsService {
         };
         meals: ({
             user: {
+                id: string;
                 name: string;
                 phone: string;
-                id: string;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             date: Date;
+            userId: string;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
@@ -77,16 +77,16 @@ export declare class MealsService {
     }>;
     findAll(): Promise<({
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
+        userId: string;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -94,16 +94,16 @@ export declare class MealsService {
     })[]>;
     findOne(id: string): Promise<{
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
+        userId: string;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -111,16 +111,16 @@ export declare class MealsService {
     }>;
     findByUser(userId: string, startDate?: Date, endDate?: Date): Promise<({
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
+        userId: string;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -128,16 +128,16 @@ export declare class MealsService {
     })[]>;
     findByDate(date: Date): Promise<({
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
+        userId: string;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
@@ -155,16 +155,16 @@ export declare class MealsService {
         runningTotalMeal: number;
         meals: ({
             user: {
+                id: string;
                 name: string;
                 phone: string;
-                id: string;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             date: Date;
+            userId: string;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
@@ -190,16 +190,16 @@ export declare class MealsService {
     }>;
     update(id: string, updateMealDto: UpdateMealDto): Promise<{
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
+        userId: string;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;

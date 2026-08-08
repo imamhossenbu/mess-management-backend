@@ -6,41 +6,41 @@ export declare class AuthController {
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         user: {
+            id: string;
             name: string;
             phone: string;
             email: string;
-            roomNumber: string;
             role: import(".prisma/client").$Enums.Role;
-            id: string;
+            roomNumber: string;
             profileImage: string;
         };
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             phone: string;
             email: string | null;
-            roomNumber: string | null;
             role: import(".prisma/client").$Enums.Role;
-            id: string;
+            roomNumber: string | null;
             profileImage: string | null;
             isActive: boolean;
             joinedDate: Date;
             leftDate: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
     }>;
     getProfile(req: any): Promise<{
         balance: number;
         balances: any;
+        id: string;
         name: string;
         phone: string;
         email: string;
-        roomNumber: string;
         role: import(".prisma/client").$Enums.Role;
-        id: string;
+        roomNumber: string;
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
@@ -49,18 +49,18 @@ export declare class AuthController {
     googleAuthRedirect(req: any): Promise<{
         accessToken: string;
         user: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             phone: string;
             email: string | null;
-            roomNumber: string | null;
             role: import(".prisma/client").$Enums.Role;
-            id: string;
+            roomNumber: string | null;
             profileImage: string | null;
             isActive: boolean;
             joinedDate: Date;
             leftDate: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         isNewUser: boolean;
     }>;

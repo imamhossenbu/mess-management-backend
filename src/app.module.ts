@@ -7,6 +7,7 @@ import { UsersModule } from "./modules/users/users.module";
 import { MealsModule } from "./modules/meals/meals.module";
 import { HealthModule } from "./modules/health/health.module";
 import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
+import { MarketingsModule } from "./modules/marketings/marketings.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
     AuthModule,
     UsersModule,
     MealsModule,
+    MarketingsModule,
     HealthModule,
   ],
   controllers: [],

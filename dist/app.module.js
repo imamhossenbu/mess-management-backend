@@ -15,6 +15,7 @@ const users_module_1 = require("./modules/users/users.module");
 const meals_module_1 = require("./modules/meals/meals.module");
 const health_module_1 = require("./modules/health/health.module");
 const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
+const marketings_module_1 = require("./modules/marketings/marketings.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -30,6 +31,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             meals_module_1.MealsModule,
+            marketings_module_1.MarketingsModule,
             health_module_1.HealthModule,
         ],
         controllers: [],

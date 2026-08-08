@@ -1,0 +1,124 @@
+import { UsersService } from "./users.service";
+import { CreateUserDto, UpdateUserDto, UpdateProfileDto } from "./dto";
+export declare class UsersController {
+    private readonly usersService;
+    constructor(usersService: UsersService);
+    create(createUserDto: CreateUserDto): Promise<{
+        id: string;
+        name: string;
+        phone: string;
+        email: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string | null;
+        profileImage: string | null;
+        isActive: boolean;
+        joinedDate: Date;
+        leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    findAll(): Promise<{
+        balance: number;
+        balances: any;
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string;
+        profileImage: string;
+        isActive: boolean;
+        joinedDate: Date;
+        leftDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
+    findOne(id: string): Promise<{
+        balance: number;
+        balances: any;
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string;
+        profileImage: string;
+        isActive: boolean;
+        joinedDate: Date;
+        leftDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    update(id: string, updateUserDto: UpdateUserDto): Promise<{
+        balance: number;
+        balances: any;
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string;
+        profileImage: string;
+        isActive: boolean;
+        joinedDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    remove(id: string): Promise<{
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        isActive: boolean;
+        leftDate: Date;
+    }>;
+    hardDelete(id: string): Promise<{
+        message: string;
+    }>;
+    updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
+        balance: number;
+        balances: any;
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string;
+        profileImage: string;
+        isActive: boolean;
+        joinedDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    uploadProfileImage(req: any, file: any): Promise<{
+        balance: number;
+        balances: any;
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string;
+        profileImage: string;
+        isActive: boolean;
+        joinedDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    removeProfileImage(req: any): Promise<{
+        balance: number;
+        balances: any;
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        roomNumber: string;
+        profileImage: string;
+        isActive: boolean;
+        joinedDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+}

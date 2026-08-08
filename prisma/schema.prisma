@@ -1,0 +1,249 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+url      = env("DATABASE_URL")  
+}
+
+// ==================== ENUMS ====================
+enum Role {
+  SUPER_ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum PaymentType {
+  CASH
+  DEBT
+  SELF
+}
+
+enum InventoryType {
+  MEAT
+  FISH
+}
+
+enum BillType {
+  CURRENT
+  WIFI
+  RENT
+  WATER
+  KHALA
+}
+
+enum DebtStatus {
+  DUE
+  PAID
+}
+
+enum PaymentMethod {
+  CASH
+  BANK
+  MOBILE_BANKING
+}
+
+// ==================== USER ====================
+model User {
+  id                String            @id @default(cuid())
+  name              String
+  phone             String            @unique
+  email             String?           @unique
+  password          String
+  role              Role              @default(MEMBER)
+  roomNumber        String?
+  profileImage      String?           // ✅ এই লাইন যোগ করুন
+  isActive          Boolean           @default(true)
+  joinedDate        DateTime          @default(now())
+  leftDate          DateTime?
+  
+  // Relations
+  meals             Meal[]
+  marketings        Marketing[]
+  payments          Payment[]
+  monthlySummaries  MonthlySummary[]
+  balances          UserBalance?
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+// ==================== USER BALANCE ====================
+model UserBalance {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance           Decimal           @default(0) // + = পাওনা, - = বাকি
+  lastUpdated       DateTime          @default(now())
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== MEAL ====================
+model Meal {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime
+  morning           Boolean           @default(false)
+  lunch             Boolean           @default(false)
+  dinner            Boolean           @default(false)
+  totalMeal         Int               @default(0) // অটো ক্যালকুলেটেড
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([userId, date])
+}
+
+// ==================== MARKETING ====================
+model Marketing {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime          @default(now())
+  itemName          String
+  quantity          String?
+  amount            Decimal
+  paymentType       PaymentType       @default(CASH)
+  shopName          String?
+  note              String?
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== INVENTORY ====================
+model Inventory {
+  id                String            @id @default(cuid())
+  type              InventoryType
+  quantity          Int               @default(0)
+  lastUpdated       DateTime          @default(now())
+  
+  logs              InventoryLog[]
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== INVENTORY LOG ====================
+model InventoryLog {
+  id                String            @id @default(cuid())
+  inventoryId       String
+  inventory         Inventory         @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  change            Int               // + বা -
+  reason            String
+  note              String?
+  date              DateTime          @default(now())
+  
+  createdAt         DateTime          @default(now())
+}
+
+// ==================== UTILITY BILL ====================
+model UtilityBill {
+  id                String            @id @default(cuid())
+  billType          BillType
+  monthYear         DateTime
+  amount            Decimal
+  paidBy            String?
+  note              String?
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== SHOP DEBT ====================
+model ShopDebt {
+  id                String            @id @default(cuid())
+  shopName          String
+  date              DateTime          @default(now())
+  itemDetails       String?
+  amount            Decimal
+  status            DebtStatus        @default(DUE)
+  paidDate          DateTime?
+  note              String?
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== SHOP MONTHLY SUMMARY ====================
+model ShopMonthlySummary {
+  id                String            @id @default(cuid())
+  monthYear         DateTime
+  totalDebt         Decimal           @default(0)
+  totalPaid         Decimal           @default(0)
+  currentDue        Decimal           @default(0)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== CARRY FORWARD ====================
+model CarryForward {
+  id                String            @id @default(cuid())
+  fromMonth         DateTime
+  toMonth           DateTime
+  itemName          String
+  totalAmount       Decimal
+  usedAmount        Decimal           @default(0)
+  carryAmount       Decimal
+  note              String?
+  isAdjusted        Boolean           @default(false)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== PAYMENT ====================
+model Payment {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount            Decimal
+  paymentDate       DateTime          @default(now())
+  paymentMethod     PaymentMethod     @default(CASH)
+  note              String?
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== MONTHLY SUMMARY ====================
+model MonthlySummary {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthYear         DateTime
+  totalMeal         Int               @default(0)
+  mealRate          Decimal           @default(0)
+  mealBill          Decimal           @default(0)
+  utilityShare      Decimal           @default(0)
+  totalBill         Decimal           @default(0)
+  totalPaid         Decimal           @default(0)
+  previousDue       Decimal           @default(0)
+  currentDue        Decimal           @default(0) // + = পাওনা, - = বাকি
+  carryToNext       Decimal           @default(0)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([userId, monthYear])
+}
+
+// ==================== DAILY SUMMARY ====================
+model DailySummary {
+  id                String            @id @default(cuid())
+  date              DateTime          @unique
+  dailyMarketCost   Decimal           @default(0)
+  dailyTotalMeal    Int               @default(0)
+  runningMarketCost Decimal           @default(0)
+  runningTotalMeal  Int               @default(0)
+  mealRate          Decimal           @default(0)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}

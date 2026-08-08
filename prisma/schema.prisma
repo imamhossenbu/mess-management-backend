@@ -46,6 +46,16 @@ enum PaymentMethod {
   MOBILE_BANKING
 }
 
+enum NotificationType {
+  BILL
+  PAYMENT
+  MEAL
+  INVENTORY
+  SUMMARY
+  EMAIL
+  SYSTEM
+}
+
 // ==================== USER ====================
 model User {
   id                String            @id @default(cuid())
@@ -66,7 +76,9 @@ model User {
   payments          Payment[]
   monthlySummaries  MonthlySummary[]
   balances          UserBalance?
-  utilityBills      UtilityBill[]     // ✅ এই লাইন যোগ করুন
+  utilityBills      UtilityBill[]    
+    notifications     Notification[]
+  emailLogs         EmailLog[]
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -250,4 +262,31 @@ model DailySummary {
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+}
+
+model Notification {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              NotificationType
+  title             String
+  message           String
+  link              String?
+  isRead            Boolean           @default(false)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model EmailLog {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email             String
+  subject           String
+  message           String
+  html              String?
+  sentAt            DateTime          @default(now())
+  
+  createdAt         DateTime          @default(now())
 }

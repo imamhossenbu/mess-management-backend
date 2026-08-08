@@ -8,10 +8,10 @@ export declare class InventoryController {
         logs: ({
             marketing: {
                 id: string;
+                amount: import("@prisma/client/runtime/library").Decimal;
+                quantity: string;
                 date: Date;
                 itemName: string;
-                quantity: string;
-                amount: import("@prisma/client/runtime/library").Decimal;
                 shopName: string;
             };
         } & {
@@ -26,11 +26,11 @@ export declare class InventoryController {
         })[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.InventoryType;
         createdAt: Date;
         updatedAt: Date;
-        lastUpdated: Date;
-        type: import(".prisma/client").$Enums.InventoryType;
         quantity: number;
+        lastUpdated: Date;
     })[]>;
     getSummary(): Promise<{
         meat: {
@@ -40,10 +40,10 @@ export declare class InventoryController {
             logs: ({
                 marketing: {
                     id: string;
+                    amount: import("@prisma/client/runtime/library").Decimal;
+                    quantity: string;
                     date: Date;
                     itemName: string;
-                    quantity: string;
-                    amount: import("@prisma/client/runtime/library").Decimal;
                     shopName: string;
                 };
             } & {
@@ -64,10 +64,10 @@ export declare class InventoryController {
             logs: ({
                 marketing: {
                     id: string;
+                    amount: import("@prisma/client/runtime/library").Decimal;
+                    quantity: string;
                     date: Date;
                     itemName: string;
-                    quantity: string;
-                    amount: import("@prisma/client/runtime/library").Decimal;
                     shopName: string;
                 };
             } & {
@@ -86,10 +86,10 @@ export declare class InventoryController {
         logs: ({
             marketing: {
                 id: string;
+                amount: import("@prisma/client/runtime/library").Decimal;
+                quantity: string;
                 date: Date;
                 itemName: string;
-                quantity: string;
-                amount: import("@prisma/client/runtime/library").Decimal;
                 shopName: string;
             };
         } & {
@@ -104,28 +104,28 @@ export declare class InventoryController {
         })[];
     } & {
         id: string;
+        type: import(".prisma/client").$Enums.InventoryType;
         createdAt: Date;
         updatedAt: Date;
-        lastUpdated: Date;
-        type: import(".prisma/client").$Enums.InventoryType;
         quantity: number;
+        lastUpdated: Date;
     }>;
     getLogs(type?: InventoryType): Promise<({
         marketing: {
             id: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: string;
             date: Date;
             itemName: string;
-            quantity: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
             shopName: string;
         };
         inventory: {
             id: string;
+            type: import(".prisma/client").$Enums.InventoryType;
             createdAt: Date;
             updatedAt: Date;
-            lastUpdated: Date;
-            type: import(".prisma/client").$Enums.InventoryType;
             quantity: number;
+            lastUpdated: Date;
         };
     } & {
         id: string;
@@ -145,27 +145,27 @@ export declare class InventoryController {
     }>;
     add(addInventoryDto: AddInventoryDto): Promise<{
         id: string;
+        type: import(".prisma/client").$Enums.InventoryType;
         createdAt: Date;
         updatedAt: Date;
-        lastUpdated: Date;
-        type: import(".prisma/client").$Enums.InventoryType;
         quantity: number;
+        lastUpdated: Date;
     }>;
     remove(removeInventoryDto: RemoveInventoryDto): Promise<{
         id: string;
+        type: import(".prisma/client").$Enums.InventoryType;
         createdAt: Date;
         updatedAt: Date;
-        lastUpdated: Date;
-        type: import(".prisma/client").$Enums.InventoryType;
         quantity: number;
+        lastUpdated: Date;
     }>;
     set(setInventoryDto: SetInventoryDto): Promise<{
         id: string;
+        type: import(".prisma/client").$Enums.InventoryType;
         createdAt: Date;
         updatedAt: Date;
-        lastUpdated: Date;
-        type: import(".prisma/client").$Enums.InventoryType;
         quantity: number;
+        lastUpdated: Date;
     }>;
     bulkAdd(items: {
         type: InventoryType;

@@ -7,8 +7,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -19,8 +19,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -31,8 +31,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -43,8 +43,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -55,8 +55,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -67,8 +67,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -79,8 +79,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;
@@ -108,8 +108,8 @@ export declare class ShopDebtsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
+            date: Date;
             shopName: string;
             note: string | null;
             itemDetails: string | null;
@@ -121,8 +121,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         shopName: string;
         note: string | null;
         itemDetails: string | null;

@@ -19,6 +19,8 @@ export declare class AuthController {
         accessToken: string;
         user: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             phone: string;
             email: string | null;
@@ -28,8 +30,6 @@ export declare class AuthController {
             isActive: boolean;
             joinedDate: Date;
             leftDate: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
     }>;
     getProfile(req: any): Promise<{
@@ -50,6 +50,8 @@ export declare class AuthController {
         accessToken: string;
         user: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             phone: string;
             email: string | null;
@@ -59,8 +61,6 @@ export declare class AuthController {
             isActive: boolean;
             joinedDate: Date;
             leftDate: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         isNewUser: boolean;
     }>;

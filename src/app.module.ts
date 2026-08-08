@@ -13,6 +13,8 @@ import { UtilityBillsModule } from "./modules/utility-bills/utility-bills.module
 import { ShopDebtsModule } from "./modules/shop-debts/shop-debts.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { MonthlySummaryModule } from "./modules/monthly-summary/monthly-summary.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { MonthlySummaryModule } from "./modules/monthly-summary/monthly-summary.
     ShopDebtsModule,
     PaymentsModule,
     MonthlySummaryModule,
+    DashboardModule,
+     NotificationsModule,
     HealthModule,
   ],
   controllers: [],

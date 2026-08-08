@@ -5,6 +5,8 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     create(createUserDto: CreateUserDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string | null;
@@ -14,13 +16,13 @@ export declare class UsersController {
         isActive: boolean;
         joinedDate: Date;
         leftDate: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findAll(): Promise<{
         balance: number;
         balances: any;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string;
@@ -30,13 +32,13 @@ export declare class UsersController {
         isActive: boolean;
         joinedDate: Date;
         leftDate: Date;
-        createdAt: Date;
-        updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
         balance: number;
         balances: any;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string;
@@ -46,13 +48,13 @@ export declare class UsersController {
         isActive: boolean;
         joinedDate: Date;
         leftDate: Date;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number;
         balances: any;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string;
@@ -61,13 +63,13 @@ export declare class UsersController {
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number;
         balances: any;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string;
@@ -76,13 +78,13 @@ export declare class UsersController {
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     uploadProfileImage(req: any, file: any): Promise<{
         balance: number;
         balances: any;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string;
@@ -91,13 +93,13 @@ export declare class UsersController {
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     removeProfileImage(req: any): Promise<{
         balance: number;
         balances: any;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         phone: string;
         email: string;
@@ -106,8 +108,6 @@ export declare class UsersController {
         profileImage: string;
         isActive: boolean;
         joinedDate: Date;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     remove(id: string): Promise<{
         id: string;

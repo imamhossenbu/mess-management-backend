@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RolesGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
+const register_dto_1 = require("../dto/register.dto");
 let RolesGuard = class RolesGuard {
     constructor(reflector) {
         this.reflector = reflector;
@@ -24,11 +25,27 @@ let RolesGuard = class RolesGuard {
         if (!requiredRoles) {
             return true;
         }
-        const { user } = context.switchToHttp().getRequest();
+        const request = context.switchToHttp().getRequest();
+        const { user } = request;
         if (!user) {
             throw new common_1.ForbiddenException("User not authenticated");
         }
-        const hasRole = requiredRoles.some((role) => user.role === role);
+        const rawRole = request.memberRole || "MEMBER";
+        let userRole = register_dto_1.Role.MEMBER;
+        if (rawRole === "SUPER_ADMIN") {
+            userRole = register_dto_1.Role.SUPER_ADMIN;
+        }
+        else if (rawRole === "ADMIN") {
+            userRole = register_dto_1.Role.MANAGER;
+        }
+        const hasRole = requiredRoles.some((role) => {
+            if (userRole === register_dto_1.Role.SUPER_ADMIN)
+                return true;
+            if (userRole === register_dto_1.Role.MANAGER) {
+                return role === register_dto_1.Role.MANAGER || role === register_dto_1.Role.MEMBER;
+            }
+            return role === register_dto_1.Role.MEMBER;
+        });
         if (!hasRole) {
             throw new common_1.ForbiddenException("You do not have permission to access this resource");
         }

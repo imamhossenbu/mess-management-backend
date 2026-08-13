@@ -1,3 +1,15 @@
+export declare class InventoryItemDto {
+    name: string;
+    quantity: number;
+    unit: string;
+    minStockLevel: number;
+    status: string;
+}
+export declare class InventoryCategoryDto {
+    items: InventoryItemDto[];
+    totalItems: number;
+    lowStockItems: number;
+}
 export declare class DashboardStatsDto {
     totalMembers: number;
     activeMembers: number;
@@ -12,10 +24,7 @@ export declare class DashboardStatsDto {
     mealsBreakfast?: number;
     mealsLunch?: number;
     mealsDinner?: number;
-    inventory: {
-        meat: number;
-        fish: number;
-    };
+    inventory: Record<string, InventoryCategoryDto>;
     recentActivities: {
         meals: any[];
         marketings: any[];

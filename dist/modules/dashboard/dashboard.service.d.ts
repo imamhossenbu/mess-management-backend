@@ -5,16 +5,15 @@ export declare class DashboardService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    getAdminDashboard(messId: string): Promise<DashboardStatsDto>;
+    getAdminDashboard(): Promise<DashboardStatsDto>;
     getMemberDashboard(userId: string): Promise<MemberDashboardDto>;
-    getDailySummary(messId: string, date?: string): Promise<DailySummaryDto>;
-    getMonthlySummaryForDashboard(messId: string, year?: number, month?: number): Promise<MonthlySummaryDto>;
-    getActivities(messId: string, limit?: number, offset?: number): Promise<ActivityDto>;
-    getMealRateHistory(messId: string, days?: number): Promise<MealRateHistoryDto[]>;
-    getMemberBalances(messId: string): Promise<MemberBalanceDto[]>;
-    getMessStats(messId: string): Promise<MessStatsDto>;
-    getWeeklySummary(messId: string): Promise<WeeklySummaryDto[]>;
-    getRecentActivities(messId: string): Promise<ActivityDto>;
+    getDailySummary(date?: string): Promise<DailySummaryDto>;
+    getMonthlySummaryForDashboard(year?: number, month?: number): Promise<MonthlySummaryDto>;
+    getActivities(limit?: number, offset?: number): Promise<ActivityDto>;
+    getMealRateHistory(days?: number): Promise<MealRateHistoryDto[]>;
+    getMemberBalances(): Promise<MemberBalanceDto[]>;
+    getMessStats(): Promise<MessStatsDto>;
+    getWeeklySummary(): Promise<WeeklySummaryDto[]>;
     private getMealBreakdown;
     private calculateTotalDue;
 }

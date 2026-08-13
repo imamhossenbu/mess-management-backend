@@ -1,6 +1,34 @@
 // src/modules/dashboard/dto/dashboard-response.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
 
+export class InventoryItemDto {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  quantity: number;
+
+  @ApiProperty()
+  unit: string;
+
+  @ApiProperty()
+  minStockLevel: number;
+
+  @ApiProperty()
+  status: string;
+}
+
+export class InventoryCategoryDto {
+  @ApiProperty({ type: [InventoryItemDto] })
+  items: InventoryItemDto[];
+
+  @ApiProperty()
+  totalItems: number;
+
+  @ApiProperty()
+  lowStockItems: number;
+}
+
 export class DashboardStatsDto {
   @ApiProperty()
   totalMembers: number;
@@ -41,11 +69,8 @@ export class DashboardStatsDto {
   @ApiProperty({ required: false })
   mealsDinner?: number;
 
-  @ApiProperty()
-  inventory: {
-    meat: number;
-    fish: number;
-  };
+  @ApiProperty({ type: "object", additionalProperties: { type: "object" } })
+  inventory: Record<string, InventoryCategoryDto>;
 
   @ApiProperty()
   recentActivities: {

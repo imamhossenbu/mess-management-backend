@@ -5,23 +5,13 @@ import {
   UseGuards,
   Request,
   Query,
-  ParseIntPipe,
   BadRequestException,
 } from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { DashboardService } from "./dashboard.service";
-import { DashboardStatsDto, MemberDashboardDto, DailySummaryDto } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("dashboard")
 @ApiBearerAuth("JWT-auth")
@@ -31,34 +21,29 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get("admin")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async getAdminDashboard(@CurrentMess() messId: string) {
-    return this.dashboardService.getAdminDashboard(messId);
+  @Roles("ADMIN", "MANAGER")
+  async getAdminDashboard() {
+    return this.dashboardService.getAdminDashboard();
   }
 
   @Get("member")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   async getMemberDashboard(@Request() req) {
     return this.dashboardService.getMemberDashboard(req.user.id);
   }
 
   @Get("daily")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async getDailySummary(
-    @CurrentMess() messId: string,
-    @Query("date") date?: string,
-  ) {
-    return this.dashboardService.getDailySummary(messId, date);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  async getDailySummary(@Query("date") date?: string) {
+    return this.dashboardService.getDailySummary(date);
   }
 
   @Get("monthly")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year") year?: string,
     @Query("month") month?: string,
   ) {
-    // Parse year and month with validation
     let yearNum: number | undefined;
     let monthNum: number | undefined;
 
@@ -81,9 +66,44 @@ export class DashboardController {
     }
 
     return this.dashboardService.getMonthlySummaryForDashboard(
-      messId,
       yearNum,
       monthNum,
     );
+  }
+
+  @Get("activities")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  async getActivities(
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+  ) {
+    const limitNum = limit ? parseInt(limit) : 10;
+    const offsetNum = offset ? parseInt(offset) : 0;
+    return this.dashboardService.getActivities(limitNum, offsetNum);
+  }
+
+  @Get("meal-rate-history")
+  @Roles("ADMIN", "MANAGER")
+  async getMealRateHistory(@Query("days") days?: string) {
+    const daysNum = days ? parseInt(days) : 30;
+    return this.dashboardService.getMealRateHistory(daysNum);
+  }
+
+  @Get("member-balances")
+  @Roles("ADMIN", "MANAGER")
+  async getMemberBalances() {
+    return this.dashboardService.getMemberBalances();
+  }
+
+  @Get("mess-stats")
+  @Roles("ADMIN", "MANAGER")
+  async getMessStats() {
+    return this.dashboardService.getMessStats();
+  }
+
+  @Get("weekly-summary")
+  @Roles("ADMIN", "MANAGER")
+  async getWeeklySummary() {
+    return this.dashboardService.getWeeklySummary();
   }
 }

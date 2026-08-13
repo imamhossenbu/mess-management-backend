@@ -9,8 +9,46 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WeeklySummaryDto = exports.MessStatsDto = exports.MemberBalanceDto = exports.MealRateHistoryDto = exports.ActivityDto = exports.MonthlySummaryDto = exports.DailySummaryDto = exports.MemberDashboardDto = exports.DashboardStatsDto = void 0;
+exports.WeeklySummaryDto = exports.MessStatsDto = exports.MemberBalanceDto = exports.MealRateHistoryDto = exports.ActivityDto = exports.MonthlySummaryDto = exports.DailySummaryDto = exports.MemberDashboardDto = exports.DashboardStatsDto = exports.InventoryCategoryDto = exports.InventoryItemDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+class InventoryItemDto {
+}
+exports.InventoryItemDto = InventoryItemDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], InventoryItemDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], InventoryItemDto.prototype, "quantity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], InventoryItemDto.prototype, "unit", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], InventoryItemDto.prototype, "minStockLevel", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], InventoryItemDto.prototype, "status", void 0);
+class InventoryCategoryDto {
+}
+exports.InventoryCategoryDto = InventoryCategoryDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [InventoryItemDto] }),
+    __metadata("design:type", Array)
+], InventoryCategoryDto.prototype, "items", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], InventoryCategoryDto.prototype, "totalItems", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], InventoryCategoryDto.prototype, "lowStockItems", void 0);
 class DashboardStatsDto {
 }
 exports.DashboardStatsDto = DashboardStatsDto;
@@ -67,7 +105,7 @@ __decorate([
     __metadata("design:type", Number)
 ], DashboardStatsDto.prototype, "mealsDinner", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ type: "object", additionalProperties: { type: "object" } }),
     __metadata("design:type", Object)
 ], DashboardStatsDto.prototype, "inventory", void 0);
 __decorate([

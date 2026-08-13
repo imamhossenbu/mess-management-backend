@@ -8,11 +8,11 @@ export declare class UsersService {
     private notificationsService;
     constructor(prisma: PrismaService, cloudinaryService: CloudinaryService, notificationsService: NotificationsService);
     create(createUserDto: CreateUserDto): Promise<{
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -24,11 +24,11 @@ export declare class UsersService {
     findAll(): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -40,11 +40,11 @@ export declare class UsersService {
     findOne(id: string): Promise<{
         balance: any;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;
@@ -57,11 +57,11 @@ export declare class UsersService {
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -73,11 +73,11 @@ export declare class UsersService {
     updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -89,11 +89,11 @@ export declare class UsersService {
     updateProfileImage(userId: string, file: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -105,11 +105,11 @@ export declare class UsersService {
     removeProfileImage(userId: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -119,9 +119,9 @@ export declare class UsersService {
         leftDate: Date;
     }>;
     remove(id: string): Promise<{
-        email: string;
         id: string;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         isActive: boolean;
@@ -132,11 +132,11 @@ export declare class UsersService {
         message: string;
     }>;
     findByPhone(phone: string): Promise<{
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;
@@ -147,11 +147,11 @@ export declare class UsersService {
         leftDate: Date | null;
     }>;
     findByEmail(email: string): Promise<{
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;

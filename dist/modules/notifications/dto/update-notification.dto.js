@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MarkAllReadDto = exports.UpdateNotificationDto = void 0;
+exports.MarkMultipleReadDto = exports.MarkAllReadDto = exports.UpdateNotificationDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class UpdateNotificationDto {
@@ -30,4 +30,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], MarkAllReadDto.prototype, "isRead", void 0);
+class MarkMultipleReadDto {
+}
+exports.MarkMultipleReadDto = MarkMultipleReadDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [String], example: ["id1", "id2"] }),
+    __metadata("design:type", Array)
+], MarkMultipleReadDto.prototype, "ids", void 0);
 //# sourceMappingURL=update-notification.dto.js.map

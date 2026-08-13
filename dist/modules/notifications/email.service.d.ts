@@ -9,7 +9,35 @@ export declare class EmailService {
         id: string;
         name: string;
         email: string;
-    }, password: string, messName: string): Promise<{
+    }, password: string): Promise<{
         sent: boolean;
+        error?: undefined;
+    } | {
+        sent: boolean;
+        error: string;
+    }>;
+    sendBillEmail(user: {
+        id: string;
+        name: string;
+        email: string;
+    }, billAmount: number, dueDate: Date, month: string, details?: {
+        mealBill: number;
+        utilityShare: number;
+        totalBill: number;
+        totalPaid: number;
+        currentDue: number;
+    }): Promise<{
+        sent: boolean;
+        error?: undefined;
+    } | {
+        sent: boolean;
+        error: string;
+    }>;
+    sendEmailWithHtml(to: string, subject: string, text: string, html: string): Promise<{
+        sent: boolean;
+        error?: undefined;
+    } | {
+        sent: boolean;
+        error: string;
     }>;
 }

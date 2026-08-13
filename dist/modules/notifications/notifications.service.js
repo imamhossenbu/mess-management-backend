@@ -13,9 +13,11 @@ exports.NotificationsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const email_service_1 = require("./email.service");
 let NotificationsService = class NotificationsService {
-    constructor(prisma) {
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
     }
     async create(createNotificationDto) {
         const { userId, type, title, message, link, isRead } = createNotificationDto;
@@ -156,10 +158,10 @@ let NotificationsService = class NotificationsService {
         if (!notification) {
             throw new common_1.NotFoundException(`Notification with ID ${id} not found`);
         }
-        return this.prisma.notification.update({
+        const updated = await this.prisma.notification.update({
             where: { id },
             data: {
-                isRead: true,
+                isRead: !notification.isRead,
             },
             include: {
                 user: {
@@ -172,6 +174,26 @@ let NotificationsService = class NotificationsService {
                 },
             },
         });
+        return updated;
+    }
+    async markMultipleAsRead(ids) {
+        if (!ids || ids.length === 0) {
+            throw new common_1.BadRequestException("No notification IDs provided");
+        }
+        const notifications = await this.prisma.notification.findMany({
+            where: { id: { in: ids } },
+        });
+        if (notifications.length !== ids.length) {
+            throw new common_1.NotFoundException("Some notifications not found");
+        }
+        const result = await this.prisma.notification.updateMany({
+            where: { id: { in: ids } },
+            data: { isRead: true },
+        });
+        return {
+            message: `Marked ${result.count} notifications as read`,
+            count: result.count,
+        };
     }
     async markAllAsRead(userId) {
         const user = await this.prisma.user.findUnique({
@@ -193,6 +215,31 @@ let NotificationsService = class NotificationsService {
             message: `Marked ${result.count} notifications as read`,
             count: result.count,
         };
+    }
+    async update(id, updateNotificationDto) {
+        const notification = await this.prisma.notification.findUnique({
+            where: { id },
+        });
+        if (!notification) {
+            throw new common_1.NotFoundException(`Notification with ID ${id} not found`);
+        }
+        const updated = await this.prisma.notification.update({
+            where: { id },
+            data: {
+                isRead: updateNotificationDto.isRead,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phone: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+        return updated;
     }
     async remove(id) {
         const notification = await this.prisma.notification.findUnique({
@@ -255,19 +302,43 @@ let NotificationsService = class NotificationsService {
     async sendBillNotification(userId, billAmount, dueDate) {
         const title = "Monthly Bill";
         const message = `Your monthly bill is ${billAmount} TK. Due date: ${dueDate.toLocaleDateString()}`;
-        return this.create({
+        const notification = await this.create({
             userId,
             type: client_1.NotificationType.BILL,
             title,
             message,
-            link: "/bills",
+            link: "/payments",
             isRead: false,
         });
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { id: true, name: true, email: true },
+            });
+            if (user?.email) {
+                const month = dueDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                });
+                await this.emailService.sendBillEmail(user, billAmount, dueDate, month, {
+                    mealBill: billAmount * 0.7,
+                    utilityShare: billAmount * 0.3,
+                    totalBill: billAmount,
+                    totalPaid: 0,
+                    currentDue: billAmount,
+                });
+            }
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            console.error("Failed to send bill email:", errorMessage);
+        }
+        return notification;
     }
     async sendPaymentConfirmation(userId, amount) {
         const title = "Payment Confirmation";
         const message = `Your payment of ${amount} TK has been received.`;
-        return this.create({
+        const notification = await this.create({
             userId,
             type: client_1.NotificationType.PAYMENT,
             title,
@@ -275,6 +346,52 @@ let NotificationsService = class NotificationsService {
             link: "/payments",
             isRead: false,
         });
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { id: true, name: true, email: true },
+            });
+            if (user?.email) {
+                const subject = "Payment Confirmation";
+                const text = `Hello ${user.name},\n\nYour payment of ${amount} TK has been received successfully.\n\nThank you for your payment.`;
+                const html = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: 'Segoe UI', sans-serif; padding: 20px; }
+              .container { max-width: 500px; margin: 0 auto; background: #f8fafc; padding: 30px; border-radius: 12px; }
+              .header { text-align: center; }
+              .header h1 { color: #059669; }
+              .amount { font-size: 32px; font-weight: bold; color: #059669; text-align: center; }
+              .footer { margin-top: 30px; text-align: center; color: #94a3b8; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>✅ Payment Confirmed</h1>
+              </div>
+              <p>Hello <strong>${user.name}</strong>,</p>
+              <p>Your payment has been received successfully.</p>
+              <div class="amount">${amount} TK</div>
+              <p style="text-align: center;">Thank you for your payment!</p>
+              <div class="footer">
+                <p>Mess Management System</p>
+                <p>This is an automated email, please do not reply.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+                await this.emailService.sendEmailWithHtml(user.email, subject, text, html);
+            }
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            console.error("Failed to send payment confirmation email:", errorMessage);
+        }
+        return notification;
     }
     async sendMealReminder(userId, mealType) {
         const title = "Meal Reminder";
@@ -291,16 +408,12 @@ let NotificationsService = class NotificationsService {
     async sendInventoryAlert(type, quantity) {
         const title = "Inventory Alert";
         const message = `${type} stock is running low! Only ${quantity} pieces left.`;
-        const admins = await this.prisma.messMember.findMany({
+        const admins = await this.prisma.user.findMany({
             where: {
-                role: {
-                    in: ["SUPER_ADMIN", "ADMIN"],
-                },
+                role: "ADMIN",
                 isActive: true,
             },
-            include: {
-                user: true,
-            },
+            select: { id: true },
         });
         if (admins.length === 0) {
             return {
@@ -310,7 +423,7 @@ let NotificationsService = class NotificationsService {
         }
         const notifications = await this.prisma.$transaction(admins.map((admin) => this.prisma.notification.create({
             data: {
-                userId: admin.userId,
+                userId: admin.id,
                 type: client_1.NotificationType.INVENTORY,
                 title,
                 message,
@@ -355,6 +468,7 @@ let NotificationsService = class NotificationsService {
 exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map

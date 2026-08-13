@@ -4,3 +4,6 @@ export declare class UpdateNotificationDto {
 export declare class MarkAllReadDto {
     isRead?: boolean;
 }
+export declare class MarkMultipleReadDto {
+    ids: string[];
+}

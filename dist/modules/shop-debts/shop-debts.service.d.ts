@@ -9,8 +9,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -21,8 +21,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -33,8 +33,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -45,8 +45,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -57,8 +57,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -69,8 +69,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -81,8 +81,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
@@ -110,8 +110,8 @@ export declare class ShopDebtsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
+            date: Date;
             note: string | null;
             shopName: string;
             status: import(".prisma/client").$Enums.DebtStatus;
@@ -123,8 +123,8 @@ export declare class ShopDebtsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        date: Date;
         note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;

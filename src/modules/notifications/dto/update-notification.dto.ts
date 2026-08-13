@@ -15,3 +15,8 @@ export class MarkAllReadDto {
   @IsOptional()
   isRead?: boolean;
 }
+
+export class MarkMultipleReadDto {
+  @ApiProperty({ type: [String], example: ["id1", "id2"] })
+  ids: string[];
+}

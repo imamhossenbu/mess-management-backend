@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
         isActive: true,
       },
       orderBy: { joinedDate: "asc" },
-      select: { id: true, messId: true, role: true },
+      select: { id: true, messId: true, role: true, roles: true },
     });
 
     if (!member) {
@@ -52,15 +52,14 @@ export class RolesGuard implements CanActivate {
     request.messId = member.messId;
     request.memberId = member.id;
     request.memberRole = member.role;
-    const rawRole = member.role;
+    const rawRoles = member.roles.length ? member.roles : [member.role];
 
     // Map database enum MessRole (SUPER_ADMIN, ADMIN, MEMBER) to controller DTO Role (SUPER_ADMIN, MANAGER, MEMBER)
-    let userRole = Role.MEMBER;
-    if (rawRole === "SUPER_ADMIN") {
-      userRole = Role.SUPER_ADMIN;
-    } else if (rawRole === "ADMIN") {
-      userRole = Role.MANAGER; // ADMIN in database maps to MANAGER in controller routes
-    }
+    const userRole = rawRoles.includes("SUPER_ADMIN")
+      ? Role.SUPER_ADMIN
+      : rawRoles.includes("ADMIN")
+        ? Role.MANAGER
+        : Role.MEMBER;
 
     // Check role hierarchy permissions
     const hasRole = requiredRoles.some((role) => {

@@ -7,6 +7,9 @@ import {
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateMessDto, UpdateMessDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
+import { EmailService } from "../notifications/email.service";
+import { AddMemberDto } from "./dto";
+import * as bcrypt from "bcrypt";
 import { MessRole } from "@prisma/client";
 
 @Injectable()
@@ -14,6 +17,7 @@ export class MessService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private emailService: EmailService,
   ) {}
 
   // ==================== CREATE ====================
@@ -64,6 +68,7 @@ export class MessService {
         userId,
         messId: mess.id,
         role: MessRole.SUPER_ADMIN, // ✅ Direct enum
+        roles: [MessRole.SUPER_ADMIN],
         isActive: true,
       },
     });
@@ -114,6 +119,7 @@ export class MessService {
       phone: member.mess.phone,
       email: member.mess.email,
       role: member.role,
+      roles: member.roles,
     }));
   }
 
@@ -198,11 +204,12 @@ export class MessService {
 
   // ==================== MEMBERS ====================
 
-  async addMember(messId: string, userId: string, role: string = "MEMBER") {
+  async addMember(messId: string, dto: AddMemberDto) {
     const mess = await this.findById(messId);
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const roles = this.normalizeRoles(dto.roles ?? (dto.role ? [dto.role] : ["MEMBER"]));
+    const user = dto.userId
+      ? await this.prisma.user.findUnique({ where: { id: dto.userId } })
+      : await this.createInvitedUser(dto);
 
     if (!user) {
       throw new NotFoundException("User not found");
@@ -210,7 +217,7 @@ export class MessService {
 
     const existing = await this.prisma.messMember.findFirst({
       where: {
-        userId,
+        userId: user.id,
         messId,
       },
     });
@@ -224,16 +231,18 @@ export class MessService {
         data: {
           isActive: true,
           leftDate: null,
-          role: role as MessRole,
+          role: this.primaryRole(roles),
+          roles,
         },
       });
     }
 
     const member = await this.prisma.messMember.create({
       data: {
-        userId,
+        userId: user.id,
         messId,
-        role: role as MessRole,
+        role: this.primaryRole(roles),
+        roles,
         isActive: true,
       },
     });
@@ -245,7 +254,39 @@ export class MessService {
       },
     });
 
+    await this.prisma.user.update({ where: { id: user.id }, data: { isActive: true, approvalStatus: "APPROVED" } });
+    if (!dto.userId && dto.password) {
+      await this.emailService.sendCredentials(user, dto.password, mess.name);
+    }
     return member;
+  }
+
+  async getPendingRegistrations() {
+    return this.prisma.user.findMany({
+      where: { approvalStatus: "PENDING" },
+      select: { id: true, name: true, email: true, phone: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
+  private async createInvitedUser(dto: AddMemberDto) {
+    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (existing) throw new BadRequestException("User already exists with this email");
+    return this.prisma.user.create({
+      data: {
+        name: dto.name!, email: dto.email!, phone: dto.phone || "",
+        password: await bcrypt.hash(dto.password!, 10), isActive: true, approvalStatus: "APPROVED",
+      },
+    });
+  }
+
+  private normalizeRoles(roles: string[]): MessRole[] {
+    const uniqueRoles = [...new Set(roles)] as MessRole[];
+    return uniqueRoles.length ? uniqueRoles : [MessRole.MEMBER];
+  }
+
+  private primaryRole(roles: MessRole[]): MessRole {
+    return roles.includes(MessRole.SUPER_ADMIN) ? MessRole.SUPER_ADMIN : roles.includes(MessRole.ADMIN) ? MessRole.ADMIN : MessRole.MEMBER;
   }
 
   async removeMember(messId: string, userId: string) {
@@ -316,10 +357,21 @@ export class MessService {
       },
     });
 
-    return members;
+    return members.map((member) => ({
+      id: member.id,
+      userId: member.userId,
+      userName: member.user.name,
+      userEmail: member.user.email,
+      userPhone: member.user.phone,
+      userProfileImage: member.user.profileImage,
+      role: member.role,
+      roles: member.roles,
+      joinedDate: member.joinedDate,
+      balance: Number(member.userBalance?.balance ?? 0),
+    }));
   }
 
-  async updateMemberRole(messId: string, userId: string, role: string) {
+  async updateMemberRole(messId: string, userId: string, role: string, requestedRoles?: string[]) {
     const member = await this.prisma.messMember.findFirst({
       where: {
         userId,
@@ -332,7 +384,8 @@ export class MessService {
       throw new NotFoundException("Member not found");
     }
 
-    if (member.role === MessRole.SUPER_ADMIN && role !== "SUPER_ADMIN") {
+    const roles = this.normalizeRoles(requestedRoles ?? [role]);
+    if (member.roles.includes(MessRole.SUPER_ADMIN) && !roles.includes(MessRole.SUPER_ADMIN)) {
       const otherAdmins = await this.prisma.messMember.count({
         where: {
           messId,
@@ -352,7 +405,8 @@ export class MessService {
     return this.prisma.messMember.update({
       where: { id: member.id },
       data: {
-        role: role as MessRole,
+        role: this.primaryRole(roles),
+        roles,
       },
     });
   }

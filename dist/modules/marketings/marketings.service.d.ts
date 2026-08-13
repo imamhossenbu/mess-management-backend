@@ -7,7 +7,7 @@ export declare class MarketingsService {
     private inventoryService;
     private notificationsService;
     constructor(prisma: PrismaService, inventoryService: InventoryService, notificationsService: NotificationsService);
-    create(messId: string, createMarketingDto: CreateMarketingDto): Promise<{
+    create(messId: string, userId: string, createMarketingDto: CreateMarketingDto): Promise<{
         member: {
             user: {
                 id: string;
@@ -15,13 +15,14 @@ export declare class MarketingsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -31,10 +32,10 @@ export declare class MarketingsService {
         updatedAt: Date;
         messId: string;
         memberId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
@@ -47,13 +48,14 @@ export declare class MarketingsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -63,10 +65,10 @@ export declare class MarketingsService {
         updatedAt: Date;
         messId: string;
         memberId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
@@ -79,13 +81,14 @@ export declare class MarketingsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -95,10 +98,10 @@ export declare class MarketingsService {
         updatedAt: Date;
         messId: string;
         memberId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
@@ -111,13 +114,14 @@ export declare class MarketingsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -127,10 +131,10 @@ export declare class MarketingsService {
         updatedAt: Date;
         messId: string;
         memberId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
@@ -143,13 +147,14 @@ export declare class MarketingsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -159,10 +164,10 @@ export declare class MarketingsService {
         updatedAt: Date;
         messId: string;
         memberId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;
@@ -182,13 +187,14 @@ export declare class MarketingsService {
                     phone: string;
                 };
             } & {
-                userId: string;
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                isActive: boolean;
+                userId: string;
                 messId: string;
                 role: import(".prisma/client").$Enums.MessRole;
+                roles: import(".prisma/client").$Enums.MessRole[];
                 joinedDate: Date;
                 leftDate: Date | null;
             };
@@ -198,10 +204,10 @@ export declare class MarketingsService {
             updatedAt: Date;
             messId: string;
             memberId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            quantity: string | null;
             date: Date;
             itemName: string;
+            quantity: string | null;
+            amount: import("@prisma/client/runtime/library").Decimal;
             paymentType: import(".prisma/client").$Enums.PaymentType;
             shopName: string | null;
             note: string | null;
@@ -229,13 +235,14 @@ export declare class MarketingsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -245,10 +252,10 @@ export declare class MarketingsService {
         updatedAt: Date;
         messId: string;
         memberId: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        quantity: string | null;
         date: Date;
         itemName: string;
+        quantity: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentType: import(".prisma/client").$Enums.PaymentType;
         shopName: string | null;
         note: string | null;

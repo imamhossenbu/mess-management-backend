@@ -66,6 +66,10 @@ class MonthlySummaryResponseDto {
 }
 exports.MonthlySummaryResponseDto = MonthlySummaryResponseDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: "Whether this month's calculation sheet has been generated" }),
+    __metadata("design:type", Boolean)
+], MonthlySummaryResponseDto.prototype, "isGenerated", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], MonthlySummaryResponseDto.prototype, "month", void 0);

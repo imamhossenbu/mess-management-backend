@@ -282,7 +282,19 @@ let MonthlySummaryService = class MonthlySummaryService {
             },
         });
         if (summaries.length === 0) {
-            throw new common_1.NotFoundException(`No summary found for ${(0, date_fns_1.format)(monthYear, "MMMM yyyy")}`);
+            return {
+                isGenerated: false,
+                month: (0, date_fns_1.format)(monthYear, "MMMM"),
+                year,
+                totalMeals: 0,
+                mealRate: 0,
+                totalMealBill: 0,
+                totalUtilityBill: 0,
+                totalBill: 0,
+                totalPaid: 0,
+                totalDue: 0,
+                userSummaries: [],
+            };
         }
         const userSummaries = summaries.map((s) => ({
             userId: s.member.userId,
@@ -305,6 +317,7 @@ let MonthlySummaryService = class MonthlySummaryService {
         const totalPaid = summaries.reduce((sum, s) => sum + Number(s.totalPaid), 0);
         const totalDue = summaries.reduce((sum, s) => sum + Number(s.currentDue), 0);
         return {
+            isGenerated: true,
             month: (0, date_fns_1.format)(monthYear, "MMMM"),
             year,
             totalMeals,

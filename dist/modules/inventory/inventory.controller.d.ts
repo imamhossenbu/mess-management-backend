@@ -16,8 +16,8 @@ export declare class InventoryController {
             };
         } & {
             id: string;
-            messId: string;
             createdAt: Date;
+            messId: string;
             date: Date;
             note: string | null;
             inventoryId: string;
@@ -27,9 +27,9 @@ export declare class InventoryController {
         })[];
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         lastUpdated: Date;
         quantity: number;
         type: import(".prisma/client").$Enums.InventoryType;
@@ -50,8 +50,8 @@ export declare class InventoryController {
                 };
             } & {
                 id: string;
-                messId: string;
                 createdAt: Date;
+                messId: string;
                 date: Date;
                 note: string | null;
                 inventoryId: string;
@@ -75,8 +75,8 @@ export declare class InventoryController {
                 };
             } & {
                 id: string;
-                messId: string;
                 createdAt: Date;
+                messId: string;
                 date: Date;
                 note: string | null;
                 inventoryId: string;
@@ -98,8 +98,8 @@ export declare class InventoryController {
             };
         } & {
             id: string;
-            messId: string;
             createdAt: Date;
+            messId: string;
             date: Date;
             note: string | null;
             inventoryId: string;
@@ -109,9 +109,9 @@ export declare class InventoryController {
         })[];
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         lastUpdated: Date;
         quantity: number;
         type: import(".prisma/client").$Enums.InventoryType;
@@ -127,17 +127,17 @@ export declare class InventoryController {
         };
         inventory: {
             id: string;
-            messId: string;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
             lastUpdated: Date;
             quantity: number;
             type: import(".prisma/client").$Enums.InventoryType;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
+        messId: string;
         date: Date;
         note: string | null;
         inventoryId: string;
@@ -153,27 +153,27 @@ export declare class InventoryController {
     }>;
     add(messId: string, addInventoryDto: AddInventoryDto): Promise<{
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         lastUpdated: Date;
         quantity: number;
         type: import(".prisma/client").$Enums.InventoryType;
     }>;
     remove(messId: string, removeInventoryDto: RemoveInventoryDto): Promise<{
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         lastUpdated: Date;
         quantity: number;
         type: import(".prisma/client").$Enums.InventoryType;
     }>;
     set(messId: string, setInventoryDto: SetInventoryDto): Promise<{
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         lastUpdated: Date;
         quantity: number;
         type: import(".prisma/client").$Enums.InventoryType;

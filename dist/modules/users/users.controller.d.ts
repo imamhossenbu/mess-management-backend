@@ -5,23 +5,24 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     create(createUserDto: CreateUserDto): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string | null;
+        profileImage: string | null;
         isActive: boolean;
+        approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
-        email: string;
-        profileImage: string | null;
     }>;
     findAll(): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string;
+        profileImage: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string;
-        email: string;
-        profileImage: string;
         messMembers: ({
             mess: {
                 id: string;
@@ -30,25 +31,26 @@ export declare class UsersController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         })[];
     }[]>;
     findOne(id: string): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string;
+        profileImage: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string;
-        email: string;
-        profileImage: string;
         messMembers: ({
             mess: {
                 id: string;
@@ -65,25 +67,26 @@ export declare class UsersController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         })[];
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string;
+        profileImage: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string;
-        email: string;
-        profileImage: string;
         messMembers: ({
             mess: {
                 id: string;
@@ -92,25 +95,26 @@ export declare class UsersController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         })[];
     }>;
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string;
+        profileImage: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string;
-        email: string;
-        profileImage: string;
         messMembers: ({
             mess: {
                 id: string;
@@ -119,25 +123,26 @@ export declare class UsersController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         })[];
     }>;
     uploadProfileImage(req: any, file: any): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string;
+        profileImage: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string;
-        email: string;
-        profileImage: string;
         messMembers: ({
             mess: {
                 id: string;
@@ -146,25 +151,26 @@ export declare class UsersController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         })[];
     }>;
     removeProfileImage(req: any): Promise<{
         id: string;
+        name: string;
+        email: string;
+        phone: string;
+        profileImage: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string;
-        email: string;
-        profileImage: string;
         messMembers: ({
             mess: {
                 id: string;
@@ -173,22 +179,23 @@ export declare class UsersController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         })[];
     }>;
     remove(id: string): Promise<{
         id: string;
-        isActive: boolean;
         name: string;
-        phone: string;
         email: string;
+        phone: string;
+        isActive: boolean;
     }>;
     hardDelete(id: string): Promise<{
         message: string;

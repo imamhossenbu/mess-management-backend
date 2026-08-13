@@ -9,5 +9,4 @@ export declare class RegisterDto {
     password: string;
     phone?: string;
     roomNumber?: string;
-    role?: Role;
 }

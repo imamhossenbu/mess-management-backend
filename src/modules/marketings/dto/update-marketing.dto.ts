@@ -5,14 +5,13 @@ import {
   IsOptional,
   IsNumber,
   Min,
-  IsUUID,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { PaymentType } from "@prisma/client";
 
 export class UpdateMarketingDto {
   @ApiProperty({ required: false })
-  @IsUUID()
+  @IsString()
   @IsOptional()
   userId?: string;
 

@@ -40,6 +40,9 @@ export class UserMonthlySummaryDto {
 }
 
 export class MonthlySummaryResponseDto {
+  @ApiProperty({ description: "Whether this month's calculation sheet has been generated" })
+  isGenerated: boolean;
+
   @ApiProperty()
   month: string;
 

@@ -30,27 +30,28 @@ export declare class MonthlySummaryService {
         carryToNext: number;
         member: {
             user: {
+                phone: string;
                 id: string;
                 name: string;
-                phone: string;
             };
         } & {
             userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        totalMeal: number;
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
-        totalMeal: number;
         monthYear: Date;
     }[]>;
     getAllMonthlySummaries(messId: string): Promise<{
@@ -64,27 +65,28 @@ export declare class MonthlySummaryService {
         carryToNext: number;
         member: {
             user: {
+                phone: string;
                 id: string;
                 name: string;
-                phone: string;
             };
         } & {
             userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        totalMeal: number;
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
-        totalMeal: number;
         monthYear: Date;
     }[]>;
     updateMonthlySummary(messId: string, id: string, updateDto: any): Promise<{
@@ -98,27 +100,28 @@ export declare class MonthlySummaryService {
         carryToNext: number;
         member: {
             user: {
+                phone: string;
                 id: string;
                 name: string;
-                phone: string;
             };
         } & {
             userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
+        totalMeal: number;
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
-        totalMeal: number;
         monthYear: Date;
     }>;
     deleteMonthlySummary(messId: string, year: number, month: number): Promise<{

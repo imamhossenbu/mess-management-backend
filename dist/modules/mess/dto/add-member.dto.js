@@ -16,14 +16,47 @@ class AddMemberDto {
 }
 exports.AddMemberDto = AddMemberDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "user-id-123" }),
-    (0, class_validator_1.IsUUID)(),
+    (0, swagger_1.ApiProperty)({ required: false, description: "Pending registered user's ID" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AddMemberDto.prototype, "userId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.ValidateIf)((dto) => !dto.userId),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], AddMemberDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.ValidateIf)((dto) => !dto.userId),
+    (0, class_validator_1.IsEmail)(),
+    __metadata("design:type", String)
+], AddMemberDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, minLength: 6 }),
+    (0, class_validator_1.ValidateIf)((dto) => !dto.userId),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    __metadata("design:type", String)
+], AddMemberDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], AddMemberDto.prototype, "phone", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: ["SUPER_ADMIN", "ADMIN", "MEMBER"], default: "MEMBER" }),
     (0, class_validator_1.IsEnum)(["SUPER_ADMIN", "ADMIN", "MEMBER"]),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AddMemberDto.prototype, "role", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: ["SUPER_ADMIN", "ADMIN", "MEMBER"], isArray: true, required: false }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsEnum)(["SUPER_ADMIN", "ADMIN", "MEMBER"], { each: true }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], AddMemberDto.prototype, "roles", void 0);
 //# sourceMappingURL=add-member.dto.js.map

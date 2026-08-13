@@ -1,25 +1,28 @@
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateMessDto, UpdateMessDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
+import { EmailService } from "../notifications/email.service";
+import { AddMemberDto } from "./dto";
 export declare class MessService {
     private prisma;
     private notificationsService;
-    constructor(prisma: PrismaService, notificationsService: NotificationsService);
+    private emailService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService, emailService: EmailService);
     create(userId: string, createMessDto: CreateMessDto): Promise<{
-        description: string | null;
-        email: string | null;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
-        phone: string | null;
-        isActive: boolean;
         slug: string;
+        description: string | null;
         address: string | null;
+        phone: string | null;
+        email: string | null;
         logo: string | null;
         city: string | null;
         country: string | null;
         maxMembers: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getUserMesses(userId: string): Promise<{
         id: string;
@@ -31,126 +34,125 @@ export declare class MessService {
         phone: string;
         email: string;
         role: import(".prisma/client").$Enums.MessRole;
+        roles: import(".prisma/client").$Enums.MessRole[];
     }[]>;
     findOne(messId: string): Promise<{
         members: ({
             user: {
-                email: string;
                 id: string;
                 name: string;
                 phone: string;
+                email: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         })[];
     } & {
-        description: string | null;
-        email: string | null;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
-        phone: string | null;
-        isActive: boolean;
         slug: string;
+        description: string | null;
         address: string | null;
+        phone: string | null;
+        email: string | null;
         logo: string | null;
         city: string | null;
         country: string | null;
         maxMembers: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     findById(messId: string): Promise<{
-        description: string | null;
-        email: string | null;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
-        phone: string | null;
-        isActive: boolean;
         slug: string;
+        description: string | null;
         address: string | null;
+        phone: string | null;
+        email: string | null;
         logo: string | null;
         city: string | null;
         country: string | null;
         maxMembers: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(messId: string, updateMessDto: UpdateMessDto): Promise<{
-        description: string | null;
-        email: string | null;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
-        phone: string | null;
-        isActive: boolean;
         slug: string;
+        description: string | null;
         address: string | null;
+        phone: string | null;
+        email: string | null;
         logo: string | null;
         city: string | null;
         country: string | null;
         maxMembers: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     remove(messId: string): Promise<{
         message: string;
     }>;
-    addMember(messId: string, userId: string, role?: string): Promise<{
-        userId: string;
+    addMember(messId: string, dto: AddMemberDto): Promise<{
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
+        userId: string;
         messId: string;
         role: import(".prisma/client").$Enums.MessRole;
+        roles: import(".prisma/client").$Enums.MessRole[];
         joinedDate: Date;
         leftDate: Date | null;
     }>;
+    getPendingRegistrations(): Promise<{
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        createdAt: Date;
+    }[]>;
+    private createInvitedUser;
+    private normalizeRoles;
+    private primaryRole;
     removeMember(messId: string, userId: string): Promise<{
         message: string;
     }>;
-    getMembers(messId: string): Promise<({
-        user: {
-            email: string;
-            id: string;
-            name: string;
-            phone: string;
-            profileImage: string;
-        };
-        userBalance: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            balance: import("@prisma/client/runtime/library").Decimal;
-            lastUpdated: Date;
-            memberId: string;
-        };
-    } & {
-        userId: string;
+    getMembers(messId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        messId: string;
+        userId: string;
+        userName: string;
+        userEmail: string;
+        userPhone: string;
+        userProfileImage: string;
         role: import(".prisma/client").$Enums.MessRole;
+        roles: import(".prisma/client").$Enums.MessRole[];
         joinedDate: Date;
-        leftDate: Date | null;
-    })[]>;
-    updateMemberRole(messId: string, userId: string, role: string): Promise<{
-        userId: string;
+        balance: number;
+    }[]>;
+    updateMemberRole(messId: string, userId: string, role: string, requestedRoles?: string[]): Promise<{
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
+        userId: string;
         messId: string;
         role: import(".prisma/client").$Enums.MessRole;
+        roles: import(".prisma/client").$Enums.MessRole[];
         joinedDate: Date;
         leftDate: Date | null;
     }>;

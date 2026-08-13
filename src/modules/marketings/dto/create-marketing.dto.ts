@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsOptional,
   IsNumber,
-  IsUUID,
   Min,
   IsDateString,
 } from "class-validator";
@@ -12,10 +11,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { PaymentType } from "@prisma/client";
 
 export class CreateMarketingDto {
-  @ApiProperty({ example: "user-id-123" })
-  @IsUUID()
-  userId: string;
-
   @ApiProperty({ example: "2026-08-08", required: false })
   @IsDateString()
   @IsOptional()

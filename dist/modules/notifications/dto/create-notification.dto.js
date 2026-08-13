@@ -8,7 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BulkNotificationDto = exports.SendEmailDto = exports.CreateNotificationDto = void 0;
 const class_validator_1 = require("class-validator");
@@ -25,7 +24,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.NotificationType, example: "BILL" }),
     (0, class_validator_1.IsEnum)(client_1.NotificationType),
-    __metadata("design:type", typeof (_a = typeof client_1.NotificationType !== "undefined" && client_1.NotificationType) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], CreateNotificationDto.prototype, "type", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: "মাসিক বিল" }),
@@ -84,7 +83,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.NotificationType, example: "BILL" }),
     (0, class_validator_1.IsEnum)(client_1.NotificationType),
-    __metadata("design:type", typeof (_b = typeof client_1.NotificationType !== "undefined" && client_1.NotificationType) === "function" ? _b : Object)
+    __metadata("design:type", String)
 ], BulkNotificationDto.prototype, "type", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: "মাসিক বিল" }),

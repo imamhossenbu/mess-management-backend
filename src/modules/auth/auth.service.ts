@@ -3,12 +3,12 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  BadRequestException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../prisma/prisma.service";
-import { RegisterDto, LoginDto } from "./dto";
-import { Role } from "./dto/register.dto";
+import { RegisterDto, LoginDto, ChangePasswordDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
@@ -32,7 +32,8 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // ✅ Create user
+    // Public registration creates a pending account. A super admin must
+    // approve it and attach it to the mess before the user can sign in.
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
@@ -40,53 +41,15 @@ export class AuthService {
         phone: dto.phone || "",
         password: hashedPassword,
         profileImage: null,
-        isActive: true,
+        isActive: false,
+        approvalStatus: "PENDING",
       },
     });
-
-    // ✅ Create default mess
-    const mess = await this.prisma.mess.create({
-      data: {
-        name: `${user.name}'s Mess`,
-        slug: `mess-${Date.now()}`,
-        description: "My mess",
-        isActive: true,
-      },
-    });
-
-    // ✅ Create mess member (SUPER_ADMIN)
-    const member = await this.prisma.messMember.create({
-      data: {
-        userId: user.id,
-        messId: mess.id,
-        role: "SUPER_ADMIN",
-        isActive: true,
-      },
-    });
-
-    // ✅ Create user balance - memberId ব্যবহার করুন
-    await this.prisma.userBalance.create({
-      data: {
-        memberId: member.id, // ✅ userId না, memberId ব্যবহার করুন
-        balance: 0,
-      },
-    });
-
-    // ✅ Send welcome notification
-    await this.notificationsService.create({
-      userId: user.id,
-      type: "SYSTEM",
-      title: "Welcome to the Mess!",
-      message: `Hello ${user.name}, your account has been created successfully. Your mess "${mess.name}" has been created.`,
-      link: "/profile",
-    });
-
-    // Generate token
-    const token = this.generateToken(user);
-
     const { password, ...userWithoutPassword } = user;
-
-    return { accessToken: token, user: userWithoutPassword };
+    return {
+      message: "Registration submitted. Please wait for super admin approval.",
+      user: userWithoutPassword,
+    };
   }
 
   async login(dto: LoginDto) {
@@ -98,7 +61,10 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    if (!user.isActive) {
+    if (user.approvalStatus === "PENDING") {
+      throw new UnauthorizedException("Your account is waiting for super admin approval");
+    }
+    if (user.approvalStatus === "REJECTED" || !user.isActive) {
       throw new UnauthorizedException("Account is inactive");
     }
 
@@ -108,7 +74,7 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    const { password, ...userWithoutPassword } = user;
+    const userWithoutPassword = await this.withMessRole(user);
     const token = this.generateToken(user);
 
     return { accessToken: token, user: userWithoutPassword };
@@ -137,7 +103,22 @@ export class AuthService {
       throw new UnauthorizedException("User not found");
     }
 
-    return user;
+    return this.withMessRole(user);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !(await bcrypt.compare(dto.currentPassword, user.password))) {
+      throw new BadRequestException("Current password is incorrect");
+    }
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException("New password must be different from the current password");
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: await bcrypt.hash(dto.newPassword, 10) },
+    });
+    return { message: "Password changed successfully" };
   }
 
   async googleLogin(googleUser: any) {
@@ -157,6 +138,7 @@ export class AuthService {
             phone: "",
             password: hashedPassword,
             profileImage: googleUser.picture || null,
+            approvalStatus: "APPROVED",
           },
         });
 
@@ -174,6 +156,7 @@ export class AuthService {
             userId: user.id,
             messId: mess.id,
             role: "SUPER_ADMIN",
+            roles: ["SUPER_ADMIN"],
             isActive: true,
           },
         });
@@ -187,7 +170,7 @@ export class AuthService {
       }
 
       const token = this.generateToken(user);
-      const { password, ...userWithoutPassword } = user;
+      const userWithoutPassword = await this.withMessRole(user);
 
       return {
         accessToken: token,
@@ -201,5 +184,20 @@ export class AuthService {
   private generateToken(user: any) {
     const payload = { sub: user.id, email: user.email };
     return this.jwtService.sign(payload);
+  }
+
+  private async withMessRole(user: any) {
+    const { password, ...safeUser } = user;
+    const membership = await this.prisma.messMember.findFirst({
+      where: { userId: user.id, isActive: true },
+      orderBy: { joinedDate: "asc" },
+      select: { role: true, roles: true },
+    });
+    const roles = membership?.roles?.length ? membership.roles : membership ? [membership.role] : [];
+    return {
+      ...safeUser,
+      role: roles.includes("SUPER_ADMIN") ? "SUPER_ADMIN" : roles.includes("ADMIN") ? "MANAGER" : "MEMBER",
+      roles: roles.map((role) => role === "ADMIN" ? "MANAGER" : role),
+    };
   }
 }

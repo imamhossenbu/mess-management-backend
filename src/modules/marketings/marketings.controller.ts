@@ -8,11 +8,11 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
   Query,
   ParseIntPipe,
+  Request,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -47,9 +47,10 @@ export class MarketingsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async create(
     @CurrentMess() messId: string,
+    @Request() req,
     @Body() createMarketingDto: CreateMarketingDto,
   ) {
-    return this.marketingsService.create(messId, createMarketingDto);
+    return this.marketingsService.create(messId, req.user.id, createMarketingDto);
   }
 
   @Get()
@@ -88,7 +89,7 @@ export class MarketingsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async findByUser(
     @CurrentMess() messId: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("userId") userId: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
   ) {
@@ -107,7 +108,7 @@ export class MarketingsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async findOne(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
   ) {
     return this.marketingsService.findOne(messId, id);
   }
@@ -116,7 +117,7 @@ export class MarketingsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   async update(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() updateMarketingDto: UpdateMarketingDto,
   ) {
     return this.marketingsService.update(messId, id, updateMarketingDto);
@@ -127,7 +128,7 @@ export class MarketingsController {
   @HttpCode(HttpStatus.OK)
   async remove(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
   ) {
     return this.marketingsService.remove(messId, id);
   }

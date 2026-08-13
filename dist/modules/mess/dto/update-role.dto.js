@@ -20,4 +20,11 @@ __decorate([
     (0, class_validator_1.IsEnum)(["SUPER_ADMIN", "ADMIN", "MEMBER"]),
     __metadata("design:type", String)
 ], UpdateRoleDto.prototype, "role", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: ["SUPER_ADMIN", "ADMIN", "MEMBER"], isArray: true, required: false }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsEnum)(["SUPER_ADMIN", "ADMIN", "MEMBER"], { each: true }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], UpdateRoleDto.prototype, "roles", void 0);
 //# sourceMappingURL=update-role.dto.js.map

@@ -8,7 +8,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
   Query,
@@ -74,7 +73,7 @@ export class MonthlySummaryController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async getUserSummaries(
     @CurrentMess() messId: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("userId") userId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
@@ -90,7 +89,7 @@ export class MonthlySummaryController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   async update(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() updateDto: UpdateMonthlySummaryDto,
   ) {
     return this.monthlySummaryService.updateMonthlySummary(

@@ -12,12 +12,12 @@ export declare class JwtStrategy extends JwtStrategy_base {
         sub: string;
         email: string;
     }): Promise<{
-        email: string;
         id: string;
         name: string;
         phone: string;
-        profileImage: string;
+        email: string;
         isActive: boolean;
+        profileImage: string;
     }>;
 }
 export {};

@@ -34,6 +34,9 @@ let AuthController = class AuthController {
     async getProfile(req) {
         return this.authService.getProfile(req.user.id);
     }
+    async changePassword(req, dto) {
+        return this.authService.changePassword(req.user.id, dto);
+    }
     async googleAuth() {
     }
     async googleAuthRedirect(req, res) {
@@ -80,6 +83,16 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Post)("change-password"),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, dto_1.ChangePasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "changePassword", null);
 __decorate([
     (0, common_1.Get)("google"),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("google")),

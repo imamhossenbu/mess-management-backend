@@ -9,7 +9,6 @@ import {
   Delete,
   UseGuards,
   Request,
-  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
   ForbiddenException,
@@ -56,12 +55,18 @@ export class MessController {
     return this.messService.getUserMesses(req.user.id);
   }
 
+  @Get("registrations/pending")
+  @Roles(Role.SUPER_ADMIN)
+  async getPendingRegistrations() {
+    return this.messService.getPendingRegistrations();
+  }
+
   // ✅ Get Mess Details - Any logged in user (must be member)
   @Get(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   @ApiOperation({ summary: "Get mess details" })
   @ApiParam({ name: "id", description: "Mess ID" })
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+  async findOne(@Param("id") id: string) {
     return this.messService.findOne(id);
   }
 
@@ -71,7 +76,7 @@ export class MessController {
   @ApiOperation({ summary: "Update mess details" })
   @ApiParam({ name: "id", description: "Mess ID" })
   async update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() updateMessDto: UpdateMessDto,
   ) {
     return this.messService.update(id, updateMessDto);
@@ -83,7 +88,7 @@ export class MessController {
   @ApiOperation({ summary: "Delete a mess" })
   @ApiParam({ name: "id", description: "Mess ID" })
   @HttpCode(HttpStatus.OK)
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
+  async remove(@Param("id") id: string) {
     throw new ForbiddenException("Deletion of mess is disabled.");
   }
 
@@ -92,7 +97,7 @@ export class MessController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   @ApiOperation({ summary: "Get all members of a mess" })
   @ApiParam({ name: "id", description: "Mess ID" })
-  async getMembers(@Param("id", ParseUUIDPipe) id: string) {
+  async getMembers(@Param("id") id: string) {
     return this.messService.getMembers(id);
   }
 
@@ -102,13 +107,12 @@ export class MessController {
   @ApiOperation({ summary: "Add a member to the mess" })
   @ApiParam({ name: "id", description: "Mess ID" })
   async addMember(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() addMemberDto: AddMemberDto,
   ) {
     return this.messService.addMember(
       id,
-      addMemberDto.userId,
-      addMemberDto.role,
+      addMemberDto,
     );
   }
 
@@ -120,8 +124,8 @@ export class MessController {
   @ApiParam({ name: "userId", description: "User ID" })
   @HttpCode(HttpStatus.OK)
   async removeMember(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("id") id: string,
+    @Param("userId") userId: string,
   ) {
     return this.messService.removeMember(id, userId);
   }
@@ -133,10 +137,11 @@ export class MessController {
   @ApiParam({ name: "id", description: "Mess ID" })
   @ApiParam({ name: "userId", description: "User ID" })
   async updateMemberRole(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("id") id: string,
+    @Param("userId") userId: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ) {
-    return this.messService.updateMemberRole(id, userId, updateRoleDto.role);
+    return this.messService.updateMemberRole(id, userId, updateRoleDto.role, updateRoleDto.roles);
   }
+
 }

@@ -13,13 +13,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -42,13 +43,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -71,13 +73,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -100,13 +103,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -129,13 +133,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -158,13 +163,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };
@@ -192,13 +198,14 @@ export declare class PaymentsService {
                     phone: string;
                 };
             } & {
-                userId: string;
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                isActive: boolean;
+                userId: string;
                 messId: string;
                 role: import(".prisma/client").$Enums.MessRole;
+                roles: import(".prisma/client").$Enums.MessRole[];
                 joinedDate: Date;
                 leftDate: Date | null;
             };
@@ -246,13 +253,14 @@ export declare class PaymentsService {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
             joinedDate: Date;
             leftDate: Date | null;
         };

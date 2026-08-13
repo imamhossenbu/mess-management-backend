@@ -31,6 +31,9 @@ let MessController = class MessController {
     async getUserMesses(req) {
         return this.messService.getUserMesses(req.user.id);
     }
+    async getPendingRegistrations() {
+        return this.messService.getPendingRegistrations();
+    }
     async findOne(id) {
         return this.messService.findOne(id);
     }
@@ -44,13 +47,13 @@ let MessController = class MessController {
         return this.messService.getMembers(id);
     }
     async addMember(id, addMemberDto) {
-        return this.messService.addMember(id, addMemberDto.userId, addMemberDto.role);
+        return this.messService.addMember(id, addMemberDto);
     }
     async removeMember(id, userId) {
         return this.messService.removeMember(id, userId);
     }
     async updateMemberRole(id, userId, updateRoleDto) {
-        return this.messService.updateMemberRole(id, userId, updateRoleDto.role);
+        return this.messService.updateMemberRole(id, userId, updateRoleDto.role, updateRoleDto.roles);
     }
 };
 exports.MessController = MessController;
@@ -74,11 +77,18 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], MessController.prototype, "getUserMesses", null);
 __decorate([
+    (0, common_1.Get)("registrations/pending"),
+    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], MessController.prototype, "getPendingRegistrations", null);
+__decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     (0, swagger_1.ApiOperation)({ summary: "Get mess details" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
@@ -88,7 +98,7 @@ __decorate([
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Update mess details" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, dto_1.UpdateMessDto]),
@@ -100,7 +110,7 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: "Delete a mess" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
@@ -110,7 +120,7 @@ __decorate([
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     (0, swagger_1.ApiOperation)({ summary: "Get all members of a mess" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
@@ -120,7 +130,7 @@ __decorate([
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({ summary: "Add a member to the mess" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, dto_1.AddMemberDto]),
@@ -133,8 +143,8 @@ __decorate([
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
     (0, swagger_1.ApiParam)({ name: "userId", description: "User ID" }),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Param)("userId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
@@ -145,8 +155,8 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: "Update member role" }),
     (0, swagger_1.ApiParam)({ name: "id", description: "Mess ID" }),
     (0, swagger_1.ApiParam)({ name: "userId", description: "User ID" }),
-    __param(0, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Param)("userId")),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, dto_1.UpdateRoleDto]),

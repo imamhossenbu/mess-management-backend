@@ -18,7 +18,7 @@ import {
   ApiBearerAuth,
 } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
-import { RegisterDto, LoginDto, AuthResponseDto } from "./dto";
+import { RegisterDto, LoginDto, ChangePasswordDto } from "./dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { ConfigService } from "@nestjs/config";
 
@@ -49,6 +49,13 @@ export class AuthController {
   @ApiOperation({ summary: "Get current user profile" })
   async getProfile(@Request() req) {
     return this.authService.getProfile(req.user.id);
+  }
+
+  @Post("change-password")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.id, dto);
   }
 
   @Get("google")

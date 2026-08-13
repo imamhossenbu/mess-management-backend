@@ -8,7 +8,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
   UseInterceptors,
@@ -60,14 +59,14 @@ export class UsersController {
 
   @Get(":id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+  async findOne(@Param("id") id: string) {
     return this.usersService.findOne(id);
   }
 
-  @Patch(":id")
+  @Patch("manage/:id")
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   async update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -102,14 +101,14 @@ export class UsersController {
 
   @Delete(":id")
   @Roles(Role.SUPER_ADMIN)
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
+  async remove(@Param("id") id: string) {
     return this.usersService.remove(id);
   }
 
   @Delete(":id/hard")
   @Roles(Role.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
-  async hardDelete(@Param("id", ParseUUIDPipe) id: string) {
+  async hardDelete(@Param("id") id: string) {
     return this.usersService.hardDelete(id);
   }
 }

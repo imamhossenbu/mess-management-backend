@@ -12,9 +12,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -26,9 +26,9 @@ export declare class NotificationsController {
         count: number;
         notifications: {
             id: string;
-            userId: string;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             link: string | null;
             message: string;
             type: import(".prisma/client").$Enums.NotificationType;
@@ -45,9 +45,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -63,9 +63,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -81,9 +81,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -102,9 +102,9 @@ export declare class NotificationsController {
         message: string;
         emailLog: {
             id: string;
-            userId: string;
-            createdAt: Date;
             email: string;
+            createdAt: Date;
+            userId: string;
             message: string;
             subject: string;
             html: string | null;
@@ -120,9 +120,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -138,9 +138,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -159,9 +159,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -177,9 +177,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
@@ -195,9 +195,9 @@ export declare class NotificationsController {
         };
     } & {
         id: string;
-        userId: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         link: string | null;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;

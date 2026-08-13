@@ -13,6 +13,7 @@ export declare class UserMonthlySummaryDto {
     carryToNext: number;
 }
 export declare class MonthlySummaryResponseDto {
+    isGenerated: boolean;
     month: string;
     year: number;
     totalMeals: number;

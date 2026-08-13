@@ -3,7 +3,7 @@ import { CreateMarketingDto, UpdateMarketingDto } from "./dto";
 export declare class MarketingsController {
     private readonly marketingsService;
     constructor(marketingsService: MarketingsService);
-    create(messId: string, createMarketingDto: CreateMarketingDto): Promise<{
+    create(messId: string, req: any, createMarketingDto: CreateMarketingDto): Promise<{
         member: {
             user: {
                 id: string;
@@ -12,20 +12,21 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         date: Date;
         itemName: string;
@@ -44,20 +45,21 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         date: Date;
         itemName: string;
@@ -83,20 +85,21 @@ export declare class MarketingsController {
                 };
             } & {
                 id: string;
-                userId: string;
-                messId: string;
-                role: import(".prisma/client").$Enums.MessRole;
-                joinedDate: Date;
-                leftDate: Date | null;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                userId: string;
+                messId: string;
+                role: import(".prisma/client").$Enums.MessRole;
+                roles: import(".prisma/client").$Enums.MessRole[];
+                joinedDate: Date;
+                leftDate: Date | null;
             };
         } & {
             id: string;
-            messId: string;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
             memberId: string;
             date: Date;
             itemName: string;
@@ -130,20 +133,21 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         date: Date;
         itemName: string;
@@ -162,20 +166,21 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         date: Date;
         itemName: string;
@@ -194,20 +199,21 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         date: Date;
         itemName: string;
@@ -226,20 +232,21 @@ export declare class MarketingsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         date: Date;
         itemName: string;

@@ -39,7 +39,7 @@ let RolesGuard = class RolesGuard {
                 isActive: true,
             },
             orderBy: { joinedDate: "asc" },
-            select: { id: true, messId: true, role: true },
+            select: { id: true, messId: true, role: true, roles: true },
         });
         if (!member) {
             throw new common_1.ForbiddenException("You are not an active mess member");
@@ -47,14 +47,12 @@ let RolesGuard = class RolesGuard {
         request.messId = member.messId;
         request.memberId = member.id;
         request.memberRole = member.role;
-        const rawRole = member.role;
-        let userRole = register_dto_1.Role.MEMBER;
-        if (rawRole === "SUPER_ADMIN") {
-            userRole = register_dto_1.Role.SUPER_ADMIN;
-        }
-        else if (rawRole === "ADMIN") {
-            userRole = register_dto_1.Role.MANAGER;
-        }
+        const rawRoles = member.roles.length ? member.roles : [member.role];
+        const userRole = rawRoles.includes("SUPER_ADMIN")
+            ? register_dto_1.Role.SUPER_ADMIN
+            : rawRoles.includes("ADMIN")
+                ? register_dto_1.Role.MANAGER
+                : register_dto_1.Role.MEMBER;
         const hasRole = requiredRoles.some((role) => {
             if (userRole === register_dto_1.Role.SUPER_ADMIN)
                 return true;

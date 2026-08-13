@@ -12,25 +12,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     }>;
     findAll(messId: string): Promise<({
         member: {
@@ -41,25 +42,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     })[]>;
     getAllUserBalances(messId: string): Promise<{
         userId: string;
@@ -82,25 +84,26 @@ export declare class PaymentsController {
                 };
             } & {
                 id: string;
-                userId: string;
-                messId: string;
-                role: import(".prisma/client").$Enums.MessRole;
-                joinedDate: Date;
-                leftDate: Date | null;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                userId: string;
+                messId: string;
+                role: import(".prisma/client").$Enums.MessRole;
+                roles: import(".prisma/client").$Enums.MessRole[];
+                joinedDate: Date;
+                leftDate: Date | null;
             };
         } & {
             id: string;
-            messId: string;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
             memberId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             paymentDate: Date;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+            note: string | null;
         })[];
     }>;
     findByUser(messId: string, userId: string, startDate?: string, endDate?: string): Promise<({
@@ -112,25 +115,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     })[]>;
     getUserBalance(messId: string, userId: string): Promise<{
         userId: string;
@@ -139,14 +143,14 @@ export declare class PaymentsController {
         balance: number;
         payments: {
             id: string;
-            messId: string;
             createdAt: Date;
             updatedAt: Date;
+            messId: string;
             memberId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             paymentDate: Date;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+            note: string | null;
         }[];
     }>;
     findByDate(messId: string, date: string): Promise<({
@@ -158,25 +162,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     })[]>;
     findByMonth(messId: string, year: number, month: number): Promise<({
         member: {
@@ -187,25 +192,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     })[]>;
     findOne(messId: string, id: string): Promise<{
         member: {
@@ -216,25 +222,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     }>;
     update(messId: string, id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         member: {
@@ -245,25 +252,26 @@ export declare class PaymentsController {
             };
         } & {
             id: string;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            messId: string;
+            role: import(".prisma/client").$Enums.MessRole;
+            roles: import(".prisma/client").$Enums.MessRole[];
+            joinedDate: Date;
+            leftDate: Date | null;
         };
     } & {
         id: string;
-        messId: string;
         createdAt: Date;
         updatedAt: Date;
+        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
     }>;
     remove(messId: string, id: string): Promise<{
         message: string;

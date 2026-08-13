@@ -371,10 +371,22 @@ export class MonthlySummaryService {
       },
     });
 
+    // A month without a generated sheet is a normal first-use state, not an
+    // API error. The frontend can show its Generate action without a 404.
     if (summaries.length === 0) {
-      throw new NotFoundException(
-        `No summary found for ${format(monthYear, "MMMM yyyy")}`,
-      );
+      return {
+        isGenerated: false,
+        month: format(monthYear, "MMMM"),
+        year,
+        totalMeals: 0,
+        mealRate: 0,
+        totalMealBill: 0,
+        totalUtilityBill: 0,
+        totalBill: 0,
+        totalPaid: 0,
+        totalDue: 0,
+        userSummaries: [],
+      } as MonthlySummaryResponseDto;
     }
 
     const userSummaries: UserMonthlySummaryDto[] = summaries.map((s) => ({
@@ -415,6 +427,7 @@ export class MonthlySummaryService {
     );
 
     return {
+      isGenerated: true,
       month: format(monthYear, "MMMM"),
       year,
       totalMeals,

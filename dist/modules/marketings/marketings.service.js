@@ -22,10 +22,10 @@ let MarketingsService = class MarketingsService {
         this.inventoryService = inventoryService;
         this.notificationsService = notificationsService;
     }
-    async create(messId, createMarketingDto) {
+    async create(messId, userId, createMarketingDto) {
         const member = await this.prisma.messMember.findFirst({
             where: {
-                userId: createMarketingDto.userId,
+                userId,
                 messId: messId,
                 isActive: true,
             },
@@ -83,7 +83,7 @@ let MarketingsService = class MarketingsService {
         }
         await this.updateDailySummary(messId, date);
         await this.notificationsService.create({
-            userId: createMarketingDto.userId,
+            userId,
             type: "SYSTEM",
             title: "Bazar Entry Added",
             message: `You have added a bazar entry: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,

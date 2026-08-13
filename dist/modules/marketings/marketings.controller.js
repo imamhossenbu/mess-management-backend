@@ -26,8 +26,8 @@ let MarketingsController = class MarketingsController {
     constructor(marketingsService) {
         this.marketingsService = marketingsService;
     }
-    async create(messId, createMarketingDto) {
-        return this.marketingsService.create(messId, createMarketingDto);
+    async create(messId, req, createMarketingDto) {
+        return this.marketingsService.create(messId, req.user.id, createMarketingDto);
     }
     async findAll(messId) {
         return this.marketingsService.findAll(messId);
@@ -67,9 +67,10 @@ __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.CreateMarketingDto]),
+    __metadata("design:paramtypes", [String, Object, dto_1.CreateMarketingDto]),
     __metadata("design:returntype", Promise)
 ], MarketingsController.prototype, "create", null);
 __decorate([
@@ -103,7 +104,7 @@ __decorate([
     (0, common_1.Get)("user/:userId"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("userId", common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Param)("userId")),
     __param(2, (0, common_1.Query)("startDate")),
     __param(3, (0, common_1.Query)("endDate")),
     __metadata("design:type", Function),
@@ -123,7 +124,7 @@ __decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
@@ -132,7 +133,7 @@ __decorate([
     (0, common_1.Patch)(":id"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Param)("id")),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, dto_1.UpdateMarketingDto]),
@@ -143,7 +144,7 @@ __decorate([
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("id", common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)

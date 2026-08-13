@@ -1,6 +1,5 @@
 import { PaymentType } from "@prisma/client";
 export declare class CreateMarketingDto {
-    userId: string;
     date?: string;
     itemName: string;
     quantity?: string;

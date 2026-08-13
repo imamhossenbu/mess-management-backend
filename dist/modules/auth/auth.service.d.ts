@@ -1,6 +1,6 @@
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../../prisma/prisma.service";
-import { RegisterDto, LoginDto } from "./dto";
+import { RegisterDto, LoginDto, ChangePasswordDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
 export declare class AuthService {
     private prisma;
@@ -8,87 +8,31 @@ export declare class AuthService {
     private notificationsService;
     constructor(prisma: PrismaService, jwtService: JwtService, notificationsService: NotificationsService);
     register(dto: RegisterDto): Promise<{
-        accessToken: string;
+        message: string;
         user: {
-            email: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
+            email: string;
             phone: string | null;
             profileImage: string | null;
             isActive: boolean;
+            approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
-        user: {
-            email: string;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            name: string;
-            phone: string | null;
-            profileImage: string | null;
-            isActive: boolean;
-        };
+        user: any;
     }>;
-    getProfile(userId: string): Promise<{
-        email: string;
-        id: string;
-        name: string;
-        phone: string;
-        profileImage: string;
-        isActive: boolean;
-        messMembers: ({
-            mess: {
-                description: string | null;
-                email: string | null;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                phone: string | null;
-                isActive: boolean;
-                slug: string;
-                address: string | null;
-                logo: string | null;
-                city: string | null;
-                country: string | null;
-                maxMembers: number;
-            };
-            userBalance: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                lastUpdated: Date;
-                memberId: string;
-            };
-        } & {
-            userId: string;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            joinedDate: Date;
-            leftDate: Date | null;
-        })[];
+    getProfile(userId: string): Promise<any>;
+    changePassword(userId: string, dto: ChangePasswordDto): Promise<{
+        message: string;
     }>;
     googleLogin(googleUser: any): Promise<{
         accessToken: string;
-        user: {
-            email: string;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            name: string;
-            phone: string | null;
-            profileImage: string | null;
-            isActive: boolean;
-        };
+        user: any;
     }>;
     private generateToken;
+    private withMessRole;
 }

@@ -5,111 +5,111 @@ export declare class NotificationsService {
     constructor(prisma: PrismaService);
     create(createNotificationDto: CreateNotificationDto): Promise<{
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     }>;
     createBulk(bulkNotificationDto: BulkNotificationDto): Promise<{
         message: string;
         count: number;
         notifications: {
-            type: import(".prisma/client").$Enums.NotificationType;
-            title: string;
-            userId: string;
-            message: string;
-            link: string | null;
-            isRead: boolean;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
+            link: string | null;
+            message: string;
+            type: import(".prisma/client").$Enums.NotificationType;
+            title: string;
+            isRead: boolean;
         }[];
     }>;
     findAll(): Promise<({
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     })[]>;
     findOne(id: string): Promise<{
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     }>;
     findByUser(userId: string): Promise<({
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     })[]>;
     getUnreadCount(userId: string): Promise<{
         unreadCount: number;
     }>;
     markAsRead(id: string): Promise<{
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     }>;
     markAllAsRead(userId: string): Promise<{
         message: string;
@@ -125,69 +125,69 @@ export declare class NotificationsService {
     sendEmail(sendEmailDto: SendEmailDto): Promise<{
         message: string;
         emailLog: {
+            id: string;
+            email: string;
+            createdAt: Date;
             userId: string;
             message: string;
-            email: string;
             subject: string;
             html: string | null;
-            id: string;
-            createdAt: Date;
             sentAt: Date;
         };
     }>;
     sendBillNotification(userId: string, billAmount: number, dueDate: Date): Promise<{
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     }>;
     sendPaymentConfirmation(userId: string, amount: number): Promise<{
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     }>;
     sendMealReminder(userId: string, mealType: string): Promise<{
         user: {
-            email: string;
             id: string;
             name: string;
             phone: string;
+            email: string;
         };
     } & {
-        type: import(".prisma/client").$Enums.NotificationType;
-        title: string;
-        userId: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        link: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
+        title: string;
+        isRead: boolean;
     }>;
     sendInventoryAlert(type: string, quantity: number): Promise<{
         message: string;

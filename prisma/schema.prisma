@@ -22,6 +22,12 @@ enum MessRole {
   MEMBER
 }
 
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum PaymentType {
   CASH
   DEBT
@@ -102,6 +108,7 @@ model User {
   password          String
   profileImage      String?
   isActive          Boolean           @default(true)
+  approvalStatus    ApprovalStatus    @default(PENDING)
   
   // Relations
   messMembers       MessMember[]
@@ -121,6 +128,7 @@ model MessMember {
   messId            String
   mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
   role              MessRole          @default(MEMBER)
+  roles             MessRole[]        @default([MEMBER])
   joinedDate        DateTime          @default(now())
   leftDate          DateTime?
   isActive          Boolean           @default(true)

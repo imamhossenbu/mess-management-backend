@@ -21,11 +21,11 @@ export class MarketingsService {
 
   // ==================== CREATE ====================
 
-  async create(messId: string, createMarketingDto: CreateMarketingDto) {
+  async create(messId: string, userId: string, createMarketingDto: CreateMarketingDto) {
     // Check if member exists in this mess
     const member = await this.prisma.messMember.findFirst({
       where: {
-        userId: createMarketingDto.userId,
+        userId,
         messId: messId,
         isActive: true,
       },
@@ -97,7 +97,7 @@ export class MarketingsService {
 
     // ✅ Send notification to user who created the marketing
     await this.notificationsService.create({
-      userId: createMarketingDto.userId,
+      userId,
       type: "SYSTEM",
       title: "Bazar Entry Added",
       message: `You have added a bazar entry: ${createMarketingDto.itemName} (${createMarketingDto.quantity}) - ${createMarketingDto.amount} TK`,

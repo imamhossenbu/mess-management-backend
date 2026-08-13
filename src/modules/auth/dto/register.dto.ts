@@ -1,11 +1,5 @@
 // src/modules/auth/dto/register.dto.ts
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsEnum,
-  MinLength,
-} from "class-validator";
+import { IsString, IsEmail, IsOptional, MinLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export enum Role {
@@ -38,8 +32,4 @@ export class RegisterDto {
   @IsOptional()
   roomNumber?: string;
 
-  @ApiProperty({ enum: Role, default: Role.MEMBER })
-  @IsEnum(Role)
-  @IsOptional()
-  role?: Role;
 }

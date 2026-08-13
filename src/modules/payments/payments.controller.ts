@@ -8,7 +8,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
   Query,
@@ -84,7 +83,7 @@ export class PaymentsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async findByUser(
     @CurrentMess() messId: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("userId") userId: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
   ) {
@@ -97,7 +96,7 @@ export class PaymentsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async getUserBalance(
     @CurrentMess() messId: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("userId") userId: string,
   ) {
     return this.paymentsService.getUserBalance(messId, userId);
   }
@@ -122,7 +121,7 @@ export class PaymentsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async findOne(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
   ) {
     return this.paymentsService.findOne(messId, id);
   }
@@ -131,7 +130,7 @@ export class PaymentsController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   async update(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() updatePaymentDto: UpdatePaymentDto,
   ) {
     return this.paymentsService.update(messId, id, updatePaymentDto);
@@ -142,7 +141,7 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   async remove(
     @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
   ) {
     return this.paymentsService.remove(messId, id);
   }

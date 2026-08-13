@@ -49,10 +49,4 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "roomNumber", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ enum: Role, default: Role.MEMBER }),
-    (0, class_validator_1.IsEnum)(Role),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "role", void 0);
 //# sourceMappingURL=register.dto.js.map

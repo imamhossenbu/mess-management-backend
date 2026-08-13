@@ -2,10 +2,10 @@
 import { Module } from "@nestjs/common";
 import { MonthlySummaryService } from "./monthly-summary.service";
 import { MonthlySummaryController } from "./monthly-summary.controller";
-import { NotificationsModule } from "../notifications/notifications.module"; // ✅ Import
+import { NotificationsModule } from "../notifications/notifications.module";
 
 @Module({
-  imports: [NotificationsModule], // ✅ Add
+  imports: [NotificationsModule],
   controllers: [MonthlySummaryController],
   providers: [MonthlySummaryService],
   exports: [MonthlySummaryService],

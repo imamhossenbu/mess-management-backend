@@ -5,7 +5,7 @@ export declare class MonthlySummaryService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    generateMonthlySummary(messId: string, year: number, month: number): Promise<{
+    generateMonthlySummary(year: number, month: number): Promise<{
         month: string;
         year: number;
         totalMeals: number;
@@ -18,8 +18,9 @@ export declare class MonthlySummaryService {
         userSummaries: UserMonthlySummaryDto[];
     }>;
     private saveMonthlySummary;
-    getMonthlySummary(messId: string, year: number, month: number): Promise<MonthlySummaryResponseDto>;
-    getUserMonthlySummaries(messId: string, userId: string, year?: number, month?: number): Promise<{
+    private sendNotifications;
+    getMonthlySummary(year: number, month: number): Promise<MonthlySummaryResponseDto>;
+    getUserMonthlySummaries(userId: string, year?: number, month?: number): Promise<{
         mealRate: number;
         mealBill: number;
         utilityShare: number;
@@ -28,14 +29,19 @@ export declare class MonthlySummaryService {
         previousDue: number;
         currentDue: number;
         carryToNext: number;
-        userId: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }[]>;
-    getAllMonthlySummaries(messId: string): Promise<{
+    getAllMonthlySummaries(): Promise<{
         mealRate: number;
         mealBill: number;
         utilityShare: number;
@@ -44,14 +50,19 @@ export declare class MonthlySummaryService {
         previousDue: number;
         currentDue: number;
         carryToNext: number;
-        userId: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }[]>;
-    updateMonthlySummary(messId: string, id: string, updateDto: any): Promise<{
+    updateMonthlySummary(id: string, updateDto: any): Promise<{
         mealRate: number;
         mealBill: number;
         utilityShare: number;
@@ -60,14 +71,19 @@ export declare class MonthlySummaryService {
         previousDue: number;
         currentDue: number;
         carryToNext: number;
-        userId: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }>;
-    deleteMonthlySummary(messId: string, year: number, month: number): Promise<{
+    deleteMonthlySummary(year: number, month: number): Promise<{
         message: string;
         count: number;
     }>;

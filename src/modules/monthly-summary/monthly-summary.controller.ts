@@ -13,14 +13,7 @@ import {
   Query,
   ParseIntPipe,
 } from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { MonthlySummaryService } from "./monthly-summary.service";
 import {
   MonthlySummaryResponseDto,
@@ -30,8 +23,6 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("monthly-summary")
 @ApiBearerAuth("JWT-auth")
@@ -41,44 +32,41 @@ export class MonthlySummaryController {
   constructor(private readonly monthlySummaryService: MonthlySummaryService) {}
 
   @Post("generate")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async generate(
-    @CurrentMess() messId: string,
-    @Body() generateDto: GenerateMonthlySummaryDto,
-  ) {
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Generate monthly summary" })
+  async generate(@Body() generateDto: GenerateMonthlySummaryDto) {
     return this.monthlySummaryService.generateMonthlySummary(
-      messId,
       generateDto.year,
       generateDto.month,
     );
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findAll(@CurrentMess() messId: string) {
-    return this.monthlySummaryService.getAllMonthlySummaries(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get all monthly summaries" })
+  async findAll() {
+    return this.monthlySummaryService.getAllMonthlySummaries();
   }
 
   @Get("month")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly summary for specific month" })
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year: number,
     @Query("month", ParseIntPipe) month: number,
   ) {
-    return this.monthlySummaryService.getMonthlySummary(messId, year, month);
+    return this.monthlySummaryService.getMonthlySummary(year, month);
   }
 
   @Get("user/:userId")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get user monthly summaries" })
   async getUserSummaries(
-    @CurrentMess() messId: string,
     @Param("userId") userId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     return this.monthlySummaryService.getUserMonthlySummaries(
-      messId,
       userId,
       year,
       month,
@@ -86,27 +74,23 @@ export class MonthlySummaryController {
   }
 
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Update monthly summary" })
   async update(
-    @CurrentMess() messId: string,
     @Param("id") id: string,
     @Body() updateDto: UpdateMonthlySummaryDto,
   ) {
-    return this.monthlySummaryService.updateMonthlySummary(
-      messId,
-      id,
-      updateDto,
-    );
+    return this.monthlySummaryService.updateMonthlySummary(id, updateDto);
   }
 
   @Delete("month/:year/:month")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Delete monthly summary" })
   async deleteMonthlySummary(
-    @CurrentMess() messId: string,
     @Param("year", ParseIntPipe) year: number,
     @Param("month", ParseIntPipe) month: number,
   ) {
-    return this.monthlySummaryService.deleteMonthlySummary(messId, year, month);
+    return this.monthlySummaryService.deleteMonthlySummary(year, month);
   }
 }

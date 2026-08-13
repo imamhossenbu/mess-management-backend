@@ -20,89 +20,87 @@ const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../../common/roles.decorator");
-const register_dto_1 = require("../auth/dto/register.dto");
-const current_mess_decorator_1 = require("../../common/current-mess.decorator");
 let MonthlySummaryController = class MonthlySummaryController {
     constructor(monthlySummaryService) {
         this.monthlySummaryService = monthlySummaryService;
     }
-    async generate(messId, generateDto) {
-        return this.monthlySummaryService.generateMonthlySummary(messId, generateDto.year, generateDto.month);
+    async generate(generateDto) {
+        return this.monthlySummaryService.generateMonthlySummary(generateDto.year, generateDto.month);
     }
-    async findAll(messId) {
-        return this.monthlySummaryService.getAllMonthlySummaries(messId);
+    async findAll() {
+        return this.monthlySummaryService.getAllMonthlySummaries();
     }
-    async getMonthlySummary(messId, year, month) {
-        return this.monthlySummaryService.getMonthlySummary(messId, year, month);
+    async getMonthlySummary(year, month) {
+        return this.monthlySummaryService.getMonthlySummary(year, month);
     }
-    async getUserSummaries(messId, userId, year, month) {
-        return this.monthlySummaryService.getUserMonthlySummaries(messId, userId, year, month);
+    async getUserSummaries(userId, year, month) {
+        return this.monthlySummaryService.getUserMonthlySummaries(userId, year, month);
     }
-    async update(messId, id, updateDto) {
-        return this.monthlySummaryService.updateMonthlySummary(messId, id, updateDto);
+    async update(id, updateDto) {
+        return this.monthlySummaryService.updateMonthlySummary(id, updateDto);
     }
-    async deleteMonthlySummary(messId, year, month) {
-        return this.monthlySummaryService.deleteMonthlySummary(messId, year, month);
+    async deleteMonthlySummary(year, month) {
+        return this.monthlySummaryService.deleteMonthlySummary(year, month);
     }
 };
 exports.MonthlySummaryController = MonthlySummaryController;
 __decorate([
     (0, common_1.Post)("generate"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Body)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, swagger_1.ApiOperation)({ summary: "Generate monthly summary" }),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.GenerateMonthlySummaryDto]),
+    __metadata("design:paramtypes", [dto_1.GenerateMonthlySummaryDto]),
     __metadata("design:returntype", Promise)
 ], MonthlySummaryController.prototype, "generate", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get all monthly summaries" }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], MonthlySummaryController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)("month"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get monthly summary for specific month" }),
+    __param(0, (0, common_1.Query)("year", common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", Promise)
+], MonthlySummaryController.prototype, "getMonthlySummary", null);
+__decorate([
+    (0, common_1.Get)("user/:userId"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get user monthly summaries" }),
+    __param(0, (0, common_1.Param)("userId")),
     __param(1, (0, common_1.Query)("year", common_1.ParseIntPipe)),
     __param(2, (0, common_1.Query)("month", common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)
-], MonthlySummaryController.prototype, "getMonthlySummary", null);
-__decorate([
-    (0, common_1.Get)("user/:userId"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("userId")),
-    __param(2, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(3, (0, common_1.Query)("month", common_1.ParseIntPipe)),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Number, Number]),
-    __metadata("design:returntype", Promise)
 ], MonthlySummaryController.prototype, "getUserSummaries", null);
 __decorate([
     (0, common_1.Patch)(":id"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("id")),
-    __param(2, (0, common_1.Body)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, swagger_1.ApiOperation)({ summary: "Update monthly summary" }),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, dto_1.UpdateMonthlySummaryDto]),
+    __metadata("design:paramtypes", [String, dto_1.UpdateMonthlySummaryDto]),
     __metadata("design:returntype", Promise)
 ], MonthlySummaryController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)("month/:year/:month"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("year", common_1.ParseIntPipe)),
-    __param(2, (0, common_1.Param)("month", common_1.ParseIntPipe)),
+    (0, swagger_1.ApiOperation)({ summary: "Delete monthly summary" }),
+    __param(0, (0, common_1.Param)("year", common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Param)("month", common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", Promise)
 ], MonthlySummaryController.prototype, "deleteMonthlySummary", null);
 exports.MonthlySummaryController = MonthlySummaryController = __decorate([

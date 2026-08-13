@@ -2,10 +2,10 @@
 import { Module } from "@nestjs/common";
 import { ShopDebtsService } from "./shop-debts.service";
 import { ShopDebtsController } from "./shop-debts.controller";
-import { NotificationsModule } from "../notifications/notifications.module"; // ✅ Import
+import { NotificationsModule } from "../notifications/notifications.module";
 
 @Module({
-  imports: [NotificationsModule], // ✅ Add
+  imports: [NotificationsModule],
   controllers: [ShopDebtsController],
   providers: [ShopDebtsService],
   exports: [ShopDebtsService],

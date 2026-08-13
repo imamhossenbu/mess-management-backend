@@ -14,27 +14,12 @@ import {
   Query,
   ParseIntPipe,
 } from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { ShopDebtsService } from "./shop-debts.service";
-import {
-  CreateShopDebtDto,
-  UpdateShopDebtDto,
-  ShopDebtResponseDto,
-  ShopDebtSummaryDto,
-  MonthlyShopDebtSummaryDto,
-} from "./dto";
+import { CreateShopDebtDto, UpdateShopDebtDto } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("shop-debts")
 @ApiBearerAuth("JWT-auth")
@@ -44,113 +29,104 @@ export class ShopDebtsController {
   constructor(private readonly shopDebtsService: ShopDebtsService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async create(
-    @CurrentMess() messId: string,
-    @Body() createShopDebtDto: CreateShopDebtDto,
-  ) {
-    return this.shopDebtsService.create(messId, createShopDebtDto);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Create a new shop debt" })
+  async create(@Body() createShopDebtDto: CreateShopDebtDto) {
+    return this.shopDebtsService.create(createShopDebtDto);
   }
 
   @Post(":id/pay")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Pay a shop debt" })
   async payDebt(
-    @CurrentMess() messId: string,
     @Param("id", ParseUUIDPipe) id: string,
     @Query("paidDate") paidDate?: string,
   ) {
-    return this.shopDebtsService.payDebt(messId, id, paidDate);
+    return this.shopDebtsService.payDebt(id, paidDate);
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findAll(@CurrentMess() messId: string) {
-    return this.shopDebtsService.findAll(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get all shop debts" })
+  async findAll() {
+    return this.shopDebtsService.findAll();
   }
 
   @Get("summary")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async getSummary(@CurrentMess() messId: string) {
-    return this.shopDebtsService.getSummary(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get shop debt summary" })
+  async getSummary() {
+    return this.shopDebtsService.getSummary();
   }
 
   @Get("monthly")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly shop debt summary" })
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
-    return this.shopDebtsService.getMonthlySummary(
-      messId,
-      queryYear,
-      queryMonth,
-    );
+    return this.shopDebtsService.getMonthlySummary(queryYear, queryMonth);
   }
 
   @Get("monthly-report")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly shop debt report" })
   async getMonthlyReport(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year: number,
     @Query("month", ParseIntPipe) month: number,
   ) {
-    return this.shopDebtsService.getMonthlySummaryReport(messId, year, month);
+    return this.shopDebtsService.getMonthlySummaryReport(year, month);
   }
 
   @Get("shop/:shopName")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findByShop(
-    @CurrentMess() messId: string,
-    @Param("shopName") shopName: string,
-  ) {
-    return this.shopDebtsService.findByShop(messId, shopName);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get shop debts by shop name" })
+  async findByShop(@Param("shopName") shopName: string) {
+    return this.shopDebtsService.findByShop(shopName);
   }
 
   @Get("date/:date")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findByDate(@CurrentMess() messId: string, @Param("date") date: string) {
-    return this.shopDebtsService.findByDate(messId, new Date(date));
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get shop debts by date" })
+  async findByDate(@Param("date") date: string) {
+    return this.shopDebtsService.findByDate(new Date(date));
   }
 
   @Get("month/:year/:month")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get shop debts by month" })
   async findByMonth(
-    @CurrentMess() messId: string,
     @Param("year", ParseIntPipe) year: number,
     @Param("month", ParseIntPipe) month: number,
   ) {
-    return this.shopDebtsService.findByMonth(messId, year, month);
+    return this.shopDebtsService.findByMonth(year, month);
   }
 
   @Get(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findOne(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
-    return this.shopDebtsService.findOne(messId, id);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get shop debt by ID" })
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+    return this.shopDebtsService.findOne(id);
   }
 
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Update shop debt" })
   async update(
-    @CurrentMess() messId: string,
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateShopDebtDto: UpdateShopDebtDto,
   ) {
-    return this.shopDebtsService.update(messId, id, updateShopDebtDto);
+    return this.shopDebtsService.update(id, updateShopDebtDto);
   }
 
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
-  async remove(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
-    return this.shopDebtsService.remove(messId, id);
+  @ApiOperation({ summary: "Delete shop debt" })
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
+    return this.shopDebtsService.remove(id);
   }
 }

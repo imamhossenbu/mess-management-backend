@@ -8,11 +8,11 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
   Query,
   ParseIntPipe,
+  Request,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -35,8 +35,6 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("meals")
 @ApiBearerAuth("JWT-auth")
@@ -46,115 +44,115 @@ export class MealsController {
   constructor(private readonly mealsService: MealsService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async create(
-    @CurrentMess() messId: string,
-    @Body() createMealDto: CreateMealDto,
-  ) {
-    return this.mealsService.create(messId, createMealDto);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Create a single meal entry" })
+  async create(@Body() createMealDto: CreateMealDto) {
+    return this.mealsService.create(createMealDto);
   }
 
   @Post("bulk")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async bulkEntry(
-    @CurrentMess() messId: string,
-    @Body() bulkMealDto: BulkMealEntryDto,
-  ) {
-    return this.mealsService.bulkEntry(messId, bulkMealDto);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Bulk meal entry for multiple users" })
+  async bulkEntry(@Body() bulkMealDto: BulkMealEntryDto) {
+    return this.mealsService.bulkEntry(bulkMealDto);
   }
 
   @Post("single-meal-type")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async singleMealEntry(
-    @CurrentMess() messId: string,
-    @Body() singleMealDto: SingleMealEntryDto,
-  ) {
-    return this.mealsService.singleMealEntry(messId, singleMealDto);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Single meal type entry (morning/lunch/dinner)" })
+  async singleMealEntry(@Body() singleMealDto: SingleMealEntryDto) {
+    return this.mealsService.singleMealEntry(singleMealDto);
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findAll(@CurrentMess() messId: string) {
-    return this.mealsService.findAll(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get all meals" })
+  async findAll() {
+    return this.mealsService.findAll();
   }
 
   @Get("daily")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async getDailySummary(
-    @CurrentMess() messId: string,
-    @Query("date") date?: string,
-  ) {
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get daily meal summary" })
+  async getDailySummary(@Query("date") date?: string) {
     const queryDate = date ? new Date(date) : new Date();
-    return this.mealsService.getDailySummary(messId, queryDate);
+    return this.mealsService.getDailySummary(queryDate);
   }
 
   @Get("monthly")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly meal summary" })
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
-    return this.mealsService.getMonthlySummary(messId, queryYear, queryMonth);
+    return this.mealsService.getMonthlySummary(queryYear, queryMonth);
+  }
+
+  // ✅ NEW: Monthly Date-wise Meal View API
+  @Get("monthly/date-wise")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly date-wise meal view" })
+  @ApiQuery({ name: "year", required: false, type: Number })
+  @ApiQuery({ name: "month", required: false, type: Number })
+  async getMonthlyDateWiseMeals(
+    @Query("year", ParseIntPipe) year?: number,
+    @Query("month", ParseIntPipe) month?: number,
+  ) {
+    const queryYear = year || new Date().getFullYear();
+    const queryMonth = month || new Date().getMonth() + 1;
+    return this.mealsService.getMonthlyDateWiseMeals(queryYear, queryMonth);
   }
 
   @Get("user/:userId")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get meals by user" })
   async findByUser(
-    @CurrentMess() messId: string,
-    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("userId") userId: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.mealsService.findByUser(messId, userId, start, end);
+    return this.mealsService.findByUser(userId, start, end);
   }
 
   @Get("date/:date")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findByDate(@CurrentMess() messId: string, @Param("date") date: string) {
-    return this.mealsService.findByDate(messId, new Date(date));
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get meals by date" })
+  async findByDate(@Param("date") date: string) {
+    return this.mealsService.findByDate(new Date(date));
   }
 
   @Get(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findOne(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
-    return this.mealsService.findOne(messId, id);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get meal by ID" })
+  async findOne(@Param("id") id: string) {
+    return this.mealsService.findOne(id);
   }
 
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async update(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body() updateMealDto: UpdateMealDto,
-  ) {
-    return this.mealsService.update(messId, id, updateMealDto);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Update meal entry" })
+  async update(@Param("id") id: string, @Body() updateMealDto: UpdateMealDto) {
+    return this.mealsService.update(id, updateMealDto);
   }
 
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
-  async remove(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
-    return this.mealsService.remove(messId, id);
+  @ApiOperation({ summary: "Delete meal entry" })
+  async remove(@Param("id") id: string) {
+    return this.mealsService.remove(id);
   }
 
   @Delete("date/:date")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
-  async removeByDate(
-    @CurrentMess() messId: string,
-    @Param("date") date: string,
-  ) {
-    return this.mealsService.removeByDate(messId, new Date(date));
+  @ApiOperation({ summary: "Delete all meals for a date" })
+  async removeByDate(@Param("date") date: string) {
+    return this.mealsService.removeByDate(new Date(date));
   }
 }

@@ -5,18 +5,24 @@ export declare class MealsService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    create(messId: string, createMealDto: CreateMealDto): Promise<{
-        userId: string;
+    create(createMealDto: CreateMealDto): Promise<{
+        userName: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
-    bulkEntry(messId: string, bulkMealDto: BulkMealEntryDto): Promise<{
+    bulkEntry(bulkMealDto: BulkMealEntryDto): Promise<{
         date: string;
         totalUsers: number;
         summary: {
@@ -26,18 +32,24 @@ export declare class MealsService {
             totalMeals: number;
         };
         meals: {
-            userId: string;
+            userName: string;
+            user: {
+                id: string;
+                name: string;
+                phone: string;
+            };
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         }[];
     }>;
-    singleMealEntry(messId: string, singleMealDto: SingleMealEntryDto): Promise<{
+    singleMealEntry(singleMealDto: SingleMealEntryDto): Promise<{
         date: string;
         mealType: "morning" | "lunch" | "dinner";
         totalUsers: number;
@@ -48,62 +60,92 @@ export declare class MealsService {
             totalMeals: number;
         };
         meals: {
-            userId: string;
+            userName: string;
+            user: {
+                id: string;
+                name: string;
+                phone: string;
+            };
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         }[];
     }>;
-    findAll(messId: string): Promise<{
-        userId: string;
+    findAll(): Promise<{
+        userName: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
-    findOne(messId: string, id: string): Promise<{
-        userId: string;
+    findOne(id: string): Promise<{
+        userName: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
-    findByUser(messId: string, userId: string, startDate?: Date, endDate?: Date): Promise<{
-        userId: string;
+    findByUser(userId: string, startDate?: Date, endDate?: Date): Promise<{
+        userName: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
-    }[]>;
-    findByDate(messId: string, date: Date): Promise<{
-        userId: string;
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+    }[]>;
+    findByDate(date: Date): Promise<{
+        userName: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
+        id: string;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
-    getDailySummary(messId: string, date: Date): Promise<{
+    getDailySummary(date: Date): Promise<{
         date: string;
         totalMorning: number;
         totalLunch: number;
@@ -114,18 +156,24 @@ export declare class MealsService {
         runningMarketCost: number;
         runningTotalMeal: number;
         meals: {
-            userId: string;
+            userName: string;
+            user: {
+                id: string;
+                name: string;
+                phone: string;
+            };
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         }[];
     }>;
-    getMonthlySummary(messId: string, year: number, month: number): Promise<{
+    getMonthlySummary(year: number, month: number): Promise<{
         month: string;
         year: number;
         totalMorning: number;
@@ -142,21 +190,63 @@ export declare class MealsService {
             totalMeals: number;
         }[];
     }>;
-    update(messId: string, id: string, updateMealDto: UpdateMealDto): Promise<{
-        userId: string;
+    getMonthlyDateWiseMeals(year: number, month: number): Promise<{
+        month: string;
+        year: number;
+        totalDays: number;
+        monthlyTotals: {
+            totalMorning: any;
+            totalLunch: any;
+            totalDinner: any;
+            totalMeals: any;
+        };
+        userMonthlyTotals: {
+            userId: string;
+            userName: string;
+            morning: number;
+            lunch: number;
+            dinner: number;
+            totalMeals: number;
+        }[];
+        dailyData: {
+            date: string;
+            dayOfWeek: string;
+            totalMorning: any;
+            totalLunch: any;
+            totalDinner: any;
+            totalMeals: any;
+            totalUsers: any;
+            userMeals: {
+                userId: string;
+                userName: string;
+                morning: any;
+                lunch: any;
+                dinner: any;
+                totalMeal: any;
+            }[];
+        }[];
+    }>;
+    update(id: string, updateMealDto: UpdateMealDto): Promise<{
+        userName: string;
+        user: {
+            id: string;
+            name: string;
+            phone: string;
+        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
-    remove(messId: string, id: string): Promise<{
+    remove(id: string): Promise<{
         message: string;
     }>;
-    removeByDate(messId: string, date: Date): Promise<{
+    removeByDate(date: Date): Promise<{
         message: string;
         count: number;
     }>;

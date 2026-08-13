@@ -19,7 +19,7 @@ export class UtilityBillsService {
 
   // ==================== CREATE ====================
 
-  async create(messId: string, createUtilityBillDto: CreateUtilityBillDto) {
+  async create(createUtilityBillDto: CreateUtilityBillDto) {
     const { billType, monthYear, amount, paidBy, note } = createUtilityBillDto;
 
     // যদি paidBy দেওয়া থাকে, চেক করুন
@@ -37,7 +37,6 @@ export class UtilityBillsService {
     // Check if bill already exists for this month and type
     const existing = await this.prisma.utilityBill.findFirst({
       where: {
-        messId,
         billType,
         monthYear: {
           gte: startOfDay(monthDate),
@@ -54,7 +53,6 @@ export class UtilityBillsService {
 
     const bill = await this.prisma.utilityBill.create({
       data: {
-        messId,
         billType,
         monthYear: monthDate,
         amount,
@@ -67,19 +65,16 @@ export class UtilityBillsService {
             id: true,
             name: true,
             phone: true,
+            email: true,
           },
         },
       },
     });
 
-    // ✅ Send notification to all users of this mess
-    const members = await this.prisma.messMember.findMany({
+    // Send notification to all users
+    const users = await this.prisma.user.findMany({
       where: {
-        messId,
         isActive: true,
-      },
-      include: {
-        user: true,
       },
     });
 
@@ -91,9 +86,9 @@ export class UtilityBillsService {
       KHALA: "Cook",
     };
 
-    for (const member of members) {
+    for (const user of users) {
       await this.notificationsService.create({
-        userId: member.userId,
+        userId: user.id,
         type: "BILL",
         title: `New ${billTypeLabels[billType] || billType} Bill Added`,
         message: `${format(monthDate, "MMMM yyyy")} ${billTypeLabels[billType] || billType} bill of ${amount} TK has been added.`,
@@ -101,21 +96,17 @@ export class UtilityBillsService {
       });
     }
 
-    // ✅ Send notification to admins
-    const admins = await this.prisma.messMember.findMany({
+    // Send notification to admins
+    const admins = await this.prisma.user.findMany({
       where: {
-        messId,
-        role: { in: ["SUPER_ADMIN", "ADMIN"] },
+        role: "ADMIN",
         isActive: true,
-      },
-      include: {
-        user: true,
       },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.userId,
+        userId: admin.id,
         type: "BILL",
         title: "Utility Bill Added",
         message: `${billTypeLabels[billType] || billType} bill of ${amount} TK added for ${format(monthDate, "MMMM yyyy")}`,
@@ -123,20 +114,23 @@ export class UtilityBillsService {
       });
     }
 
-    return bill;
+    return {
+      ...bill,
+      paidByName: bill.payer?.name || null,
+    };
   }
 
   // ==================== FIND ====================
 
-  async findAll(messId: string) {
-    return this.prisma.utilityBill.findMany({
-      where: { messId },
+  async findAll() {
+    const bills = await this.prisma.utilityBill.findMany({
       include: {
         payer: {
           select: {
             id: true,
             name: true,
             phone: true,
+            email: true,
           },
         },
       },
@@ -144,38 +138,44 @@ export class UtilityBillsService {
         monthYear: "desc",
       },
     });
+
+    return bills.map((b) => ({
+      ...b,
+      paidByName: b.payer?.name || null,
+    }));
   }
 
-  async findOne(messId: string, id: string) {
+  async findOne(id: string) {
     const bill = await this.prisma.utilityBill.findUnique({
-      where: { id, messId },
+      where: { id },
       include: {
         payer: {
           select: {
             id: true,
             name: true,
             phone: true,
+            email: true,
           },
         },
       },
     });
 
     if (!bill) {
-      throw new NotFoundException(
-        `Utility bill with ID ${id} not found in this mess`,
-      );
+      throw new NotFoundException(`Utility bill with ID ${id} not found`);
     }
 
-    return bill;
+    return {
+      ...bill,
+      paidByName: bill.payer?.name || null,
+    };
   }
 
-  async findByMonth(messId: string, year: number, month: number) {
+  async findByMonth(year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
-    return this.prisma.utilityBill.findMany({
+    const bills = await this.prisma.utilityBill.findMany({
       where: {
-        messId,
         monthYear: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
@@ -187,6 +187,7 @@ export class UtilityBillsService {
             id: true,
             name: true,
             phone: true,
+            email: true,
           },
         },
       },
@@ -194,15 +195,19 @@ export class UtilityBillsService {
         billType: "asc",
       },
     });
+
+    return bills.map((b) => ({
+      ...b,
+      paidByName: b.payer?.name || null,
+    }));
   }
 
-  async getMonthlySummary(messId: string, year: number, month: number) {
-    const bills = await this.findByMonth(messId, year, month);
+  async getMonthlySummary(year: number, month: number) {
+    const bills = await this.findByMonth(year, month);
 
-    // Get active members count
-    const activeMembers = await this.prisma.messMember.count({
+    // Get active users count
+    const activeUsers = await this.prisma.user.count({
       where: {
-        messId,
         isActive: true,
       },
     });
@@ -229,24 +234,20 @@ export class UtilityBillsService {
 
     const totalAmount =
       totalCurrent + totalWifi + totalRent + totalWater + totalKhala;
-    const perPersonShare = activeMembers > 0 ? totalAmount / activeMembers : 0;
+    const perPersonShare = activeUsers > 0 ? totalAmount / activeUsers : 0;
 
-    // ✅ Send notification if total utility bill is too high
+    // Send notification if total utility bill is too high
     if (totalAmount > 50000) {
-      const admins = await this.prisma.messMember.findMany({
+      const admins = await this.prisma.user.findMany({
         where: {
-          messId,
-          role: { in: ["SUPER_ADMIN", "ADMIN"] },
+          role: "ADMIN",
           isActive: true,
-        },
-        include: {
-          user: true,
         },
       });
 
       for (const admin of admins) {
         await this.notificationsService.create({
-          userId: admin.userId,
+          userId: admin.id,
           type: "BILL",
           title: "High Utility Bill Alert",
           message: `Total utility bill for ${format(new Date(year, month - 1, 1), "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
@@ -265,15 +266,16 @@ export class UtilityBillsService {
       totalKhala,
       totalAmount,
       perPersonShare,
-      totalMembers: activeMembers,
-      bills,
+      totalMembers: activeUsers,
+      bills: bills.map((b) => ({
+        ...b,
+        paidByName: b.payer?.name || null,
+      })),
     };
   }
 
-  async getSummary(messId: string) {
-    const bills = await this.prisma.utilityBill.findMany({
-      where: { messId },
-    });
+  async getSummary() {
+    const bills = await this.prisma.utilityBill.findMany();
 
     const totalCurrent = bills
       .filter((b) => b.billType === BillType.CURRENT)
@@ -298,9 +300,8 @@ export class UtilityBillsService {
     const totalAmount =
       totalCurrent + totalWifi + totalRent + totalWater + totalKhala;
 
-    const activeMembers = await this.prisma.messMember.count({
+    const activeUsers = await this.prisma.user.count({
       where: {
-        messId,
         isActive: true,
       },
     });
@@ -312,20 +313,16 @@ export class UtilityBillsService {
       totalWater,
       totalKhala,
       totalAmount,
-      perPersonShare: activeMembers > 0 ? totalAmount / activeMembers : 0,
-      totalMembers: activeMembers,
+      perPersonShare: activeUsers > 0 ? totalAmount / activeUsers : 0,
+      totalMembers: activeUsers,
     };
   }
 
   // ==================== UPDATE ====================
 
-  async update(
-    messId: string,
-    id: string,
-    updateUtilityBillDto: UpdateUtilityBillDto,
-  ) {
+  async update(id: string, updateUtilityBillDto: UpdateUtilityBillDto) {
     const existing = await this.prisma.utilityBill.findUnique({
-      where: { id, messId },
+      where: { id },
       include: {
         payer: {
           select: {
@@ -337,9 +334,7 @@ export class UtilityBillsService {
     });
 
     if (!existing) {
-      throw new NotFoundException(
-        `Utility bill with ID ${id} not found in this mess`,
-      );
+      throw new NotFoundException(`Utility bill with ID ${id} not found`);
     }
 
     if (updateUtilityBillDto.paidBy) {
@@ -367,6 +362,7 @@ export class UtilityBillsService {
             id: true,
             name: true,
             phone: true,
+            email: true,
           },
         },
       },
@@ -380,19 +376,15 @@ export class UtilityBillsService {
       KHALA: "Cook",
     };
 
-    const members = await this.prisma.messMember.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
-        messId,
         isActive: true,
-      },
-      include: {
-        user: true,
       },
     });
 
-    for (const member of members) {
+    for (const user of users) {
       await this.notificationsService.create({
-        userId: member.userId,
+        userId: user.id,
         type: "BILL",
         title: `Utility Bill Updated`,
         message: `${billTypeLabels[existing.billType] || existing.billType} bill for ${format(existing.monthYear, "MMMM yyyy")} has been updated to ${updated.amount} TK.`,
@@ -400,14 +392,17 @@ export class UtilityBillsService {
       });
     }
 
-    return updated;
+    return {
+      ...updated,
+      paidByName: updated.payer?.name || null,
+    };
   }
 
   // ==================== DELETE ====================
 
-  async remove(messId: string, id: string) {
+  async remove(id: string) {
     const bill = await this.prisma.utilityBill.findUnique({
-      where: { id, messId },
+      where: { id },
       include: {
         payer: {
           select: {
@@ -419,9 +414,7 @@ export class UtilityBillsService {
     });
 
     if (!bill) {
-      throw new NotFoundException(
-        `Utility bill with ID ${id} not found in this mess`,
-      );
+      throw new NotFoundException(`Utility bill with ID ${id} not found`);
     }
 
     await this.prisma.utilityBill.delete({
@@ -436,19 +429,15 @@ export class UtilityBillsService {
       KHALA: "Cook",
     };
 
-    const members = await this.prisma.messMember.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
-        messId,
         isActive: true,
-      },
-      include: {
-        user: true,
       },
     });
 
-    for (const member of members) {
+    for (const user of users) {
       await this.notificationsService.create({
-        userId: member.userId,
+        userId: user.id,
         type: "BILL",
         title: `Utility Bill Deleted`,
         message: `${billTypeLabels[bill.billType] || bill.billType} bill for ${format(bill.monthYear, "MMMM yyyy")} has been deleted.`,
@@ -459,13 +448,12 @@ export class UtilityBillsService {
     return { message: `Utility bill with ID ${id} deleted successfully` };
   }
 
-  async removeByMonth(messId: string, year: number, month: number) {
+  async removeByMonth(year: number, month: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
     const deleted = await this.prisma.utilityBill.deleteMany({
       where: {
-        messId,
         monthYear: {
           gte: startOfDay(startDate),
           lte: endOfDay(endDate),
@@ -474,19 +462,15 @@ export class UtilityBillsService {
     });
 
     if (deleted.count > 0) {
-      const members = await this.prisma.messMember.findMany({
+      const users = await this.prisma.user.findMany({
         where: {
-          messId,
           isActive: true,
-        },
-        include: {
-          user: true,
         },
       });
 
-      for (const member of members) {
+      for (const user of users) {
         await this.notificationsService.create({
-          userId: member.userId,
+          userId: user.id,
           type: "BILL",
           title: `Utility Bills Deleted`,
           message: `${deleted.count} utility bills for ${format(startDate, "MMMM yyyy")} have been deleted.`,

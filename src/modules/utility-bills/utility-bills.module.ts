@@ -2,10 +2,10 @@
 import { Module } from "@nestjs/common";
 import { UtilityBillsService } from "./utility-bills.service";
 import { UtilityBillsController } from "./utility-bills.controller";
-import { NotificationsModule } from "../notifications/notifications.module"; // ✅ Import
+import { NotificationsModule } from "../notifications/notifications.module";
 
 @Module({
-  imports: [NotificationsModule], // ✅ Add
+  imports: [NotificationsModule],
   controllers: [UtilityBillsController],
   providers: [UtilityBillsService],
   exports: [UtilityBillsService],

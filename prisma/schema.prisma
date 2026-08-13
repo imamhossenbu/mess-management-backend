@@ -16,6 +16,15 @@ enum Role {
   MEMBER
 }
 
+enum BillType {
+  CURRENT
+  WIFI
+  RENT
+  WATER
+  KHALA
+}
+
+
 enum ApprovalStatus {
   PENDING
   APPROVED
@@ -213,7 +222,7 @@ model MarketingItem {
 // ==================== UTILITY BILL ====================
 model UtilityBill {
   id                String            @id @default(cuid())
-  billType          String
+  billType          BillType
   monthYear         DateTime
   amount            Decimal
   paidBy            String?

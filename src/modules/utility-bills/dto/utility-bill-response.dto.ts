@@ -1,12 +1,12 @@
 // src/modules/utility-bills/dto/utility-bill-response.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
-import { BillType } from "@prisma/client";
+import { BillType } from "./create-utility-bill.dto";
 
 export class UtilityBillResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: BillType })
   billType: BillType;
 
   @ApiProperty()

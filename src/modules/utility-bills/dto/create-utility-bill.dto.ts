@@ -9,7 +9,15 @@ import {
   IsDateString,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { BillType } from "@prisma/client";
+
+// ✅ Define BillType locally since it's not exported from @prisma/client
+export enum BillType {
+  CURRENT = "CURRENT",
+  WIFI = "WIFI",
+  RENT = "RENT",
+  WATER = "WATER",
+  KHALA = "KHALA",
+}
 
 export class CreateUtilityBillDto {
   @ApiProperty({ enum: BillType, example: "CURRENT" })

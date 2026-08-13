@@ -14,27 +14,12 @@ import {
   Query,
   ParseIntPipe,
 } from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { UtilityBillsService } from "./utility-bills.service";
-import {
-  CreateUtilityBillDto,
-  UpdateUtilityBillDto,
-  UtilityBillResponseDto,
-  MonthlyUtilitySummaryDto,
-  UtilityBillSummaryDto,
-} from "./dto";
+import { CreateUtilityBillDto, UpdateUtilityBillDto } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("utility-bills")
 @ApiBearerAuth("JWT-auth")
@@ -44,89 +29,81 @@ export class UtilityBillsController {
   constructor(private readonly utilityBillsService: UtilityBillsService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async create(
-    @CurrentMess() messId: string,
-    @Body() createUtilityBillDto: CreateUtilityBillDto,
-  ) {
-    return this.utilityBillsService.create(messId, createUtilityBillDto);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Create a new utility bill" })
+  async create(@Body() createUtilityBillDto: CreateUtilityBillDto) {
+    return this.utilityBillsService.create(createUtilityBillDto);
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findAll(@CurrentMess() messId: string) {
-    return this.utilityBillsService.findAll(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get all utility bills" })
+  async findAll() {
+    return this.utilityBillsService.findAll();
   }
 
   @Get("summary")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async getSummary(@CurrentMess() messId: string) {
-    return this.utilityBillsService.getSummary(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get utility bill summary" })
+  async getSummary() {
+    return this.utilityBillsService.getSummary();
   }
 
   @Get("monthly")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly utility bill summary" })
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
-    return this.utilityBillsService.getMonthlySummary(
-      messId,
-      queryYear,
-      queryMonth,
-    );
+    return this.utilityBillsService.getMonthlySummary(queryYear, queryMonth);
   }
 
   @Get("month/:year/:month")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get utility bills by month" })
   async findByMonth(
-    @CurrentMess() messId: string,
     @Param("year", ParseIntPipe) year: number,
     @Param("month", ParseIntPipe) month: number,
   ) {
-    return this.utilityBillsService.findByMonth(messId, year, month);
+    return this.utilityBillsService.findByMonth(year, month);
   }
 
   @Get(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findOne(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
-    return this.utilityBillsService.findOne(messId, id);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get utility bill by ID" })
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+    return this.utilityBillsService.findOne(id);
   }
 
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Update utility bill" })
   async update(
-    @CurrentMess() messId: string,
     @Param("id", ParseUUIDPipe) id: string,
     @Body() updateUtilityBillDto: UpdateUtilityBillDto,
   ) {
-    return this.utilityBillsService.update(messId, id, updateUtilityBillDto);
+    return this.utilityBillsService.update(id, updateUtilityBillDto);
   }
 
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
-  async remove(
-    @CurrentMess() messId: string,
-    @Param("id", ParseUUIDPipe) id: string,
-  ) {
-    return this.utilityBillsService.remove(messId, id);
+  @ApiOperation({ summary: "Delete utility bill" })
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
+    return this.utilityBillsService.remove(id);
   }
 
   @Delete("month/:year/:month")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Delete all utility bills for a month" })
   async removeByMonth(
-    @CurrentMess() messId: string,
     @Param("year", ParseIntPipe) year: number,
     @Param("month", ParseIntPipe) month: number,
   ) {
-    return this.utilityBillsService.removeByMonth(messId, year, month);
+    return this.utilityBillsService.removeByMonth(year, month);
   }
 }

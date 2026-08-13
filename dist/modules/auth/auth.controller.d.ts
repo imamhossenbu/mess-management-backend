@@ -12,9 +12,12 @@ export declare class AuthController {
             name: string;
             email: string;
             phone: string | null;
+            role: import(".prisma/client").$Enums.Role;
             profileImage: string | null;
             isActive: boolean;
             approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
+            joinedDate: Date;
+            leftDate: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };

@@ -69,13 +69,31 @@ let AuthService = class AuthService {
                 phone: dto.phone || "",
                 password: hashedPassword,
                 profileImage: null,
-                isActive: false,
-                approvalStatus: "PENDING",
+                isActive: true,
+                approvalStatus: "APPROVED",
+                role: "MEMBER",
+                userBalance: {
+                    create: {
+                        balance: 0,
+                    },
+                },
             },
         });
         const { password, ...userWithoutPassword } = user;
+        try {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "SYSTEM",
+                title: "Welcome to Mess Management",
+                message: `Welcome ${user.name}! Your account has been created successfully.`,
+                link: "/dashboard",
+            });
+        }
+        catch (error) {
+            console.error("Failed to send welcome notification:", error);
+        }
         return {
-            message: "Registration submitted. Please wait for super admin approval.",
+            message: "Account created successfully!",
             user: userWithoutPassword,
         };
     }
@@ -87,7 +105,7 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException("Invalid credentials");
         }
         if (user.approvalStatus === "PENDING") {
-            throw new common_1.UnauthorizedException("Your account is waiting for super admin approval");
+            throw new common_1.UnauthorizedException("Your account is waiting for approval");
         }
         if (user.approvalStatus === "REJECTED" || !user.isActive) {
             throw new common_1.UnauthorizedException("Account is inactive");
@@ -96,45 +114,68 @@ let AuthService = class AuthService {
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException("Invalid credentials");
         }
-        const userWithoutPassword = await this.withMessRole(user);
         const token = this.generateToken(user);
-        return { accessToken: token, user: userWithoutPassword };
+        const userWithoutPassword = this.excludePassword(user);
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { updatedAt: new Date() },
+        });
+        return {
+            accessToken: token,
+            user: userWithoutPassword,
+        };
     }
     async getProfile(userId) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                profileImage: true,
-                isActive: true,
-                messMembers: {
-                    include: {
-                        mess: true,
-                        userBalance: true,
-                    },
+            include: {
+                userBalance: true,
+                meals: {
+                    take: 5,
+                    orderBy: { date: "desc" },
+                },
+                payments: {
+                    take: 5,
+                    orderBy: { paymentDate: "desc" },
                 },
             },
         });
         if (!user) {
             throw new common_1.UnauthorizedException("User not found");
         }
-        return this.withMessRole(user);
+        return this.excludePassword(user);
     }
     async changePassword(userId, dto) {
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!user || !(await bcrypt.compare(dto.currentPassword, user.password))) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.BadRequestException("User not found");
+        }
+        const isPasswordValid = await bcrypt.compare(dto.currentPassword, user.password);
+        if (!isPasswordValid) {
             throw new common_1.BadRequestException("Current password is incorrect");
         }
         if (dto.currentPassword === dto.newPassword) {
             throw new common_1.BadRequestException("New password must be different from the current password");
         }
+        const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
         await this.prisma.user.update({
             where: { id: userId },
-            data: { password: await bcrypt.hash(dto.newPassword, 10) },
+            data: { password: hashedPassword },
         });
+        try {
+            await this.notificationsService.create({
+                userId: user.id,
+                type: "SYSTEM",
+                title: "Password Changed",
+                message: "Your password has been changed successfully.",
+                link: "/profile",
+            });
+        }
+        catch (error) {
+            console.error("Failed to send password change notification:", error);
+        }
         return { message: "Password changed successfully" };
     }
     async googleLogin(googleUser) {
@@ -153,59 +194,39 @@ let AuthService = class AuthService {
                         password: hashedPassword,
                         profileImage: googleUser.picture || null,
                         approvalStatus: "APPROVED",
-                    },
-                });
-                const mess = await this.prisma.mess.create({
-                    data: {
-                        name: `${user.name}'s Mess`,
-                        slug: `mess-${Date.now()}`,
                         isActive: true,
-                    },
-                });
-                const member = await this.prisma.messMember.create({
-                    data: {
-                        userId: user.id,
-                        messId: mess.id,
-                        role: "SUPER_ADMIN",
-                        roles: ["SUPER_ADMIN"],
-                        isActive: true,
-                    },
-                });
-                await this.prisma.userBalance.create({
-                    data: {
-                        memberId: member.id,
-                        balance: 0,
+                        role: "MEMBER",
+                        userBalance: {
+                            create: {
+                                balance: 0,
+                            },
+                        },
                     },
                 });
             }
             const token = this.generateToken(user);
-            const userWithoutPassword = await this.withMessRole(user);
+            const userWithoutPassword = this.excludePassword(user);
             return {
                 accessToken: token,
                 user: userWithoutPassword,
             };
         }
         catch (error) {
+            console.error("Google login error:", error);
             throw new common_1.UnauthorizedException("Google login failed");
         }
     }
     generateToken(user) {
-        const payload = { sub: user.id, email: user.email };
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        };
         return this.jwtService.sign(payload);
     }
-    async withMessRole(user) {
+    excludePassword(user) {
         const { password, ...safeUser } = user;
-        const membership = await this.prisma.messMember.findFirst({
-            where: { userId: user.id, isActive: true },
-            orderBy: { joinedDate: "asc" },
-            select: { role: true, roles: true },
-        });
-        const roles = membership?.roles?.length ? membership.roles : membership ? [membership.role] : [];
-        return {
-            ...safeUser,
-            role: roles.includes("SUPER_ADMIN") ? "SUPER_ADMIN" : roles.includes("ADMIN") ? "MANAGER" : "MEMBER",
-            roles: roles.map((role) => role === "ADMIN" ? "MANAGER" : role),
-        };
+        return safeUser;
     }
 };
 exports.AuthService = AuthService;

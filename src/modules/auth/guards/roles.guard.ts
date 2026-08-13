@@ -6,7 +6,6 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { Role } from "../dto/register.dto";
 import { PrismaService } from "../../../prisma/prisma.service";
 
 @Injectable()
@@ -17,7 +16,7 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>("roles", [
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>("roles", [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -27,47 +26,19 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const { user } = request;
+    const user = request.user;
 
     if (!user) {
       throw new ForbiddenException("User not authenticated");
     }
 
-    // Middleware runs before JWT guards, so membership must be resolved here,
-    // after JwtAuthGuard has attached the authenticated user to the request.
-    const member = await this.prisma.messMember.findFirst({
-      where: {
-        userId: user.id,
-        ...(request.messId ? { messId: request.messId } : {}),
-        isActive: true,
-      },
-      orderBy: { joinedDate: "asc" },
-      select: { id: true, messId: true, role: true, roles: true },
-    });
-
-    if (!member) {
-      throw new ForbiddenException("You are not an active mess member");
-    }
-
-    request.messId = member.messId;
-    request.memberId = member.id;
-    request.memberRole = member.role;
-    const rawRoles = member.roles.length ? member.roles : [member.role];
-
-    // Map database enum MessRole (SUPER_ADMIN, ADMIN, MEMBER) to controller DTO Role (SUPER_ADMIN, MANAGER, MEMBER)
-    const userRole = rawRoles.includes("SUPER_ADMIN")
-      ? Role.SUPER_ADMIN
-      : rawRoles.includes("ADMIN")
-        ? Role.MANAGER
-        : Role.MEMBER;
-
-    // Check role hierarchy permissions
+    // Check if user has required role
     const hasRole = requiredRoles.some((role) => {
-      if (userRole === Role.SUPER_ADMIN) return true; // Super admin has access to all routes
-      if (userRole === Role.MANAGER) {
-        return role === Role.MANAGER || role === Role.MEMBER;
+      if (user.role === "ADMIN") return true; // Admin has access to all
+      if (user.role === "MANAGER") {
+        return role === "MANAGER" || role === "MEMBER";
       }
-      return role === Role.MEMBER;
+      return user.role === role;
     });
 
     if (!hasRole) {

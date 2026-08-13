@@ -33,12 +33,21 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
                 name: true,
                 email: true,
                 phone: true,
+                role: true,
                 profileImage: true,
                 isActive: true,
+                approvalStatus: true,
+                userBalance: true,
             },
         });
-        if (!user || !user.isActive) {
-            throw new common_1.UnauthorizedException("User not found or inactive");
+        if (!user) {
+            throw new common_1.UnauthorizedException("User not found");
+        }
+        if (!user.isActive || user.approvalStatus === "REJECTED") {
+            throw new common_1.UnauthorizedException("User is inactive");
+        }
+        if (user.approvalStatus === "PENDING") {
+            throw new common_1.UnauthorizedException("Account pending approval");
         }
         return user;
     }

@@ -35,7 +35,21 @@ let DashboardController = class DashboardController {
         return this.dashboardService.getDailySummary(messId, date);
     }
     async getMonthlySummary(messId, year, month) {
-        return this.dashboardService.getMonthlySummaryForDashboard(messId, year, month);
+        let yearNum;
+        let monthNum;
+        if (year) {
+            yearNum = parseInt(year);
+            if (isNaN(yearNum) || yearNum < 2000 || yearNum > 2100) {
+                throw new common_1.BadRequestException("Invalid year. Year must be between 2000 and 2100");
+            }
+        }
+        if (month) {
+            monthNum = parseInt(month);
+            if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+                throw new common_1.BadRequestException("Invalid month. Month must be between 1 and 12");
+            }
+        }
+        return this.dashboardService.getMonthlySummaryForDashboard(messId, yearNum, monthNum);
     }
 };
 exports.DashboardController = DashboardController;
@@ -68,10 +82,10 @@ __decorate([
     (0, common_1.Get)("monthly"),
     (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
     __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(2, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)("year")),
+    __param(2, (0, common_1.Query)("month")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getMonthlySummary", null);
 exports.DashboardController = DashboardController = __decorate([

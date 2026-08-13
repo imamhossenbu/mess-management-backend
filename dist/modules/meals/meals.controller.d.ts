@@ -4,35 +4,15 @@ export declare class MealsController {
     private readonly mealsService;
     constructor(mealsService: MealsService);
     create(messId: string, createMealDto: CreateMealDto): Promise<{
-        member: {
-            user: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
-            id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            roles: import(".prisma/client").$Enums.MessRole[];
-            joinedDate: Date;
-            leftDate: Date | null;
-        };
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
-        memberId: string;
+        userId: string;
         date: Date;
+        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
-        totalMeal: number;
     }>;
     bulkEntry(messId: string, bulkMealDto: BulkMealEntryDto): Promise<{
         date: string;
@@ -43,37 +23,17 @@ export declare class MealsController {
             totalDinner: number;
             totalMeals: number;
         };
-        meals: ({
-            member: {
-                user: {
-                    id: string;
-                    name: string;
-                    phone: string;
-                };
-            } & {
-                id: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                messId: string;
-                role: import(".prisma/client").$Enums.MessRole;
-                roles: import(".prisma/client").$Enums.MessRole[];
-                joinedDate: Date;
-                leftDate: Date | null;
-            };
-        } & {
+        meals: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
-            memberId: string;
+            userId: string;
             date: Date;
+            totalMeal: number;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
-            totalMeal: number;
-        })[];
+        }[];
     }>;
     singleMealEntry(messId: string, singleMealDto: SingleMealEntryDto): Promise<{
         date: string;
@@ -85,69 +45,29 @@ export declare class MealsController {
             totalDinner: number;
             totalMeals: number;
         };
-        meals: ({
-            member: {
-                user: {
-                    id: string;
-                    name: string;
-                    phone: string;
-                };
-            } & {
-                id: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                messId: string;
-                role: import(".prisma/client").$Enums.MessRole;
-                roles: import(".prisma/client").$Enums.MessRole[];
-                joinedDate: Date;
-                leftDate: Date | null;
-            };
-        } & {
+        meals: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            messId: string;
-            memberId: string;
-            date: Date;
-            morning: boolean;
-            lunch: boolean;
-            dinner: boolean;
-            totalMeal: number;
-        })[];
-    }>;
-    findAll(messId: string): Promise<({
-        member: {
-            user: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
-            id: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            roles: import(".prisma/client").$Enums.MessRole[];
-            joinedDate: Date;
-            leftDate: Date | null;
-        };
-    } & {
+            date: Date;
+            totalMeal: number;
+            morning: boolean;
+            lunch: boolean;
+            dinner: boolean;
+        }[];
+    }>;
+    findAll(messId: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
-        memberId: string;
+        userId: string;
         date: Date;
+        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
-        totalMeal: number;
-    })[]>;
+    }[]>;
     getDailySummary(messId: string, date?: string): Promise<{
         date: string;
         totalMorning: number;
@@ -158,37 +78,17 @@ export declare class MealsController {
         mealRate: number;
         runningMarketCost: number;
         runningTotalMeal: number;
-        meals: ({
-            member: {
-                user: {
-                    id: string;
-                    name: string;
-                    phone: string;
-                };
-            } & {
-                id: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                messId: string;
-                role: import(".prisma/client").$Enums.MessRole;
-                roles: import(".prisma/client").$Enums.MessRole[];
-                joinedDate: Date;
-                leftDate: Date | null;
-            };
-        } & {
+        meals: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
-            memberId: string;
+            userId: string;
             date: Date;
+            totalMeal: number;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
-            totalMeal: number;
-        })[];
+        }[];
     }>;
     getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
         month: string;
@@ -207,129 +107,49 @@ export declare class MealsController {
             totalMeals: number;
         }[];
     }>;
-    findByUser(messId: string, userId: string, startDate?: string, endDate?: string): Promise<({
-        member: {
-            user: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
-            id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            roles: import(".prisma/client").$Enums.MessRole[];
-            joinedDate: Date;
-            leftDate: Date | null;
-        };
-    } & {
+    findByUser(messId: string, userId: string, startDate?: string, endDate?: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
-        memberId: string;
+        userId: string;
         date: Date;
+        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
-        totalMeal: number;
-    })[]>;
-    findByDate(messId: string, date: string): Promise<({
-        member: {
-            user: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
-            id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            roles: import(".prisma/client").$Enums.MessRole[];
-            joinedDate: Date;
-            leftDate: Date | null;
-        };
-    } & {
+    }[]>;
+    findByDate(messId: string, date: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
-        memberId: string;
+        userId: string;
         date: Date;
+        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
-        totalMeal: number;
-    })[]>;
+    }[]>;
     findOne(messId: string, id: string): Promise<{
-        member: {
-            user: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
-            id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            roles: import(".prisma/client").$Enums.MessRole[];
-            joinedDate: Date;
-            leftDate: Date | null;
-        };
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
-        memberId: string;
+        userId: string;
         date: Date;
+        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
-        totalMeal: number;
     }>;
     update(messId: string, id: string, updateMealDto: UpdateMealDto): Promise<{
-        member: {
-            user: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
-            id: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            messId: string;
-            role: import(".prisma/client").$Enums.MessRole;
-            roles: import(".prisma/client").$Enums.MessRole[];
-            joinedDate: Date;
-            leftDate: Date | null;
-        };
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
-        memberId: string;
+        userId: string;
         date: Date;
+        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
-        totalMeal: number;
     }>;
     remove(messId: string, id: string): Promise<{
         message: string;

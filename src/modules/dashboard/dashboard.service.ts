@@ -1,5 +1,9 @@
 // src/modules/dashboard/dashboard.service.ts
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
   startOfDay,
@@ -7,8 +11,21 @@ import {
   startOfMonth,
   endOfMonth,
   format,
+  subDays,
+  parseISO,
+  isValid,
 } from "date-fns";
-import { DashboardStatsDto, MemberDashboardDto, DailySummaryDto } from "./dto";
+import {
+  DashboardStatsDto,
+  MemberDashboardDto,
+  DailySummaryDto,
+  MonthlySummaryDto,
+  ActivityDto,
+  MealRateHistoryDto,
+  MemberBalanceDto,
+  MessStatsDto,
+  WeeklySummaryDto,
+} from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
@@ -21,6 +38,10 @@ export class DashboardService {
   // ==================== ADMIN DASHBOARD ====================
 
   async getAdminDashboard(messId: string): Promise<DashboardStatsDto> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
     const today = new Date();
     const startToday = startOfDay(today);
     const endToday = endOfDay(today);
@@ -29,8 +50,9 @@ export class DashboardService {
 
     // 1. Total Members in this mess
     const totalMembers = await this.prisma.messMember.count({
-      where: { messId, isActive: true },
+      where: { messId },
     });
+
     const activeMembers = await this.prisma.messMember.count({
       where: { messId, isActive: true },
     });
@@ -208,7 +230,7 @@ export class DashboardService {
       },
     });
 
-    // ✅ Check if any inventory is low
+    // 11. Check if any inventory is low
     const meatQty = meatInventory?.quantity || 0;
     const fishQty = fishInventory?.quantity || 0;
 
@@ -224,16 +246,28 @@ export class DashboardService {
       },
     });
 
+    // Send low inventory notifications
     if (meatQty < 10) {
       for (const admin of admins) {
-        await this.notificationsService.sendInventoryAlert("MEAT", meatQty);
+        try {
+          await this.notificationsService.sendInventoryAlert("MEAT", meatQty);
+        } catch (error) {
+          console.error("Failed to send inventory notification:", error);
+        }
       }
     }
     if (fishQty < 10) {
       for (const admin of admins) {
-        await this.notificationsService.sendInventoryAlert("FISH", fishQty);
+        try {
+          await this.notificationsService.sendInventoryAlert("FISH", fishQty);
+        } catch (error) {
+          console.error("Failed to send inventory notification:", error);
+        }
       }
     }
+
+    // 12. Get meal breakdown for today
+    const mealBreakdown = await this.getMealBreakdown(messId, today);
 
     return {
       totalMembers,
@@ -246,22 +280,42 @@ export class DashboardService {
       totalPaymentsThisMonth: Number(totalPayments),
       totalDue: Number(totalDue),
       mealRate: Number(mealRate),
+      mealsBreakfast: mealBreakdown.morning,
+      mealsLunch: mealBreakdown.lunch,
+      mealsDinner: mealBreakdown.dinner,
       inventory: {
         meat: meatQty,
         fish: fishQty,
       },
       recentActivities: {
         meals: recentMeals.map((m) => ({
-          ...m,
+          id: m.id,
+          date: m.date,
+          morning: m.morning,
+          lunch: m.lunch,
+          dinner: m.dinner,
+          totalMeal: m.totalMeal,
           userName: m.member?.user?.name || "Unknown",
+          userId: m.member?.userId || "",
         })),
         marketings: recentMarketings.map((m) => ({
-          ...m,
+          id: m.id,
+          date: m.date,
+          itemName: m.itemName,
+          amount: m.amount,
+          quantity: m.quantity,
+          shopName: m.shopName,
           userName: m.member?.user?.name || "Unknown",
+          userId: m.member?.userId || "",
         })),
         payments: recentPayments.map((p) => ({
-          ...p,
+          id: p.id,
+          amount: p.amount,
+          paymentDate: p.paymentDate,
+          paymentMethod: p.paymentMethod,
+          note: p.note,
           userName: p.member?.user?.name || "Unknown",
+          userId: p.member?.userId || "",
         })),
       },
     };
@@ -270,6 +324,10 @@ export class DashboardService {
   // ==================== MEMBER DASHBOARD ====================
 
   async getMemberDashboard(userId: string): Promise<MemberDashboardDto> {
+    if (!userId) {
+      throw new BadRequestException("User ID is required");
+    }
+
     const today = new Date();
     const startMonth = startOfMonth(today);
     const endMonth = endOfMonth(today);
@@ -327,18 +385,52 @@ export class DashboardService {
       where: { memberId: member.id },
       take: 5,
       orderBy: { paymentDate: "desc" },
+      select: {
+        id: true,
+        amount: true,
+        paymentDate: true,
+        paymentMethod: true,
+        note: true,
+      },
     });
 
-    // ✅ Check if user has due balance
+    // 5. Get recent meals
+    const recentMeals = await this.prisma.meal.findMany({
+      where: { memberId: member.id },
+      take: 5,
+      orderBy: { date: "desc" },
+      select: {
+        id: true,
+        date: true,
+        morning: true,
+        lunch: true,
+        dinner: true,
+        totalMeal: true,
+      },
+    });
+
+    // 6. Get meal rate
+    const dailySummary = await this.prisma.dailySummary.findFirst({
+      where: { messId },
+      orderBy: { date: "desc" },
+      select: { mealRate: true },
+    });
+
     const balance = userBalance ? Number(userBalance.balance) : 0;
+
+    // 7. Check if user has due balance and send notification
     if (balance < 0) {
-      await this.notificationsService.create({
-        userId: member.userId,
-        type: "BILL",
-        title: "Due Balance Alert",
-        message: `You have a due balance of ${Math.abs(balance)} TK. Please pay as soon as possible.`,
-        link: "/payments",
-      });
+      try {
+        await this.notificationsService.create({
+          userId: member.userId,
+          type: "BILL",
+          title: "Due Balance Alert",
+          message: `You have a due balance of ${Math.abs(balance)} TK. Please pay as soon as possible.`,
+          link: "/payments",
+        });
+      } catch (error) {
+        console.error("Failed to send due balance notification:", error);
+      }
     }
 
     return {
@@ -352,7 +444,9 @@ export class DashboardService {
       totalBillThisMonth: monthlySummary ? Number(monthlySummary.totalBill) : 0,
       totalPaidThisMonth: monthlySummary ? Number(monthlySummary.totalPaid) : 0,
       currentBalance: balance,
+      mealRate: dailySummary ? Number(dailySummary.mealRate) : 0,
       recentPayments,
+      recentMeals,
     };
   }
 
@@ -362,7 +456,20 @@ export class DashboardService {
     messId: string,
     date?: string,
   ): Promise<DailySummaryDto> {
-    const queryDate = date ? new Date(date) : new Date();
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    let queryDate: Date;
+    if (date) {
+      queryDate = parseISO(date);
+      if (!isValid(queryDate)) {
+        throw new BadRequestException("Invalid date format. Use YYYY-MM-DD");
+      }
+    } else {
+      queryDate = new Date();
+    }
+
     const start = startOfDay(queryDate);
     const end = endOfDay(queryDate);
 
@@ -425,74 +532,106 @@ export class DashboardService {
     messId: string,
     year?: number,
     month?: number,
-  ) {
-    const queryYear = year || new Date().getFullYear();
-    const queryMonth = month || new Date().getMonth() + 1;
+  ): Promise<MonthlySummaryDto> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    // Use current date if year/month not provided
+    const currentDate = new Date();
+    const queryYear = year || currentDate.getFullYear();
+    const queryMonth = month || currentDate.getMonth() + 1;
+
+    // Validate the date
+    if (queryYear < 2000 || queryYear > 2100) {
+      throw new BadRequestException(
+        "Invalid year. Year must be between 2000 and 2100",
+      );
+    }
+    if (queryMonth < 1 || queryMonth > 12) {
+      throw new BadRequestException(
+        "Invalid month. Month must be between 1 and 12",
+      );
+    }
+
     const startDate = new Date(queryYear, queryMonth - 1, 1);
     const endDate = new Date(queryYear, queryMonth, 0);
 
-    // Get all data for the month
-    const [meals, marketings, utilityBills, payments, monthlySummaries] =
-      await Promise.all([
-        this.prisma.meal.findMany({
-          where: {
-            messId,
-            date: {
-              gte: startOfDay(startDate),
-              lte: endOfDay(endDate),
-            },
+    // Get all data for the month in parallel
+    const [
+      meals,
+      marketings,
+      utilityBills,
+      payments,
+      monthlySummaries,
+      memberCount,
+    ] = await Promise.all([
+      this.prisma.meal.findMany({
+        where: {
+          messId,
+          date: {
+            gte: startOfDay(startDate),
+            lte: endOfDay(endDate),
           },
-        }),
-        this.prisma.marketing.findMany({
-          where: {
-            messId,
-            date: {
-              gte: startOfDay(startDate),
-              lte: endOfDay(endDate),
-            },
+        },
+      }),
+      this.prisma.marketing.findMany({
+        where: {
+          messId,
+          date: {
+            gte: startOfDay(startDate),
+            lte: endOfDay(endDate),
           },
-        }),
-        this.prisma.utilityBill.findMany({
-          where: {
-            messId,
-            monthYear: {
-              gte: startOfDay(startDate),
-              lte: endOfDay(endDate),
-            },
+        },
+      }),
+      this.prisma.utilityBill.findMany({
+        where: {
+          messId,
+          monthYear: {
+            gte: startOfDay(startDate),
+            lte: endOfDay(endDate),
           },
-        }),
-        this.prisma.payment.findMany({
-          where: {
-            messId,
-            paymentDate: {
-              gte: startOfDay(startDate),
-              lte: endOfDay(endDate),
-            },
+        },
+      }),
+      this.prisma.payment.findMany({
+        where: {
+          messId,
+          paymentDate: {
+            gte: startOfDay(startDate),
+            lte: endOfDay(endDate),
           },
-        }),
-        this.prisma.monthlySummary.findMany({
-          where: {
-            messId,
-            monthYear: {
-              gte: startOfDay(startDate),
-              lte: endOfDay(endDate),
-            },
+        },
+      }),
+      this.prisma.monthlySummary.findMany({
+        where: {
+          messId,
+          monthYear: {
+            gte: startOfDay(startDate),
+            lte: endOfDay(endDate),
           },
-          include: {
-            member: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    phone: true,
-                  },
+        },
+        include: {
+          member: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                  email: true,
                 },
               },
             },
           },
-        }),
-      ]);
+        },
+      }),
+      this.prisma.messMember.count({
+        where: {
+          messId,
+          isActive: true,
+        },
+      }),
+    ]);
 
     const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
     const totalMarketingCost = marketings.reduce(
@@ -513,27 +652,35 @@ export class DashboardService {
       0,
     );
 
-    // ✅ Send notification if total due is high
-    if (totalDue > 5000) {
-      const admins = await this.prisma.messMember.findMany({
-        where: {
-          messId,
-          role: { in: ["SUPER_ADMIN", "ADMIN"] },
-          isActive: true,
-        },
-        include: {
-          user: true,
-        },
-      });
+    // Calculate meal rate safely
+    const mealRate =
+      totalMeals > 0 ? Number(totalMarketingCost / totalMeals) : 0;
 
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId: admin.userId,
-          type: "BILL",
-          title: "High Due Alert",
-          message: `Total due for ${format(startDate, "MMMM yyyy")} is ${totalDue} TK. Please check.`,
-          link: "/monthly-summary",
+    // Check if total due is high and send notification to admins
+    if (totalDue > 5000) {
+      try {
+        const admins = await this.prisma.messMember.findMany({
+          where: {
+            messId,
+            role: { in: ["SUPER_ADMIN", "ADMIN"] },
+            isActive: true,
+          },
+          include: {
+            user: true,
+          },
         });
+
+        for (const admin of admins) {
+          await this.notificationsService.create({
+            userId: admin.userId,
+            type: "BILL",
+            title: "High Due Alert",
+            message: `Total due for ${format(startDate, "MMMM yyyy")} is ${totalDue} TK. Please check.`,
+            link: "/monthly-summary",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to send high due notification:", error);
       }
     }
 
@@ -546,15 +693,336 @@ export class DashboardService {
       totalCost: Number(totalMarketingCost + totalUtilityCost),
       totalPayments: Number(totalPayments),
       totalDue: Number(totalDue),
-      mealRate: totalMeals > 0 ? Number(totalMarketingCost / totalMeals) : 0,
+      mealRate: Number(mealRate),
+      totalMembers: memberCount,
       userSummaries: monthlySummaries.map((s) => ({
         userId: s.member.userId,
         userName: s.member.user.name,
+        userPhone: s.member.user.phone || undefined,
+        userEmail: s.member.user.email || undefined,
         totalMeal: s.totalMeal,
+        mealBill: Number(s.mealBill),
+        utilityShare: Number(s.utilityShare),
         totalBill: Number(s.totalBill),
         totalPaid: Number(s.totalPaid),
+        previousDue: Number(s.previousDue),
         currentDue: Number(s.currentDue),
       })),
     };
+  }
+
+  // ==================== ADDITIONAL METHODS ====================
+
+  async getActivities(
+    messId: string,
+    limit: number = 10,
+    offset: number = 0,
+  ): Promise<ActivityDto> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    const [meals, marketings, payments] = await Promise.all([
+      this.prisma.meal.findMany({
+        take: limit,
+        skip: offset,
+        where: { messId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          member: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.marketing.findMany({
+        take: limit,
+        skip: offset,
+        where: { messId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          member: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.payment.findMany({
+        take: limit,
+        skip: offset,
+        where: { messId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          member: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      meals: meals.map((m) => ({
+        id: m.id,
+        date: m.date,
+        morning: m.morning,
+        lunch: m.lunch,
+        dinner: m.dinner,
+        totalMeal: m.totalMeal,
+        userName: m.member?.user?.name || "Unknown",
+        userId: m.member?.userId || "",
+      })),
+      marketings: marketings.map((m) => ({
+        id: m.id,
+        date: m.date,
+        itemName: m.itemName,
+        amount: m.amount,
+        quantity: m.quantity,
+        shopName: m.shopName,
+        userName: m.member?.user?.name || "Unknown",
+        userId: m.member?.userId || "",
+      })),
+      payments: payments.map((p) => ({
+        id: p.id,
+        amount: p.amount,
+        paymentDate: p.paymentDate,
+        paymentMethod: p.paymentMethod,
+        note: p.note,
+        userName: p.member?.user?.name || "Unknown",
+        userId: p.member?.userId || "",
+      })),
+    };
+  }
+
+  async getMealRateHistory(
+    messId: string,
+    days: number = 30,
+  ): Promise<MealRateHistoryDto[]> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    const startDate = subDays(new Date(), days);
+
+    const dailySummaries = await this.prisma.dailySummary.findMany({
+      where: {
+        messId,
+        date: {
+          gte: startDate,
+        },
+      },
+      orderBy: { date: "asc" },
+      select: {
+        date: true,
+        mealRate: true,
+        dailyTotalMeal: true,
+        dailyMarketCost: true,
+      },
+    });
+
+    return dailySummaries.map((d) => ({
+      date: format(d.date, "yyyy-MM-dd"),
+      mealRate: Number(d.mealRate),
+      totalMeals: d.dailyTotalMeal,
+      totalCost: Number(d.dailyMarketCost),
+    }));
+  }
+
+  async getMemberBalances(messId: string): Promise<MemberBalanceDto[]> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    const balances = await this.prisma.userBalance.findMany({
+      where: {
+        member: {
+          messId,
+          isActive: true,
+        },
+      },
+      include: {
+        member: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        balance: "desc",
+      },
+    });
+
+    return balances.map((b) => ({
+      userId: b.member.userId,
+      userName: b.member.user.name,
+      userEmail: b.member.user.email || undefined,
+      userPhone: b.member.user.phone || undefined,
+      balance: Number(b.balance),
+      lastUpdated: b.lastUpdated,
+    }));
+  }
+
+  async getMessStats(messId: string): Promise<MessStatsDto> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    const today = new Date();
+    const monthStart = startOfMonth(today);
+    const monthEnd = endOfMonth(today);
+
+    const [
+      totalMembers,
+      activeMembers,
+      totalMeals,
+      totalPayments,
+      totalMarketing,
+      mealRate,
+    ] = await Promise.all([
+      this.prisma.messMember.count({
+        where: { messId },
+      }),
+      this.prisma.messMember.count({
+        where: { messId, isActive: true },
+      }),
+      this.prisma.meal.count({
+        where: {
+          messId,
+          date: {
+            gte: monthStart,
+            lte: monthEnd,
+          },
+        },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          messId,
+          paymentDate: {
+            gte: monthStart,
+            lte: monthEnd,
+          },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.marketing.aggregate({
+        where: {
+          messId,
+          date: {
+            gte: monthStart,
+            lte: monthEnd,
+          },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.dailySummary.findFirst({
+        where: { messId },
+        orderBy: { date: "desc" },
+        select: { mealRate: true },
+      }),
+    ]);
+
+    const totalDue = await this.calculateTotalDue(messId);
+
+    return {
+      totalMembers,
+      activeMembers,
+      totalMeals,
+      totalPayments: Number(totalPayments._sum.amount || 0),
+      totalMarketing: Number(totalMarketing._sum.amount || 0),
+      totalDue: Number(totalDue),
+      mealRate: mealRate ? Number(mealRate.mealRate) : 0,
+    };
+  }
+
+  async getWeeklySummary(messId: string): Promise<WeeklySummaryDto[]> {
+    if (!messId) {
+      throw new BadRequestException("Mess ID is required");
+    }
+
+    const weekStart = subDays(new Date(), 7);
+
+    const dailySummaries = await this.prisma.dailySummary.findMany({
+      where: {
+        messId,
+        date: {
+          gte: weekStart,
+        },
+      },
+      orderBy: { date: "asc" },
+    });
+
+    return dailySummaries.map((d) => ({
+      date: format(d.date, "yyyy-MM-dd"),
+      totalMeals: d.dailyTotalMeal,
+      totalCost: Number(d.dailyMarketCost),
+      mealRate: Number(d.mealRate),
+    }));
+  }
+
+  async getRecentActivities(messId: string): Promise<ActivityDto> {
+    return this.getActivities(messId, 5, 0);
+  }
+
+  // ==================== HELPER METHODS ====================
+
+  private async getMealBreakdown(messId: string, date: Date) {
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
+
+    const meals = await this.prisma.meal.findMany({
+      where: {
+        messId,
+        date: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+      },
+    });
+
+    return {
+      morning: meals.filter((m) => m.morning).length,
+      lunch: meals.filter((m) => m.lunch).length,
+      dinner: meals.filter((m) => m.dinner).length,
+    };
+  }
+
+  private async calculateTotalDue(messId: string): Promise<number> {
+    const balances = await this.prisma.userBalance.findMany({
+      where: {
+        member: {
+          messId,
+        },
+      },
+      select: {
+        balance: true,
+      },
+    });
+
+    return balances.reduce((sum, b) => sum + Number(b.balance), 0);
   }
 }

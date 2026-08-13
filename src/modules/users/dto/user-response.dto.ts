@@ -18,13 +18,13 @@ export class UserResponseDto {
   role: string;
 
   @ApiProperty()
-  roomNumber?: string;
-
-  @ApiProperty()
   profileImage?: string;
 
   @ApiProperty()
   isActive: boolean;
+
+  @ApiProperty()
+  approvalStatus: string;
 
   @ApiProperty()
   joinedDate: Date;

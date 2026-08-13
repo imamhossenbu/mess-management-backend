@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RolesGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
-const register_dto_1 = require("../dto/register.dto");
 const prisma_service_1 = require("../../../prisma/prisma.service");
 let RolesGuard = class RolesGuard {
     constructor(reflector, prisma) {
@@ -28,38 +27,17 @@ let RolesGuard = class RolesGuard {
             return true;
         }
         const request = context.switchToHttp().getRequest();
-        const { user } = request;
+        const user = request.user;
         if (!user) {
             throw new common_1.ForbiddenException("User not authenticated");
         }
-        const member = await this.prisma.messMember.findFirst({
-            where: {
-                userId: user.id,
-                ...(request.messId ? { messId: request.messId } : {}),
-                isActive: true,
-            },
-            orderBy: { joinedDate: "asc" },
-            select: { id: true, messId: true, role: true, roles: true },
-        });
-        if (!member) {
-            throw new common_1.ForbiddenException("You are not an active mess member");
-        }
-        request.messId = member.messId;
-        request.memberId = member.id;
-        request.memberRole = member.role;
-        const rawRoles = member.roles.length ? member.roles : [member.role];
-        const userRole = rawRoles.includes("SUPER_ADMIN")
-            ? register_dto_1.Role.SUPER_ADMIN
-            : rawRoles.includes("ADMIN")
-                ? register_dto_1.Role.MANAGER
-                : register_dto_1.Role.MEMBER;
         const hasRole = requiredRoles.some((role) => {
-            if (userRole === register_dto_1.Role.SUPER_ADMIN)
+            if (user.role === "ADMIN")
                 return true;
-            if (userRole === register_dto_1.Role.MANAGER) {
-                return role === register_dto_1.Role.MANAGER || role === register_dto_1.Role.MEMBER;
+            if (user.role === "MANAGER") {
+                return role === "MANAGER" || role === "MEMBER";
             }
-            return role === register_dto_1.Role.MEMBER;
+            return user.role === role;
         });
         if (!hasRole) {
             throw new common_1.ForbiddenException("You do not have permission to access this resource");

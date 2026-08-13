@@ -6,23 +6,5 @@ export declare class DashboardController {
     getAdminDashboard(messId: string): Promise<DashboardStatsDto>;
     getMemberDashboard(req: any): Promise<MemberDashboardDto>;
     getDailySummary(messId: string, date?: string): Promise<DailySummaryDto>;
-    getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
-        month: string;
-        year: number;
-        totalMeals: number;
-        totalMarketingCost: number;
-        totalUtilityCost: number;
-        totalCost: number;
-        totalPayments: number;
-        totalDue: number;
-        mealRate: number;
-        userSummaries: {
-            userId: string;
-            userName: string;
-            totalMeal: number;
-            totalBill: number;
-            totalPaid: number;
-            currentDue: number;
-        }[];
-    }>;
+    getMonthlySummary(messId: string, year?: string, month?: string): Promise<import("./dto").MonthlySummaryDto>;
 }

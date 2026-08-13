@@ -11,14 +11,8 @@ datasource db {
 
 // ==================== ENUMS ====================
 enum Role {
-  SUPER_ADMIN
-  MANAGER
-  MEMBER
-}
-
-enum MessRole {
-  SUPER_ADMIN
   ADMIN
+  MANAGER
   MEMBER
 }
 
@@ -34,17 +28,27 @@ enum PaymentType {
   SELF
 }
 
-enum InventoryType {
-  MEAT
-  FISH
+enum Unit {
+  KG
+  GRAM
+  LITER
+  ML
+  PIECE
+  DOZEN
+  PACKET
+  BOTTLE
 }
 
-enum BillType {
-  CURRENT
-  WIFI
-  RENT
-  WATER
-  KHALA
+enum InventoryCategory {
+  FISH
+  MEAT
+  VEGETABLE
+  FRUIT
+  DAIRY
+  OIL
+  SPICE
+  RICE
+  OTHER
 }
 
 enum DebtStatus {
@@ -66,39 +70,9 @@ enum NotificationType {
   SUMMARY
   EMAIL
   SYSTEM
+  STOCK_ALERT
 }
 
-// ==================== MESS ====================
-model Mess {
-  id                String            @id @default(cuid())
-  name              String
-  slug              String            @unique
-  description       String?
-  address           String?
-  phone             String?
-  email             String?
-  logo              String?
-  city              String?
-  country           String?
-  maxMembers        Int               @default(50)
-  isActive          Boolean           @default(true)
-  
-  members           MessMember[]
-  meals             Meal[]
-  marketings        Marketing[]
-  utilityBills      UtilityBill[]
-  shopDebts         ShopDebt[]
-  payments          Payment[]
-  monthlySummaries  MonthlySummary[]
-  inventories       Inventory[]
-  inventoryLogs     InventoryLog[]
-  dailySummaries    DailySummary[]
-  shopMonthlySummaries ShopMonthlySummary[]
-  carryForwards     CarryForward[]
-  
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-}
 // ==================== USER ====================
 model User {
   id                String            @id @default(cuid())
@@ -106,12 +80,19 @@ model User {
   email             String            @unique
   phone             String?
   password          String
+  role              Role              @default(MEMBER)
   profileImage      String?
   isActive          Boolean           @default(true)
   approvalStatus    ApprovalStatus    @default(PENDING)
+  joinedDate        DateTime          @default(now())
+  leftDate          DateTime?
   
   // Relations
-  messMembers       MessMember[]
+  meals             Meal[]
+  marketings        Marketing[]
+  payments          Payment[]
+  monthlySummaries  MonthlySummary[]
+  userBalance       UserBalance?
   notifications     Notification[]
   emailLogs         EmailLog[]
   utilityBills      UtilityBill[]      @relation("Payer")
@@ -120,37 +101,11 @@ model User {
   updatedAt         DateTime          @updatedAt
 }
 
-// ==================== MESS MEMBER ====================
-model MessMember {
-  id                String            @id @default(cuid())
-  userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  role              MessRole          @default(MEMBER)
-  roles             MessRole[]        @default([MEMBER])
-  joinedDate        DateTime          @default(now())
-  leftDate          DateTime?
-  isActive          Boolean           @default(true)
-  
-  // Relations
-  meals             Meal[]
-  marketings        Marketing[]
-  payments          Payment[]
-  monthlySummaries  MonthlySummary[]
-  userBalance       UserBalance?
-  
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-
-  @@unique([userId, messId])
-}
-
 // ==================== USER BALANCE ====================
 model UserBalance {
   id                String            @id @default(cuid())
-  memberId          String            @unique
-  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   balance           Decimal           @default(0)
   lastUpdated       DateTime          @default(now())
   
@@ -161,10 +116,8 @@ model UserBalance {
 // ==================== MEAL ====================
 model Meal {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  memberId          String
-  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   date              DateTime
   morning           Boolean           @default(false)
   lunch             Boolean           @default(false)
@@ -174,70 +127,93 @@ model Meal {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@unique([memberId, date])
+  @@unique([userId, date])
 }
 
-// ==================== MARKETING ====================
-model Marketing {
+// ==================== INVENTORY ITEM ====================
+model InventoryItem {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  memberId          String
-  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  date              DateTime          @default(now())
-  itemName          String
-  quantity          String?
-  amount            Decimal
-  paymentType       PaymentType       @default(CASH)
-  shopName          String?
-  note              String?
-  
-  inventoryLogs     InventoryLog[]
-  
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-}
-
-// ==================== INVENTORY ====================
-model Inventory {
-  id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  type              InventoryType
-  quantity          Int               @default(0)
+  name              String
+  category          InventoryCategory
+  unit              Unit              @default(KG)
+  quantity          Decimal           @default(0)
+  minStockLevel     Decimal           @default(0)
+  purchasePrice     Decimal?
+  sellingPrice      Decimal?
   lastUpdated       DateTime          @default(now())
   
-  logs              InventoryLog[]
+  // Relations
+  stockLogs         InventoryLog[]
+  marketingItems    MarketingItem[]
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@unique([messId, type])
+  @@unique([name, category])
 }
 
 // ==================== INVENTORY LOG ====================
 model InventoryLog {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  inventoryId       String
-  inventory         Inventory         @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
-  change            Int
+  inventoryItemId   String
+  inventoryItem     InventoryItem     @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  change            Decimal
+  previousQuantity  Decimal
+  newQuantity       Decimal
   reason            String
-  marketingId       String?
-  marketing         Marketing?        @relation(fields: [marketingId], references: [id])
   note              String?
+  marketingItemId   String?
+  marketingItem     MarketingItem?    @relation(fields: [marketingItemId], references: [id])
   date              DateTime          @default(now())
   
   createdAt         DateTime          @default(now())
 }
 
+// ==================== MARKETING (Bazar) ====================
+model Marketing {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              DateTime          @default(now())
+  shopName          String?
+  totalAmount       Decimal           @default(0)
+  note              String?
+  
+  // Relations
+  items             MarketingItem[]
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== MARKETING ITEM ====================
+model MarketingItem {
+  id                String            @id @default(cuid())
+  marketingId       String
+  marketing         Marketing         @relation(fields: [marketingId], references: [id], onDelete: Cascade)
+  inventoryItemId   String?
+  inventoryItem     InventoryItem?    @relation(fields: [inventoryItemId], references: [id])
+  itemName          String
+  quantity          Decimal
+  unit              Unit              @default(KG)
+  price             Decimal
+  totalPrice        Decimal
+  note              String?
+  
+  // If this item is added to inventory
+  addedToInventory  Boolean           @default(false)
+  
+  // Relations
+  inventoryLogs     InventoryLog[]    // ✅ Added this relation
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
 // ==================== UTILITY BILL ====================
 model UtilityBill {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  billType          BillType
+  billType          String
   monthYear         DateTime
   amount            Decimal
   paidBy            String?
@@ -251,8 +227,6 @@ model UtilityBill {
 // ==================== SHOP DEBT ====================
 model ShopDebt {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
   shopName          String
   date              DateTime          @default(now())
   itemDetails       String?
@@ -265,47 +239,11 @@ model ShopDebt {
   updatedAt         DateTime          @updatedAt
 }
 
-// ==================== SHOP MONTHLY SUMMARY ====================
-model ShopMonthlySummary {
-  id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  monthYear         DateTime
-  totalDebt         Decimal           @default(0)
-  totalPaid         Decimal           @default(0)
-  currentDue        Decimal           @default(0)
-  
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-
-  @@unique([messId, monthYear])
-}
-
-// ==================== CARRY FORWARD ====================
-model CarryForward {
-  id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  fromMonth         DateTime
-  toMonth           DateTime
-  itemName          String
-  totalAmount       Decimal
-  usedAmount        Decimal           @default(0)
-  carryAmount       Decimal
-  note              String?
-  isAdjusted        Boolean           @default(false)
-  
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-}
-
 // ==================== PAYMENT ====================
 model Payment {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  memberId          String
-  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount            Decimal
   paymentDate       DateTime          @default(now())
   paymentMethod     PaymentMethod     @default(CASH)
@@ -318,10 +256,8 @@ model Payment {
 // ==================== MONTHLY SUMMARY ====================
 model MonthlySummary {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  memberId          String
-  member            MessMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   monthYear         DateTime
   totalMeal         Int               @default(0)
   mealRate          Decimal           @default(0)
@@ -336,15 +272,13 @@ model MonthlySummary {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  @@unique([memberId, monthYear])
+  @@unique([userId, monthYear])
 }
 
 // ==================== DAILY SUMMARY ====================
 model DailySummary {
   id                String            @id @default(cuid())
-  messId            String
-  mess              Mess              @relation(fields: [messId], references: [id], onDelete: Cascade)
-  date              DateTime
+  date              DateTime          @unique
   dailyMarketCost   Decimal           @default(0)
   dailyTotalMeal    Int               @default(0)
   runningMarketCost Decimal           @default(0)
@@ -353,8 +287,6 @@ model DailySummary {
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-
-  @@unique([messId, date])
 }
 
 // ==================== NOTIFICATION ====================

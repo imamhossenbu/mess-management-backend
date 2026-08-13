@@ -20,6 +20,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    // Check if user exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: createUserDto.email },
     });
@@ -30,6 +31,7 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
+    // Create user with MEMBER role by default
     const user = await this.prisma.user.create({
       data: {
         name: createUserDto.name,
@@ -38,43 +40,30 @@ export class UsersService {
         password: hashedPassword,
         profileImage: null,
         isActive: true,
-      },
-    });
-
-    const mess = await this.prisma.mess.create({
-      data: {
-        name: `${user.name}'s Mess`,
-        slug: `mess-${Date.now()}`,
-        description: "My mess",
-        isActive: true,
-      },
-    });
-
-    const member = await this.prisma.messMember.create({
-      data: {
-        userId: user.id,
-        messId: mess.id,
-        role: "SUPER_ADMIN",
-        isActive: true,
-      },
-    });
-
-    await this.prisma.userBalance.create({
-      data: {
-        memberId: member.id,
-        balance: 0,
+        approvalStatus: "APPROVED",
+        role: "MEMBER",
+        userBalance: {
+          create: {
+            balance: 0,
+          },
+        },
       },
     });
 
     const { password, ...userWithoutPassword } = user;
 
-    await this.notificationsService.create({
-      userId: user.id,
-      type: "SYSTEM",
-      title: "Welcome to the Mess!",
-      message: `Hello ${user.name}, your account has been created successfully. Your mess "${mess.name}" has been created.`,
-      link: "/profile",
-    });
+    // Send welcome notification
+    try {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "SYSTEM",
+        title: "Welcome to the Mess!",
+        message: `Hello ${user.name}, your account has been created successfully.`,
+        link: "/profile",
+      });
+    } catch (error) {
+      console.error("Failed to send welcome notification:", error);
+    }
 
     return userWithoutPassword;
   }
@@ -86,19 +75,17 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        joinedDate: true,
+        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        messMembers: {
-          include: {
-            mess: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
+        userBalance: {
+          select: {
+            balance: true,
           },
         },
       },
@@ -107,7 +94,12 @@ export class UsersService {
       },
     });
 
-    return users;
+    // Transform to include balance directly
+    return users.map((user) => ({
+      ...user,
+      balance: user.userBalance?.balance || 0,
+      userBalance: undefined,
+    }));
   }
 
   async findOne(id: string) {
@@ -118,20 +110,51 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        joinedDate: true,
+        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        messMembers: {
-          include: {
-            mess: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-            userBalance: true,
+        userBalance: {
+          select: {
+            balance: true,
+          },
+        },
+        meals: {
+          take: 5,
+          orderBy: { date: "desc" },
+          select: {
+            id: true,
+            date: true,
+            morning: true,
+            lunch: true,
+            dinner: true,
+            totalMeal: true,
+          },
+        },
+        payments: {
+          take: 5,
+          orderBy: { paymentDate: "desc" },
+          select: {
+            id: true,
+            amount: true,
+            paymentDate: true,
+            paymentMethod: true,
+            note: true,
+          },
+        },
+        marketings: {
+          take: 5,
+          orderBy: { date: "desc" },
+          select: {
+            id: true,
+            date: true,
+            itemName: true,
+            amount: true,
+            shopName: true,
           },
         },
       },
@@ -141,12 +164,18 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user;
+    // Transform to include balance directly
+    return {
+      ...user,
+      balance: user.userBalance?.balance || 0,
+      userBalance: undefined,
+    };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id);
 
+    // Check email uniqueness if updating
     if (updateUserDto.email) {
       const existingUser = await this.prisma.user.findFirst({
         where: {
@@ -167,39 +196,47 @@ export class UsersService {
         phone: updateUserDto.phone,
         email: updateUserDto.email,
         isActive: updateUserDto.isActive,
+        role: updateUserDto.role as any,
       },
       select: {
         id: true,
         name: true,
         phone: true,
         email: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        joinedDate: true,
+        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        messMembers: {
-          include: {
-            mess: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
+        userBalance: {
+          select: {
+            balance: true,
           },
         },
       },
     });
 
-    await this.notificationsService.create({
-      userId: id,
-      type: "SYSTEM",
-      title: "Profile Updated",
-      message: "Your profile information has been updated successfully.",
-      link: "/profile",
-    });
+    // Send notification
+    try {
+      await this.notificationsService.create({
+        userId: id,
+        type: "SYSTEM",
+        title: "Profile Updated",
+        message: "Your profile information has been updated successfully.",
+        link: "/profile",
+      });
+    } catch (error) {
+      console.error("Failed to send profile update notification:", error);
+    }
 
-    return updatedUser;
+    return {
+      ...updatedUser,
+      balance: updatedUser.userBalance?.balance || 0,
+      userBalance: undefined,
+    };
   }
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
@@ -236,33 +273,39 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        joinedDate: true,
+        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        messMembers: {
-          include: {
-            mess: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
+        userBalance: {
+          select: {
+            balance: true,
           },
         },
       },
     });
 
-    await this.notificationsService.create({
-      userId: userId,
-      type: "SYSTEM",
-      title: "Profile Updated",
-      message: "Your profile information has been updated successfully.",
-      link: "/profile",
-    });
+    try {
+      await this.notificationsService.create({
+        userId: userId,
+        type: "SYSTEM",
+        title: "Profile Updated",
+        message: "Your profile information has been updated successfully.",
+        link: "/profile",
+      });
+    } catch (error) {
+      console.error("Failed to send profile update notification:", error);
+    }
 
-    return updatedUser;
+    return {
+      ...updatedUser,
+      balance: updatedUser.userBalance?.balance || 0,
+      userBalance: undefined,
+    };
   }
 
   async updateProfileImage(userId: string, file: any) {
@@ -274,6 +317,7 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
+    // Delete old image if exists
     if (user.profileImage) {
       await this.cloudinaryService.deleteProfileImage(user.profileImage);
     }
@@ -293,33 +337,39 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        joinedDate: true,
+        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        messMembers: {
-          include: {
-            mess: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
+        userBalance: {
+          select: {
+            balance: true,
           },
         },
       },
     });
 
-    await this.notificationsService.create({
-      userId: userId,
-      type: "SYSTEM",
-      title: "Profile Image Updated",
-      message: "Your profile image has been updated successfully.",
-      link: "/profile",
-    });
+    try {
+      await this.notificationsService.create({
+        userId: userId,
+        type: "SYSTEM",
+        title: "Profile Image Updated",
+        message: "Your profile image has been updated successfully.",
+        link: "/profile",
+      });
+    } catch (error) {
+      console.error("Failed to send profile image notification:", error);
+    }
 
-    return updatedUser;
+    return {
+      ...updatedUser,
+      balance: updatedUser.userBalance?.balance || 0,
+      userBalance: undefined,
+    };
   }
 
   async removeProfileImage(userId: string) {
@@ -347,81 +397,103 @@ export class UsersService {
         name: true,
         phone: true,
         email: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        joinedDate: true,
+        leftDate: true,
         createdAt: true,
         updatedAt: true,
-        messMembers: {
-          include: {
-            mess: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
+        userBalance: {
+          select: {
+            balance: true,
           },
         },
       },
     });
 
-    await this.notificationsService.create({
-      userId: userId,
-      type: "SYSTEM",
-      title: "Profile Image Removed",
-      message: "Your profile image has been removed successfully.",
-      link: "/profile",
-    });
+    try {
+      await this.notificationsService.create({
+        userId: userId,
+        type: "SYSTEM",
+        title: "Profile Image Removed",
+        message: "Your profile image has been removed successfully.",
+        link: "/profile",
+      });
+    } catch (error) {
+      console.error(
+        "Failed to send profile image removal notification:",
+        error,
+      );
+    }
 
-    return updatedUser;
+    return {
+      ...updatedUser,
+      balance: updatedUser.userBalance?.balance || 0,
+      userBalance: undefined,
+    };
   }
 
   async remove(id: string) {
-    const user = await this.findOne(id);
+    await this.findOne(id);
 
     const deactivatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         isActive: false,
+        leftDate: new Date(),
       },
       select: {
         id: true,
         name: true,
         phone: true,
         email: true,
+        role: true,
         isActive: true,
+        approvalStatus: true,
+        leftDate: true,
       },
     });
 
-    await this.prisma.messMember.updateMany({
-      where: { userId: id },
-      data: {
-        isActive: false,
-        leftDate: new Date(),
-      },
-    });
-
-    await this.notificationsService.create({
-      userId: id,
-      type: "SYSTEM",
-      title: "Account Deactivated",
-      message:
-        "Your account has been deactivated. Please contact admin for more information.",
-      link: "/",
-    });
+    try {
+      await this.notificationsService.create({
+        userId: id,
+        type: "SYSTEM",
+        title: "Account Deactivated",
+        message:
+          "Your account has been deactivated. Please contact admin for more information.",
+        link: "/",
+      });
+    } catch (error) {
+      console.error("Failed to send account deactivation notification:", error);
+    }
 
     return deactivatedUser;
   }
 
   async hardDelete(id: string) {
-    const user = await this.findOne(id);
+    await this.findOne(id);
 
-    await this.prisma.messMember.deleteMany({
+    // Delete all related records
+    await this.prisma.meal.deleteMany({
       where: { userId: id },
     });
 
-    await this.prisma.userBalance.deleteMany({
-      where: { member: { userId: id } },
+    await this.prisma.marketing.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.prisma.payment.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.prisma.monthlySummary.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.prisma.userBalance.delete({
+      where: { userId: id },
     });
 
     await this.prisma.user.delete({
@@ -444,23 +516,23 @@ export class UsersService {
   }
 
   async updateBalance(userId: string, amount: number) {
-    const member = await this.prisma.messMember.findFirst({
-      where: { userId, isActive: true },
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
       include: { userBalance: true },
     });
 
-    if (!member) {
-      throw new NotFoundException("User is not a member of any mess");
+    if (!user) {
+      throw new NotFoundException("User not found");
     }
 
-    const currentBalance = member.userBalance
-      ? Number(member.userBalance.balance)
+    const currentBalance = user.userBalance
+      ? Number(user.userBalance.balance)
       : 0;
     const newBalance = currentBalance + amount;
 
-    if (member.userBalance) {
+    if (user.userBalance) {
       await this.prisma.userBalance.update({
-        where: { memberId: member.id },
+        where: { userId: userId },
         data: {
           balance: newBalance,
           lastUpdated: new Date(),
@@ -469,28 +541,27 @@ export class UsersService {
     } else {
       await this.prisma.userBalance.create({
         data: {
-          memberId: member.id,
+          userId: userId,
           balance: newBalance,
         },
       });
     }
 
-    if (amount > 0) {
+    const message =
+      amount > 0
+        ? `${amount} TK has been added to your balance. Current balance: ${newBalance} TK`
+        : `${Math.abs(amount)} TK has been deducted from your balance. Current balance: ${newBalance} TK`;
+
+    try {
       await this.notificationsService.create({
         userId: userId,
         type: "PAYMENT",
         title: "Balance Updated",
-        message: `${amount} TK has been added to your balance. Current balance: ${newBalance} TK`,
+        message,
         link: "/payments",
       });
-    } else if (amount < 0) {
-      await this.notificationsService.create({
-        userId: userId,
-        type: "PAYMENT",
-        title: "Balance Updated",
-        message: `${Math.abs(amount)} TK has been deducted from your balance. Current balance: ${newBalance} TK`,
-        link: "/payments",
-      });
+    } catch (error) {
+      console.error("Failed to send balance update notification:", error);
     }
 
     return {

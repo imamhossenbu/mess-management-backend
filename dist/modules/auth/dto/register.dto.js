@@ -9,15 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterDto = exports.Role = void 0;
+exports.RegisterDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
-var Role;
-(function (Role) {
-    Role["SUPER_ADMIN"] = "SUPER_ADMIN";
-    Role["MANAGER"] = "MANAGER";
-    Role["MEMBER"] = "MEMBER";
-})(Role || (exports.Role = Role = {}));
 class RegisterDto {
 }
 exports.RegisterDto = RegisterDto;
@@ -43,10 +37,4 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "phone", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: "Room-101", required: false }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "roomNumber", void 0);
 //# sourceMappingURL=register.dto.js.map

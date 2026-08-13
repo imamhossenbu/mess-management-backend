@@ -7,15 +7,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -28,8 +28,8 @@ export declare class NotificationsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             link: string | null;
+            userId: string;
             message: string;
             type: import(".prisma/client").$Enums.NotificationType;
             title: string;
@@ -40,15 +40,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -58,15 +58,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -76,15 +76,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -115,15 +115,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -133,15 +133,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -154,15 +154,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -172,15 +172,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
@@ -190,15 +190,15 @@ export declare class NotificationsController {
         user: {
             id: string;
             name: string;
-            phone: string;
             email: string;
+            phone: string;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         link: string | null;
+        userId: string;
         message: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;

@@ -6,6 +6,7 @@ import {
   Request,
   Query,
   ParseIntPipe,
+  BadRequestException,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -54,13 +55,35 @@ export class DashboardController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
   async getMonthlySummary(
     @CurrentMess() messId: string,
-    @Query("year", ParseIntPipe) year?: number,
-    @Query("month", ParseIntPipe) month?: number,
+    @Query("year") year?: string,
+    @Query("month") month?: string,
   ) {
+    // Parse year and month with validation
+    let yearNum: number | undefined;
+    let monthNum: number | undefined;
+
+    if (year) {
+      yearNum = parseInt(year);
+      if (isNaN(yearNum) || yearNum < 2000 || yearNum > 2100) {
+        throw new BadRequestException(
+          "Invalid year. Year must be between 2000 and 2100",
+        );
+      }
+    }
+
+    if (month) {
+      monthNum = parseInt(month);
+      if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+        throw new BadRequestException(
+          "Invalid month. Month must be between 1 and 12",
+        );
+      }
+    }
+
     return this.dashboardService.getMonthlySummaryForDashboard(
       messId,
-      year,
-      month,
+      yearNum,
+      monthNum,
     );
   }
 }

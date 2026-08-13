@@ -21,9 +21,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiParam,
   ApiConsumes,
-  ApiBody,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import {
@@ -35,8 +33,6 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "src/common/current-mess.decorator";
 
 @ApiTags("users")
 @ApiBearerAuth("JWT-auth")
@@ -46,34 +42,36 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Create a new user" })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Get all users" })
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Get user by ID" })
   async findOne(@Param("id") id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch("manage/:id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async update(
-    @Param("id") id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
+  @Roles("ADMIN")
+  @ApiOperation({ summary: "Update user (Admin only)" })
+  async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Patch("profile")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Update own profile" })
   async updateProfile(
     @Request() req,
     @Body() updateProfileDto: UpdateProfileDto,
@@ -82,9 +80,10 @@ export class UsersController {
   }
 
   @Post("profile/image")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
+  @ApiOperation({ summary: "Upload profile image" })
   async uploadProfileImage(@Request() req, @UploadedFile() file: any) {
     if (!file) {
       throw new BadRequestException("No file provided");
@@ -93,21 +92,24 @@ export class UsersController {
   }
 
   @Delete("profile/image")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Remove profile image" })
   async removeProfileImage(@Request() req) {
     return this.usersService.removeProfileImage(req.user.id);
   }
 
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles("ADMIN")
+  @ApiOperation({ summary: "Deactivate user" })
   async remove(@Param("id") id: string) {
     return this.usersService.remove(id);
   }
 
   @Delete(":id/hard")
-  @Roles(Role.SUPER_ADMIN)
+  @Roles("ADMIN")
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Permanently delete user" })
   async hardDelete(@Param("id") id: string) {
     return this.usersService.hardDelete(id);
   }

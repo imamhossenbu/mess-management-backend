@@ -12,7 +12,7 @@ export class AuthResponseDto {
     phone: string;
     email?: string;
     role: string;
-    roomNumber?: string;
     profileImage?: string;
+    isActive: boolean;
   };
 }

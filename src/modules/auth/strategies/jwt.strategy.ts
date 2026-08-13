@@ -18,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: string; email: string }) {
+  async validate(payload: { sub: string; email: string; role: string }) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -26,13 +26,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         name: true,
         email: true,
         phone: true,
+        role: true,
         profileImage: true,
         isActive: true,
+        approvalStatus: true,
+        userBalance: true,
       },
     });
 
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException("User not found or inactive");
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    if (!user.isActive || user.approvalStatus === "REJECTED") {
+      throw new UnauthorizedException("User is inactive");
+    }
+
+    if (user.approvalStatus === "PENDING") {
+      throw new UnauthorizedException("Account pending approval");
     }
 
     return user;

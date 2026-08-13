@@ -2,12 +2,6 @@
 import { IsString, IsEmail, IsOptional, MinLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
-export enum Role {
-  SUPER_ADMIN = "SUPER_ADMIN",
-  MANAGER = "MANAGER",
-  MEMBER = "MEMBER",
-}
-
 export class RegisterDto {
   @ApiProperty({ example: "John Doe" })
   @IsString()
@@ -26,10 +20,4 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   phone?: string;
-
-  @ApiProperty({ example: "Room-101", required: false })
-  @IsString()
-  @IsOptional()
-  roomNumber?: string;
-
 }

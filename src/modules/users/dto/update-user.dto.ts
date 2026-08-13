@@ -1,13 +1,6 @@
 // src/modules/users/dto/update-user.dto.ts
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-} from "class-validator";
+import { IsString, IsEmail, IsOptional, IsBoolean } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { Role } from "../../auth/dto/register.dto";
 
 export class UpdateUserDto {
   @ApiProperty({ required: false })
@@ -26,17 +19,12 @@ export class UpdateUserDto {
   email?: string;
 
   @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  roomNumber?: string;
-
-  @ApiProperty({ enum: Role, required: false })
-  @IsEnum(Role)
-  @IsOptional()
-  role?: Role;
-
-  @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  role?: string;
 }

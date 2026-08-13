@@ -6,73 +6,45 @@ export declare class UtilityBillsService {
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
     create(messId: string, createUtilityBillDto: CreateUtilityBillDto): Promise<{
-        payer: {
-            id: string;
-            name: string;
-            phone: string;
-        };
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        billType: string;
         monthYear: Date;
         paidBy: string | null;
     }>;
-    findAll(messId: string): Promise<({
-        payer: {
-            id: string;
-            name: string;
-            phone: string;
-        };
-    } & {
+    findAll(messId: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        billType: string;
         monthYear: Date;
         paidBy: string | null;
-    })[]>;
+    }[]>;
     findOne(messId: string, id: string): Promise<{
-        payer: {
-            id: string;
-            name: string;
-            phone: string;
-        };
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        billType: string;
         monthYear: Date;
         paidBy: string | null;
     }>;
-    findByMonth(messId: string, year: number, month: number): Promise<({
-        payer: {
-            id: string;
-            name: string;
-            phone: string;
-        };
-    } & {
+    findByMonth(messId: string, year: number, month: number): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        billType: string;
         monthYear: Date;
         paidBy: string | null;
-    })[]>;
+    }[]>;
     getMonthlySummary(messId: string, year: number, month: number): Promise<{
         month: string;
         year: number;
@@ -83,24 +55,17 @@ export declare class UtilityBillsService {
         totalKhala: number;
         totalAmount: number;
         perPersonShare: number;
-        totalMembers: number;
-        bills: ({
-            payer: {
-                id: string;
-                name: string;
-                phone: string;
-            };
-        } & {
+        totalMembers: any;
+        bills: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            billType: import(".prisma/client").$Enums.BillType;
+            billType: string;
             monthYear: Date;
             paidBy: string | null;
-        })[];
+        }[];
     }>;
     getSummary(messId: string): Promise<{
         totalCurrent: number;
@@ -110,7 +75,7 @@ export declare class UtilityBillsService {
         totalKhala: number;
         totalAmount: number;
         perPersonShare: number;
-        totalMembers: number;
+        totalMembers: any;
     }>;
     update(messId: string, id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
         payer: {
@@ -122,10 +87,9 @@ export declare class UtilityBillsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        billType: string;
         monthYear: Date;
         paidBy: string | null;
     }>;

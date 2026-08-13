@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateUserDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
-const register_dto_1 = require("../../auth/dto/register.dto");
 class CreateUserDto {
 }
 exports.CreateUserDto = CreateUserDto;
@@ -38,18 +37,6 @@ __decorate([
     (0, class_validator_1.MinLength)(6),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "password", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: "Room-101", required: false }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateUserDto.prototype, "roomNumber", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ enum: register_dto_1.Role, default: register_dto_1.Role.MEMBER }),
-    (0, class_validator_1.IsEnum)(register_dto_1.Role),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateUserDto.prototype, "role", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ default: true }),
     (0, class_validator_1.IsBoolean)(),

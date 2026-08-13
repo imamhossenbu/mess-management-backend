@@ -9,16 +9,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateUtilityBillDto = void 0;
+exports.CreateUtilityBillDto = exports.BillType = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
-const client_1 = require("@prisma/client");
+var BillType;
+(function (BillType) {
+    BillType["CURRENT"] = "CURRENT";
+    BillType["WIFI"] = "WIFI";
+    BillType["RENT"] = "RENT";
+    BillType["WATER"] = "WATER";
+    BillType["KHALA"] = "KHALA";
+})(BillType || (exports.BillType = BillType = {}));
 class CreateUtilityBillDto {
 }
 exports.CreateUtilityBillDto = CreateUtilityBillDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.BillType, example: "CURRENT" }),
-    (0, class_validator_1.IsEnum)(client_1.BillType),
+    (0, swagger_1.ApiProperty)({ enum: BillType, example: "CURRENT" }),
+    (0, class_validator_1.IsEnum)(BillType),
     __metadata("design:type", String)
 ], CreateUtilityBillDto.prototype, "billType", void 0);
 __decorate([

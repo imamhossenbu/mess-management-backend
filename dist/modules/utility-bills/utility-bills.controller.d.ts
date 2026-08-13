@@ -3,27 +3,41 @@ import { CreateUtilityBillDto, UpdateUtilityBillDto } from "./dto";
 export declare class UtilityBillsController {
     private readonly utilityBillsService;
     constructor(utilityBillsService: UtilityBillsService);
-    create(messId: string, createUtilityBillDto: CreateUtilityBillDto): Promise<{
+    create(createUtilityBillDto: CreateUtilityBillDto): Promise<{
+        paidByName: string;
+        payer: {
+            id: string;
+            name: string;
+            email: string;
+            phone: string;
+        };
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidBy: string | null;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
-        billType: string;
-        monthYear: Date;
-        paidBy: string | null;
     }>;
-    findAll(messId: string): Promise<{
+    findAll(): Promise<{
+        paidByName: string;
+        payer: {
+            id: string;
+            name: string;
+            email: string;
+            phone: string;
+        };
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidBy: string | null;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
-        billType: string;
-        monthYear: Date;
-        paidBy: string | null;
     }[]>;
-    getSummary(messId: string): Promise<{
+    getSummary(): Promise<{
         totalCurrent: number;
         totalWifi: number;
         totalRent: number;
@@ -31,9 +45,9 @@ export declare class UtilityBillsController {
         totalKhala: number;
         totalAmount: number;
         perPersonShare: number;
-        totalMembers: any;
+        totalMembers: number;
     }>;
-    getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
+    getMonthlySummary(year?: number, month?: number): Promise<{
         month: string;
         year: number;
         totalCurrent: number;
@@ -43,58 +57,80 @@ export declare class UtilityBillsController {
         totalKhala: number;
         totalAmount: number;
         perPersonShare: number;
-        totalMembers: any;
+        totalMembers: number;
         bills: {
+            paidByName: string;
+            payer: {
+                id: string;
+                name: string;
+                email: string;
+                phone: string;
+            };
+            billType: import(".prisma/client").$Enums.BillType;
+            monthYear: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            paidBy: string | null;
+            note: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
-            billType: string;
-            monthYear: Date;
-            paidBy: string | null;
         }[];
     }>;
-    findByMonth(messId: string, year: number, month: number): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
-        billType: string;
-        monthYear: Date;
-        paidBy: string | null;
-    }[]>;
-    findOne(messId: string, id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
-        billType: string;
-        monthYear: Date;
-        paidBy: string | null;
-    }>;
-    update(messId: string, id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
+    findByMonth(year: number, month: number): Promise<{
+        paidByName: string;
         payer: {
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-    } & {
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidBy: string | null;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
-        billType: string;
+    }[]>;
+    findOne(id: string): Promise<{
+        paidByName: string;
+        payer: {
+            id: string;
+            name: string;
+            email: string;
+            phone: string;
+        };
+        billType: import(".prisma/client").$Enums.BillType;
         monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paidBy: string | null;
+        note: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
-    remove(messId: string, id: string): Promise<{
+    update(id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
+        paidByName: string;
+        payer: {
+            id: string;
+            name: string;
+            email: string;
+            phone: string;
+        };
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidBy: string | null;
+        note: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    remove(id: string): Promise<{
         message: string;
     }>;
-    removeByMonth(messId: string, year: number, month: number): Promise<{
+    removeByMonth(year: number, month: number): Promise<{
         message: string;
         count: number;
     }>;

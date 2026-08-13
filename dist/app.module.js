@@ -23,13 +23,8 @@ const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const health_module_1 = require("./modules/health/health.module");
 const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
-const mess_middleware_1 = require("./common/middleware/mess.middleware");
 let AppModule = class AppModule {
     configure(consumer) {
-        consumer
-            .apply(mess_middleware_1.MessMiddleware)
-            .exclude({ path: "auth/(.*)", method: common_1.RequestMethod.ALL }, { path: "health/(.*)", method: common_1.RequestMethod.ALL }, { path: "mess", method: common_1.RequestMethod.POST }, { path: "mess/user/messes", method: common_1.RequestMethod.GET })
-            .forRoutes("*");
     }
 };
 exports.AppModule = AppModule;

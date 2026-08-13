@@ -15,7 +15,6 @@ import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { HealthModule } from "./modules/health/health.module";
 import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
-import { MessMiddleware } from "./common/middleware/mess.middleware";
 
 @Module({
   imports: [
@@ -43,14 +42,9 @@ import { MessMiddleware } from "./common/middleware/mess.middleware";
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(MessMiddleware)
-      .exclude(
-        { path: "auth/(.*)", method: RequestMethod.ALL },
-        { path: "health/(.*)", method: RequestMethod.ALL },
-        { path: "mess", method: RequestMethod.POST },
-        { path: "mess/user/messes", method: RequestMethod.GET },
-      )
-      .forRoutes("*");
+    // শুধু Auth এর জন্য middleware (যদি দরকার হয়)
+    // consumer
+    //   .apply(LoggerMiddleware)
+    //   .forRoutes('*');
   }
 }

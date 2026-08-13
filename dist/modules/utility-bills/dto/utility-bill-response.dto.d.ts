@@ -1,4 +1,4 @@
-import { BillType } from "@prisma/client";
+import { BillType } from "./create-utility-bill.dto";
 export declare class UtilityBillResponseDto {
     id: string;
     billType: BillType;

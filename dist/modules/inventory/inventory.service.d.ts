@@ -19,10 +19,10 @@ export declare class InventoryService {
         sellingPrice: number;
         status: string;
         stockLogs: {
+            note: string | null;
             id: string;
             createdAt: Date;
             date: Date;
-            note: string | null;
             inventoryItemId: string;
             change: import("@prisma/client/runtime/library").Decimal;
             previousQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -51,11 +51,11 @@ export declare class InventoryService {
                     shopName: string;
                 };
             } & {
+                note: string | null;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 quantity: import("@prisma/client/runtime/library").Decimal;
-                note: string | null;
                 itemName: string;
                 unit: import(".prisma/client").$Enums.Unit;
                 price: import("@prisma/client/runtime/library").Decimal;
@@ -65,10 +65,10 @@ export declare class InventoryService {
                 marketingId: string;
             };
         } & {
+            note: string | null;
             id: string;
             createdAt: Date;
             date: Date;
-            note: string | null;
             inventoryItemId: string;
             change: import("@prisma/client/runtime/library").Decimal;
             previousQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -155,8 +155,8 @@ export declare class InventoryService {
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            quantity: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             unit: import(".prisma/client").$Enums.Unit;
             category: import(".prisma/client").$Enums.InventoryCategory;
             minStockLevel: import("@prisma/client/runtime/library").Decimal;
@@ -170,11 +170,11 @@ export declare class InventoryService {
                 shopName: string;
             };
         } & {
+            note: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             quantity: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             itemName: string;
             unit: import(".prisma/client").$Enums.Unit;
             price: import("@prisma/client/runtime/library").Decimal;
@@ -184,10 +184,10 @@ export declare class InventoryService {
             marketingId: string;
         };
     } & {
+        note: string | null;
         id: string;
         createdAt: Date;
         date: Date;
-        note: string | null;
         inventoryItemId: string;
         change: import("@prisma/client/runtime/library").Decimal;
         previousQuantity: import("@prisma/client/runtime/library").Decimal;

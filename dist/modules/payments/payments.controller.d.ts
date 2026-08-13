@@ -11,14 +11,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }>;
     findAll(): Promise<{
         userName: string;
@@ -28,14 +28,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }[]>;
     getAllUserBalances(): Promise<{
         userId: string;
@@ -58,14 +58,14 @@ export declare class PaymentsController {
                 email: string;
                 phone: string;
             };
-            id: string;
             amount: import("@prisma/client/runtime/library").Decimal;
-            paymentDate: Date;
-            paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
+            paymentDate: Date;
+            paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         }[];
     }>;
     findByUser(userId: string, startDate?: string, endDate?: string): Promise<{
@@ -76,14 +76,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }[]>;
     getUserBalance(userId: string): Promise<{
         userId: string;
@@ -92,13 +92,13 @@ export declare class PaymentsController {
         balance: number;
         payments: {
             amount: number;
-            id: string;
-            paymentDate: Date;
-            paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
+            paymentDate: Date;
+            paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         }[];
     }>;
     findByDate(date: string): Promise<{
@@ -109,14 +109,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }[]>;
     findByMonth(year: number, month: number): Promise<{
         userName: string;
@@ -126,14 +126,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }[]>;
     findOne(id: string): Promise<{
         userName: string;
@@ -143,14 +143,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         userName: string;
@@ -160,14 +160,14 @@ export declare class PaymentsController {
             email: string;
             phone: string;
         };
-        id: string;
         amount: import("@prisma/client/runtime/library").Decimal;
-        paymentDate: Date;
-        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        paymentDate: Date;
+        paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
     }>;
     remove(id: string): Promise<{
         message: string;

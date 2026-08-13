@@ -19,6 +19,8 @@ export class UsersService {
     private notificationsService: NotificationsService,
   ) {}
 
+  // ==================== CREATE ====================
+
   async create(createUserDto: CreateUserDto) {
     // Check if user exists
     const existingUser = await this.prisma.user.findUnique({
@@ -48,6 +50,9 @@ export class UsersService {
           },
         },
       },
+      include: {
+        userBalance: true,
+      },
     });
 
     const { password, ...userWithoutPassword } = user;
@@ -65,64 +70,40 @@ export class UsersService {
       console.error("Failed to send welcome notification:", error);
     }
 
-    return userWithoutPassword;
+    return {
+      ...userWithoutPassword,
+      balance: user.userBalance?.balance || 0,
+    };
   }
+
+  // ==================== FIND ALL ====================
 
   async findAll() {
     const users = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        profileImage: true,
-        isActive: true,
-        approvalStatus: true,
-        joinedDate: true,
-        leftDate: true,
-        createdAt: true,
-        updatedAt: true,
-        userBalance: {
-          select: {
-            balance: true,
-          },
-        },
+      include: {
+        userBalance: true,
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    // Transform to include balance directly
-    return users.map((user) => ({
-      ...user,
-      balance: user.userBalance?.balance || 0,
-      userBalance: undefined,
-    }));
+    return users.map((user) => {
+      const { password, userBalance, ...safeUser } = user;
+      return {
+        ...safeUser,
+        balance: userBalance?.balance || 0,
+      };
+    });
   }
+
+  // ==================== FIND ONE ====================
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        profileImage: true,
-        isActive: true,
-        approvalStatus: true,
-        joinedDate: true,
-        leftDate: true,
-        createdAt: true,
-        updatedAt: true,
-        userBalance: {
-          select: {
-            balance: true,
-          },
-        },
+      include: {
+        userBalance: true,
         meals: {
           take: 5,
           orderBy: { date: "desc" },
@@ -149,12 +130,8 @@ export class UsersService {
         marketings: {
           take: 5,
           orderBy: { date: "desc" },
-          select: {
-            id: true,
-            date: true,
-            itemName: true,
-            amount: true,
-            shopName: true,
+          include: {
+            items: true,
           },
         },
       },
@@ -164,27 +141,39 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    // Transform to include balance directly
+    const { password, userBalance, ...safeUser } = user;
+
     return {
-      ...user,
-      balance: user.userBalance?.balance || 0,
-      userBalance: undefined,
+      ...safeUser,
+      balance: userBalance?.balance || 0,
     };
   }
 
+  // ==================== UPDATE ====================
+
   async update(id: string, updateUserDto: UpdateUserDto) {
-    await this.findOne(id);
+    // Check if user exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        userBalance: true,
+      },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
     // Check email uniqueness if updating
     if (updateUserDto.email) {
-      const existingUser = await this.prisma.user.findFirst({
+      const userWithEmail = await this.prisma.user.findFirst({
         where: {
           email: updateUserDto.email,
           NOT: { id },
         },
       });
 
-      if (existingUser) {
+      if (userWithEmail) {
         throw new ConflictException("Email already taken by another user");
       }
     }
@@ -198,24 +187,8 @@ export class UsersService {
         isActive: updateUserDto.isActive,
         role: updateUserDto.role as any,
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        profileImage: true,
-        isActive: true,
-        approvalStatus: true,
-        joinedDate: true,
-        leftDate: true,
-        createdAt: true,
-        updatedAt: true,
-        userBalance: {
-          select: {
-            balance: true,
-          },
-        },
+      include: {
+        userBalance: true,
       },
     });
 
@@ -232,16 +205,22 @@ export class UsersService {
       console.error("Failed to send profile update notification:", error);
     }
 
+    const { password, userBalance, ...safeUser } = updatedUser;
+
     return {
-      ...updatedUser,
-      balance: updatedUser.userBalance?.balance || 0,
-      userBalance: undefined,
+      ...safeUser,
+      balance: userBalance?.balance || 0,
     };
   }
+
+  // ==================== UPDATE PROFILE ====================
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        userBalance: true,
+      },
     });
 
     if (!user) {
@@ -268,24 +247,8 @@ export class UsersService {
         phone: updateProfileDto.phone,
         email: updateProfileDto.email,
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        profileImage: true,
-        isActive: true,
-        approvalStatus: true,
-        joinedDate: true,
-        leftDate: true,
-        createdAt: true,
-        updatedAt: true,
-        userBalance: {
-          select: {
-            balance: true,
-          },
-        },
+      include: {
+        userBalance: true,
       },
     });
 
@@ -301,16 +264,22 @@ export class UsersService {
       console.error("Failed to send profile update notification:", error);
     }
 
+    const { password, userBalance, ...safeUser } = updatedUser;
+
     return {
-      ...updatedUser,
-      balance: updatedUser.userBalance?.balance || 0,
-      userBalance: undefined,
+      ...safeUser,
+      balance: userBalance?.balance || 0,
     };
   }
+
+  // ==================== UPDATE PROFILE IMAGE ====================
 
   async updateProfileImage(userId: string, file: any) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        userBalance: true,
+      },
     });
 
     if (!user) {
@@ -332,24 +301,8 @@ export class UsersService {
       data: {
         profileImage: imageUrl,
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        profileImage: true,
-        isActive: true,
-        approvalStatus: true,
-        joinedDate: true,
-        leftDate: true,
-        createdAt: true,
-        updatedAt: true,
-        userBalance: {
-          select: {
-            balance: true,
-          },
-        },
+      include: {
+        userBalance: true,
       },
     });
 
@@ -365,16 +318,22 @@ export class UsersService {
       console.error("Failed to send profile image notification:", error);
     }
 
+    const { password, userBalance, ...safeUser } = updatedUser;
+
     return {
-      ...updatedUser,
-      balance: updatedUser.userBalance?.balance || 0,
-      userBalance: undefined,
+      ...safeUser,
+      balance: userBalance?.balance || 0,
     };
   }
+
+  // ==================== REMOVE PROFILE IMAGE ====================
 
   async removeProfileImage(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        userBalance: true,
+      },
     });
 
     if (!user) {
@@ -392,24 +351,8 @@ export class UsersService {
       data: {
         profileImage: null,
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        profileImage: true,
-        isActive: true,
-        approvalStatus: true,
-        joinedDate: true,
-        leftDate: true,
-        createdAt: true,
-        updatedAt: true,
-        userBalance: {
-          select: {
-            balance: true,
-          },
-        },
+      include: {
+        userBalance: true,
       },
     });
 
@@ -428,15 +371,27 @@ export class UsersService {
       );
     }
 
+    const { password, userBalance, ...safeUser } = updatedUser;
+
     return {
-      ...updatedUser,
-      balance: updatedUser.userBalance?.balance || 0,
-      userBalance: undefined,
+      ...safeUser,
+      balance: userBalance?.balance || 0,
     };
   }
 
+  // ==================== DEACTIVATE USER ====================
+
   async remove(id: string) {
-    await this.findOne(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        userBalance: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
     const deactivatedUser = await this.prisma.user.update({
       where: { id },
@@ -444,15 +399,8 @@ export class UsersService {
         isActive: false,
         leftDate: new Date(),
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        isActive: true,
-        approvalStatus: true,
-        leftDate: true,
+      include: {
+        userBalance: true,
       },
     });
 
@@ -469,11 +417,24 @@ export class UsersService {
       console.error("Failed to send account deactivation notification:", error);
     }
 
-    return deactivatedUser;
+    const { password, userBalance, ...safeUser } = deactivatedUser;
+
+    return {
+      ...safeUser,
+      balance: userBalance?.balance || 0,
+    };
   }
 
+  // ==================== HARD DELETE USER ====================
+
   async hardDelete(id: string) {
-    await this.findOne(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
     // Delete all related records
     await this.prisma.meal.deleteMany({
@@ -496,6 +457,14 @@ export class UsersService {
       where: { userId: id },
     });
 
+    await this.prisma.notification.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.prisma.emailLog.deleteMany({
+      where: { userId: id },
+    });
+
     await this.prisma.user.delete({
       where: { id },
     });
@@ -503,17 +472,29 @@ export class UsersService {
     return { message: `User with ID ${id} deleted successfully` };
   }
 
+  // ==================== FIND BY PHONE ====================
+
   async findByPhone(phone: string) {
     return this.prisma.user.findFirst({
       where: { phone },
+      include: {
+        userBalance: true,
+      },
     });
   }
+
+  // ==================== FIND BY EMAIL ====================
 
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
+      include: {
+        userBalance: true,
+      },
     });
   }
+
+  // ==================== UPDATE BALANCE ====================
 
   async updateBalance(userId: string, amount: number) {
     const user = await this.prisma.user.findUnique({
@@ -567,6 +548,50 @@ export class UsersService {
     return {
       userId,
       balance: newBalance,
+    };
+  }
+
+  // ==================== GET USER STATS ====================
+
+  async getUserStats(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        userBalance: true,
+        meals: true,
+        payments: true,
+        marketings: {
+          include: {
+            items: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const totalMeals = user.meals.reduce((sum, m) => sum + m.totalMeal, 0);
+    const totalPayments = user.payments.reduce(
+      (sum, p) => sum + Number(p.amount),
+      0,
+    );
+    const totalMarketing = user.marketings.reduce(
+      (sum, m) => sum + Number(m.totalAmount),
+      0,
+    );
+
+    return {
+      userId: user.id,
+      name: user.name,
+      balance: user.userBalance?.balance || 0,
+      totalMeals,
+      totalPayments,
+      totalMarketing,
+      mealCount: user.meals.length,
+      paymentCount: user.payments.length,
+      marketingCount: user.marketings.length,
     };
   }
 }

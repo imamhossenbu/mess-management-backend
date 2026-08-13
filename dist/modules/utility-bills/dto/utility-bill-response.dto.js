@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilityBillSummaryDto = exports.MonthlyUtilitySummaryDto = exports.UtilityBillResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-const client_1 = require("@prisma/client");
+const create_utility_bill_dto_1 = require("./create-utility-bill.dto");
 class UtilityBillResponseDto {
 }
 exports.UtilityBillResponseDto = UtilityBillResponseDto;
@@ -20,7 +20,7 @@ __decorate([
     __metadata("design:type", String)
 ], UtilityBillResponseDto.prototype, "id", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ enum: create_utility_bill_dto_1.BillType }),
     __metadata("design:type", String)
 ], UtilityBillResponseDto.prototype, "billType", void 0);
 __decorate([

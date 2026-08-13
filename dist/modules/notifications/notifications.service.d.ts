@@ -13,28 +13,28 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     createBulk(bulkNotificationDto: BulkNotificationDto): Promise<{
         message: string;
         count: number;
         notifications: {
-            id: string;
             type: import(".prisma/client").$Enums.NotificationType;
             title: string;
-            message: string;
-            link: string | null;
-            isRead: boolean;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            link: string | null;
+            message: string;
+            isRead: boolean;
             userId: string;
         }[];
     }>;
@@ -46,14 +46,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     })[]>;
     findOne(id: string): Promise<{
@@ -64,14 +64,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     findByUser(userId: string): Promise<({
@@ -82,14 +82,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     })[]>;
     getUnreadCount(userId: string): Promise<{
@@ -103,14 +103,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     markMultipleAsRead(ids: string[]): Promise<{
@@ -129,14 +129,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     remove(id: string): Promise<{
@@ -150,10 +150,10 @@ export declare class NotificationsService {
         message: string;
         emailLog: {
             id: string;
-            message: string;
             createdAt: Date;
-            userId: string;
             email: string;
+            message: string;
+            userId: string;
             subject: string;
             html: string | null;
             sentAt: Date;
@@ -167,14 +167,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     sendPaymentConfirmation(userId: string, amount: number): Promise<{
@@ -185,14 +185,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     sendMealReminder(userId: string, mealType: string): Promise<{
@@ -203,14 +203,14 @@ export declare class NotificationsService {
             phone: string;
         };
     } & {
-        id: string;
         type: import(".prisma/client").$Enums.NotificationType;
         title: string;
-        message: string;
-        link: string | null;
-        isRead: boolean;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        link: string | null;
+        message: string;
+        isRead: boolean;
         userId: string;
     }>;
     sendInventoryAlert(type: string, quantity: number): Promise<{

@@ -3,7 +3,6 @@ import {
   Injectable,
   NestMiddleware,
   BadRequestException,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -40,32 +39,19 @@ export class MessMiddleware implements NestMiddleware {
     const messId = req.headers["x-mess-id"] as string;
 
     if (!messId) {
-      throw new BadRequestException(
-        "Mess ID is required. Please select a mess.",
-      );
+      return next();
     }
 
-    const user = (req as any).user;
-
-    if (!user) {
-      throw new UnauthorizedException("User not authenticated");
-    }
-
-    const member = await this.prisma.messMember.findFirst({
-      where: {
-        userId: user.id,
-        messId: messId,
-        isActive: true,
-      },
+    const mess = await this.prisma.mess.findUnique({
+      where: { id: messId },
+      select: { id: true, isActive: true },
     });
 
-    if (!member) {
-      throw new BadRequestException("You are not a member of this mess");
+    if (!mess || !mess.isActive) {
+      throw new BadRequestException("Selected mess is unavailable");
     }
 
     (req as any).messId = messId;
-    (req as any).memberId = member.id;
-    (req as any).memberRole = member.role;
 
     next();
   }

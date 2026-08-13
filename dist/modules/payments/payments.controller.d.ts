@@ -11,21 +11,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
@@ -40,21 +40,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
@@ -81,21 +81,21 @@ export declare class PaymentsController {
                     phone: string;
                 };
             } & {
-                userId: string;
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isActive: boolean;
+                userId: string;
                 messId: string;
                 role: import(".prisma/client").$Enums.MessRole;
                 joinedDate: Date;
                 leftDate: Date | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            messId: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             memberId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
@@ -111,21 +111,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
@@ -139,9 +139,9 @@ export declare class PaymentsController {
         balance: number;
         payments: {
             id: string;
+            messId: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             memberId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
@@ -157,21 +157,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
@@ -186,21 +186,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
@@ -215,21 +215,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
@@ -244,21 +244,21 @@ export declare class PaymentsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;

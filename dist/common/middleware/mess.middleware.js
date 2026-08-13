@@ -33,25 +33,16 @@ let MessMiddleware = class MessMiddleware {
         }
         const messId = req.headers["x-mess-id"];
         if (!messId) {
-            throw new common_1.BadRequestException("Mess ID is required. Please select a mess.");
+            return next();
         }
-        const user = req.user;
-        if (!user) {
-            throw new common_1.UnauthorizedException("User not authenticated");
-        }
-        const member = await this.prisma.messMember.findFirst({
-            where: {
-                userId: user.id,
-                messId: messId,
-                isActive: true,
-            },
+        const mess = await this.prisma.mess.findUnique({
+            where: { id: messId },
+            select: { id: true, isActive: true },
         });
-        if (!member) {
-            throw new common_1.BadRequestException("You are not a member of this mess");
+        if (!mess || !mess.isActive) {
+            throw new common_1.BadRequestException("Selected mess is unavailable");
         }
         req.messId = messId;
-        req.memberId = member.id;
-        req.memberRole = member.role;
         next();
     }
 };

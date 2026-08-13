@@ -11,9 +11,9 @@ export declare class UtilityBillsController {
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
@@ -28,9 +28,9 @@ export declare class UtilityBillsController {
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
@@ -66,9 +66,9 @@ export declare class UtilityBillsController {
             };
         } & {
             id: string;
+            messId: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
             billType: import(".prisma/client").$Enums.BillType;
@@ -84,9 +84,9 @@ export declare class UtilityBillsController {
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
@@ -101,9 +101,9 @@ export declare class UtilityBillsController {
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
@@ -118,9 +118,9 @@ export declare class UtilityBillsController {
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;

@@ -26,7 +26,7 @@ let MessController = class MessController {
         this.messService = messService;
     }
     async create(req, createMessDto) {
-        return this.messService.create(req.user.id, createMessDto);
+        throw new common_1.ForbiddenException("Creation of mess is disabled.");
     }
     async getUserMesses(req) {
         return this.messService.getUserMesses(req.user.id);
@@ -38,7 +38,7 @@ let MessController = class MessController {
         return this.messService.update(id, updateMessDto);
     }
     async remove(id) {
-        return this.messService.remove(id);
+        throw new common_1.ForbiddenException("Deletion of mess is disabled.");
     }
     async getMembers(id) {
         return this.messService.getMembers(id);

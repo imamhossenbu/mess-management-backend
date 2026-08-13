@@ -11,21 +11,21 @@ export declare class MealsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         date: Date;
         morning: boolean;
@@ -50,21 +50,21 @@ export declare class MealsController {
                     phone: string;
                 };
             } & {
-                userId: string;
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isActive: boolean;
+                userId: string;
                 messId: string;
                 role: import(".prisma/client").$Enums.MessRole;
                 joinedDate: Date;
                 leftDate: Date | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            messId: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             memberId: string;
             date: Date;
             morning: boolean;
@@ -91,21 +91,21 @@ export declare class MealsController {
                     phone: string;
                 };
             } & {
-                userId: string;
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isActive: boolean;
+                userId: string;
                 messId: string;
                 role: import(".prisma/client").$Enums.MessRole;
                 joinedDate: Date;
                 leftDate: Date | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            messId: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             memberId: string;
             date: Date;
             morning: boolean;
@@ -122,21 +122,21 @@ export declare class MealsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         date: Date;
         morning: boolean;
@@ -162,21 +162,21 @@ export declare class MealsController {
                     phone: string;
                 };
             } & {
-                userId: string;
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isActive: boolean;
+                userId: string;
                 messId: string;
                 role: import(".prisma/client").$Enums.MessRole;
                 joinedDate: Date;
                 leftDate: Date | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            messId: string;
             createdAt: Date;
             updatedAt: Date;
-            messId: string;
             memberId: string;
             date: Date;
             morning: boolean;
@@ -210,21 +210,21 @@ export declare class MealsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         date: Date;
         morning: boolean;
@@ -240,21 +240,21 @@ export declare class MealsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         date: Date;
         morning: boolean;
@@ -270,21 +270,21 @@ export declare class MealsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         date: Date;
         morning: boolean;
@@ -300,21 +300,21 @@ export declare class MealsController {
                 phone: string;
             };
         } & {
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
+            userId: string;
             messId: string;
             role: import(".prisma/client").$Enums.MessRole;
             joinedDate: Date;
             leftDate: Date | null;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
+        messId: string;
         createdAt: Date;
         updatedAt: Date;
-        messId: string;
         memberId: string;
         date: Date;
         morning: boolean;

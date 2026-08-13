@@ -12,6 +12,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -44,7 +45,7 @@ export class MessController {
   @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER) // ✅ All roles
   @ApiOperation({ summary: "Create a new mess" })
   async create(@Request() req, @Body() createMessDto: CreateMessDto) {
-    return this.messService.create(req.user.id, createMessDto);
+    throw new ForbiddenException("Creation of mess is disabled.");
   }
 
   // ✅ Get User Messes - Any logged in user
@@ -83,7 +84,7 @@ export class MessController {
   @ApiParam({ name: "id", description: "Mess ID" })
   @HttpCode(HttpStatus.OK)
   async remove(@Param("id", ParseUUIDPipe) id: string) {
-    return this.messService.remove(id);
+    throw new ForbiddenException("Deletion of mess is disabled.");
   }
 
   // ✅ Get Members - Any logged in user (must be member)

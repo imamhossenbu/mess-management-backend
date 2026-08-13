@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilityBillSummaryDto = exports.MonthlyUtilitySummaryDto = exports.UtilityBillResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
@@ -21,7 +22,7 @@ __decorate([
 ], UtilityBillResponseDto.prototype, "id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", typeof (_a = typeof client_1.BillType !== "undefined" && client_1.BillType) === "function" ? _a : Object)
 ], UtilityBillResponseDto.prototype, "billType", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

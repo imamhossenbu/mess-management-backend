@@ -13,11 +13,13 @@ exports.RolesGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const register_dto_1 = require("../dto/register.dto");
+const prisma_service_1 = require("../../../prisma/prisma.service");
 let RolesGuard = class RolesGuard {
-    constructor(reflector) {
+    constructor(reflector, prisma) {
         this.reflector = reflector;
+        this.prisma = prisma;
     }
-    canActivate(context) {
+    async canActivate(context) {
         const requiredRoles = this.reflector.getAllAndOverride("roles", [
             context.getHandler(),
             context.getClass(),
@@ -30,7 +32,22 @@ let RolesGuard = class RolesGuard {
         if (!user) {
             throw new common_1.ForbiddenException("User not authenticated");
         }
-        const rawRole = request.memberRole || "MEMBER";
+        const member = await this.prisma.messMember.findFirst({
+            where: {
+                userId: user.id,
+                ...(request.messId ? { messId: request.messId } : {}),
+                isActive: true,
+            },
+            orderBy: { joinedDate: "asc" },
+            select: { id: true, messId: true, role: true },
+        });
+        if (!member) {
+            throw new common_1.ForbiddenException("You are not an active mess member");
+        }
+        request.messId = member.messId;
+        request.memberId = member.id;
+        request.memberRole = member.role;
+        const rawRole = member.role;
         let userRole = register_dto_1.Role.MEMBER;
         if (rawRole === "SUPER_ADMIN") {
             userRole = register_dto_1.Role.SUPER_ADMIN;
@@ -55,6 +72,7 @@ let RolesGuard = class RolesGuard {
 exports.RolesGuard = RolesGuard;
 exports.RolesGuard = RolesGuard = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [core_1.Reflector])
+    __metadata("design:paramtypes", [core_1.Reflector,
+        prisma_service_1.PrismaService])
 ], RolesGuard);
 //# sourceMappingURL=roles.guard.js.map

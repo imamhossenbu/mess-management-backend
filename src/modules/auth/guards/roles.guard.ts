@@ -7,12 +7,16 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Role } from "../dto/register.dto";
+import { PrismaService } from "../../../prisma/prisma.service";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private prisma: PrismaService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>("roles", [
       context.getHandler(),
       context.getClass(),
@@ -29,9 +33,26 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException("User not authenticated");
     }
 
-    // Get active member role inside active mess (if populated by MessMiddleware),
-    // otherwise fallback to a default MEMBER role for mess-agnostic routes (like POST /mess).
-    const rawRole = request.memberRole || "MEMBER";
+    // Middleware runs before JWT guards, so membership must be resolved here,
+    // after JwtAuthGuard has attached the authenticated user to the request.
+    const member = await this.prisma.messMember.findFirst({
+      where: {
+        userId: user.id,
+        ...(request.messId ? { messId: request.messId } : {}),
+        isActive: true,
+      },
+      orderBy: { joinedDate: "asc" },
+      select: { id: true, messId: true, role: true },
+    });
+
+    if (!member) {
+      throw new ForbiddenException("You are not an active mess member");
+    }
+
+    request.messId = member.messId;
+    request.memberId = member.id;
+    request.memberRole = member.role;
+    const rawRole = member.role;
 
     // Map database enum MessRole (SUPER_ADMIN, ADMIN, MEMBER) to controller DTO Role (SUPER_ADMIN, MANAGER, MEMBER)
     let userRole = Role.MEMBER;

@@ -1,57 +1,215 @@
 import { PrismaService } from "../../prisma/prisma.service";
-import { InventoryType } from "@prisma/client";
-import { AddInventoryDto, RemoveInventoryDto, SetInventoryDto } from "./dto";
+import { InventoryCategory } from "@prisma/client";
+import { AddInventoryDto, RemoveInventoryDto, SetInventoryDto, CreateInventoryItemDto, UpdateInventoryItemDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
 export declare class InventoryService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    getAllInventory(messId: string): Promise<any[]>;
-    getInventory(messId: string, type: InventoryType): Promise<any>;
-    getSummary(messId: string): Promise<{
-        meat: {
-            available: any;
-            unit: string;
-            lastUpdated: any;
-            logs: any;
-        };
-        fish: {
-            available: any;
-            unit: string;
-            lastUpdated: any;
-            logs: any;
-        };
+    getAllInventory(): Promise<Record<string, any[]>>;
+    getSummary(): Promise<{
+        totalItems: number;
+        lowStockItems: number;
+        categories: Record<string, any>;
     }>;
-    getLogs(messId: string, type?: InventoryType): Promise<{
+    getByCategory(category: InventoryCategory): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        purchasePrice: number;
+        sellingPrice: number;
+        status: string;
+        stockLogs: {
+            id: string;
+            createdAt: Date;
+            date: Date;
+            inventoryItemId: string;
+            change: import("@prisma/client/runtime/library").Decimal;
+            previousQuantity: import("@prisma/client/runtime/library").Decimal;
+            newQuantity: import("@prisma/client/runtime/library").Decimal;
+            reason: string;
+            note: string | null;
+            marketingItemId: string | null;
+        }[];
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
+    getInventoryItem(itemName: string): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        purchasePrice: number;
+        sellingPrice: number;
+        stockLogs: ({
+            marketingItem: {
+                marketing: {
+                    id: string;
+                    date: Date;
+                    shopName: string;
+                };
+            } & {
+                id: string;
+                unit: import(".prisma/client").$Enums.Unit;
+                quantity: import("@prisma/client/runtime/library").Decimal;
+                createdAt: Date;
+                updatedAt: Date;
+                inventoryItemId: string | null;
+                note: string | null;
+                marketingId: string;
+                itemName: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                totalPrice: import("@prisma/client/runtime/library").Decimal;
+                addedToInventory: boolean;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            date: Date;
+            inventoryItemId: string;
+            change: import("@prisma/client/runtime/library").Decimal;
+            previousQuantity: import("@prisma/client/runtime/library").Decimal;
+            newQuantity: import("@prisma/client/runtime/library").Decimal;
+            reason: string;
+            note: string | null;
+            marketingItemId: string | null;
+        })[];
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    createInventoryItem(dto: CreateInventoryItemDto): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        purchasePrice: number;
+        sellingPrice: number;
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    updateInventoryItem(itemName: string, dto: UpdateInventoryItemDto): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        purchasePrice: number;
+        sellingPrice: number;
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    addInventory(dto: AddInventoryDto): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
+        sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    removeInventory(dto: RemoveInventoryDto): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
+        sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    setInventory(dto: SetInventoryDto): Promise<{
+        quantity: number;
+        minStockLevel: number;
+        id: string;
+        name: string;
+        category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
+        sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+        lastUpdated: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    getStockLogs(itemName?: string): Promise<({
+        inventoryItem: {
+            id: string;
+            name: string;
+            category: import(".prisma/client").$Enums.InventoryCategory;
+            unit: import(".prisma/client").$Enums.Unit;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            minStockLevel: import("@prisma/client/runtime/library").Decimal;
+            purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
+            sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+            lastUpdated: Date;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        marketingItem: {
+            marketing: {
+                id: string;
+                date: Date;
+                shopName: string;
+            };
+        } & {
+            id: string;
+            unit: import(".prisma/client").$Enums.Unit;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            createdAt: Date;
+            updatedAt: Date;
+            inventoryItemId: string | null;
+            note: string | null;
+            marketingId: string;
+            itemName: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            totalPrice: import("@prisma/client/runtime/library").Decimal;
+            addedToInventory: boolean;
+        };
+    } & {
         id: string;
         createdAt: Date;
         date: Date;
-        note: string | null;
-        change: import("@prisma/client/runtime/library").Decimal;
-        reason: string;
         inventoryItemId: string;
+        change: import("@prisma/client/runtime/library").Decimal;
         previousQuantity: import("@prisma/client/runtime/library").Decimal;
         newQuantity: import("@prisma/client/runtime/library").Decimal;
+        reason: string;
+        note: string | null;
         marketingItemId: string | null;
-    }[]>;
-    addInventory(messId: string, addInventoryDto: AddInventoryDto): Promise<any>;
-    removeInventory(messId: string, removeInventoryDto: RemoveInventoryDto): Promise<any>;
-    setInventory(messId: string, setInventoryDto: SetInventoryDto): Promise<any>;
-    checkAvailability(messId: string, type: InventoryType, requiredQuantity: number): Promise<{
+    })[]>;
+    checkAvailability(itemName: string, requiredQuantity: number): Promise<{
         available: boolean;
-        availableQuantity: any;
+        availableQuantity: number;
         requiredQuantity: number;
-        type: InventoryType;
+        itemName: string;
+        message: string;
+        unit?: undefined;
+    } | {
+        available: boolean;
+        availableQuantity: number;
+        requiredQuantity: number;
+        itemName: string;
+        unit: import(".prisma/client").$Enums.Unit;
+        message?: undefined;
     }>;
-    bulkAdd(messId: string, items: {
-        type: InventoryType;
-        quantity: number;
-        marketingId?: string;
-        note?: string;
-    }[]): Promise<any[]>;
-    bulkRemove(messId: string, items: {
-        type: InventoryType;
-        quantity: number;
-        note?: string;
-    }[]): Promise<any[]>;
+    private sendLowStockAlert;
+    private detectCategory;
 }

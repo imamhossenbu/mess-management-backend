@@ -1,17 +1,35 @@
-import { InventoryType } from '@prisma/client';
-export declare class AddInventoryDto {
-    type: InventoryType;
+import { InventoryCategory, Unit } from "@prisma/client";
+export declare class CreateInventoryItemDto {
+    name: string;
+    category: InventoryCategory;
+    unit: Unit;
     quantity: number;
-    marketingId?: string;
+    minStockLevel: number;
+    purchasePrice?: number;
+    sellingPrice?: number;
+}
+export declare class AddInventoryDto {
+    itemName: string;
+    quantity: number;
+    unit: Unit;
+    marketingItemId?: string;
     note?: string;
 }
 export declare class RemoveInventoryDto {
-    type: InventoryType;
+    itemName: string;
     quantity: number;
     note?: string;
 }
 export declare class SetInventoryDto {
-    type: InventoryType;
+    itemName: string;
     quantity: number;
     note?: string;
+}
+export declare class UpdateInventoryItemDto {
+    name?: string;
+    category?: InventoryCategory;
+    unit?: Unit;
+    minStockLevel?: number;
+    purchasePrice?: number;
+    sellingPrice?: number;
 }

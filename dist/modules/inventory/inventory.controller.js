@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryController = void 0;
 const common_1 = require("@nestjs/common");
@@ -21,134 +20,156 @@ const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../../common/roles.decorator");
-const register_dto_1 = require("../auth/dto/register.dto");
 const client_1 = require("@prisma/client");
-const current_mess_decorator_1 = require("../../common/current-mess.decorator");
 let InventoryController = class InventoryController {
     constructor(inventoryService) {
         this.inventoryService = inventoryService;
     }
-    async getAll(messId) {
-        return this.inventoryService.getAllInventory(messId);
+    async getAll() {
+        return this.inventoryService.getAllInventory();
     }
-    async getSummary(messId) {
-        return this.inventoryService.getSummary(messId);
+    async getSummary() {
+        return this.inventoryService.getSummary();
     }
-    async getByType(messId, type) {
-        return this.inventoryService.getInventory(messId, type);
+    async getByCategory(category) {
+        return this.inventoryService.getByCategory(category);
     }
-    async getLogs(messId, type) {
-        return this.inventoryService.getLogs(messId, type);
+    async getInventoryItem(name) {
+        return this.inventoryService.getInventoryItem(name);
     }
-    async checkAvailability(messId, type, quantity) {
-        return this.inventoryService.checkAvailability(messId, type, quantity);
+    async getStockLogs(itemName) {
+        return this.inventoryService.getStockLogs(itemName);
     }
-    async add(messId, addInventoryDto) {
-        return this.inventoryService.addInventory(messId, addInventoryDto);
+    async checkAvailability(name, quantity) {
+        return this.inventoryService.checkAvailability(name, quantity);
     }
-    async remove(messId, removeInventoryDto) {
-        return this.inventoryService.removeInventory(messId, removeInventoryDto);
+    async createInventoryItem(dto) {
+        return this.inventoryService.createInventoryItem(dto);
     }
-    async set(messId, setInventoryDto) {
-        return this.inventoryService.setInventory(messId, setInventoryDto);
+    async updateInventoryItem(name, dto) {
+        return this.inventoryService.updateInventoryItem(name, dto);
     }
-    async bulkAdd(messId, items) {
-        return this.inventoryService.bulkAdd(messId, items);
+    async addInventory(dto) {
+        return this.inventoryService.addInventory(dto);
     }
-    async bulkRemove(messId, items) {
-        return this.inventoryService.bulkRemove(messId, items);
+    async removeInventory(dto) {
+        return this.inventoryService.removeInventory(dto);
+    }
+    async setInventory(dto) {
+        return this.inventoryService.setInventory(dto);
+    }
+    async deleteInventoryItem(name) {
     }
 };
 exports.InventoryController = InventoryController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get all inventory items grouped by category" }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "getAll", null);
 __decorate([
     (0, common_1.Get)("summary"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get inventory summary" }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "getSummary", null);
 __decorate([
-    (0, common_1.Get)("type/:type"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER, register_dto_1.Role.MEMBER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("type")),
+    (0, common_1.Get)("category/:category"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get inventory by category" }),
+    __param(0, (0, common_1.Param)("category")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_a = typeof client_1.InventoryType !== "undefined" && client_1.InventoryType) === "function" ? _a : Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], InventoryController.prototype, "getByType", null);
+], InventoryController.prototype, "getByCategory", null);
+__decorate([
+    (0, common_1.Get)("item/:name"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get single inventory item" }),
+    __param(0, (0, common_1.Param)("name")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "getInventoryItem", null);
 __decorate([
     (0, common_1.Get)("logs"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Query)("type")),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, swagger_1.ApiOperation)({ summary: "Get stock logs" }),
+    __param(0, (0, common_1.Query)("itemName")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_b = typeof client_1.InventoryType !== "undefined" && client_1.InventoryType) === "function" ? _b : Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], InventoryController.prototype, "getLogs", null);
+], InventoryController.prototype, "getStockLogs", null);
 __decorate([
-    (0, common_1.Get)("check/:type"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Param)("type")),
-    __param(2, (0, common_1.Query)("quantity")),
+    (0, common_1.Get)("check/:name"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, swagger_1.ApiOperation)({ summary: "Check inventory availability" }),
+    __param(0, (0, common_1.Param)("name")),
+    __param(1, (0, common_1.Query)("quantity")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_c = typeof client_1.InventoryType !== "undefined" && client_1.InventoryType) === "function" ? _c : Object, Number]),
+    __metadata("design:paramtypes", [String, Number]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "checkAvailability", null);
 __decorate([
-    (0, common_1.Post)("add"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
+    (0, common_1.Post)("items"),
+    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, swagger_1.ApiOperation)({ summary: "Create new inventory item" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dto_1.CreateInventoryItemDto]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "createInventoryItem", null);
+__decorate([
+    (0, common_1.Patch)("items/:name"),
+    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, swagger_1.ApiOperation)({ summary: "Update inventory item" }),
+    __param(0, (0, common_1.Param)("name")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.AddInventoryDto]),
+    __metadata("design:paramtypes", [String, dto_1.UpdateInventoryItemDto]),
     __metadata("design:returntype", Promise)
-], InventoryController.prototype, "add", null);
+], InventoryController.prototype, "updateInventoryItem", null);
+__decorate([
+    (0, common_1.Post)("add"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, swagger_1.ApiOperation)({ summary: "Add inventory (increase stock)" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dto_1.AddInventoryDto]),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "addInventory", null);
 __decorate([
     (0, common_1.Post)("remove"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Body)()),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, swagger_1.ApiOperation)({ summary: "Remove inventory (decrease stock)" }),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.RemoveInventoryDto]),
+    __metadata("design:paramtypes", [dto_1.RemoveInventoryDto]),
     __metadata("design:returntype", Promise)
-], InventoryController.prototype, "remove", null);
+], InventoryController.prototype, "removeInventory", null);
 __decorate([
-    (0, common_1.Patch)("set"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Body)()),
+    (0, common_1.Post)("set"),
+    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, swagger_1.ApiOperation)({ summary: "Set inventory manually" }),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.SetInventoryDto]),
+    __metadata("design:paramtypes", [dto_1.SetInventoryDto]),
     __metadata("design:returntype", Promise)
-], InventoryController.prototype, "set", null);
+], InventoryController.prototype, "setInventory", null);
 __decorate([
-    (0, common_1.Post)("bulk-add"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Body)()),
+    (0, common_1.Delete)("items/:name"),
+    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, swagger_1.ApiOperation)({ summary: "Delete inventory item" }),
+    __param(0, (0, common_1.Param)("name")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Array]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], InventoryController.prototype, "bulkAdd", null);
-__decorate([
-    (0, common_1.Post)("bulk-remove"),
-    (0, roles_decorator_1.Roles)(register_dto_1.Role.SUPER_ADMIN, register_dto_1.Role.MANAGER),
-    __param(0, (0, current_mess_decorator_1.CurrentMess)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Array]),
-    __metadata("design:returntype", Promise)
-], InventoryController.prototype, "bulkRemove", null);
+], InventoryController.prototype, "deleteInventoryItem", null);
 exports.InventoryController = InventoryController = __decorate([
     (0, swagger_1.ApiTags)("inventory"),
     (0, swagger_1.ApiBearerAuth)("JWT-auth"),

@@ -9,36 +9,83 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SetInventoryDto = exports.RemoveInventoryDto = exports.AddInventoryDto = void 0;
+exports.UpdateInventoryItemDto = exports.SetInventoryDto = exports.RemoveInventoryDto = exports.AddInventoryDto = exports.CreateInventoryItemDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
+class CreateInventoryItemDto {
+}
+exports.CreateInventoryItemDto = CreateInventoryItemDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "Rui Fish" }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateInventoryItemDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.InventoryCategory, example: "FISH" }),
+    (0, class_validator_1.IsEnum)(client_1.InventoryCategory),
+    __metadata("design:type", String)
+], CreateInventoryItemDto.prototype, "category", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
+    (0, class_validator_1.IsEnum)(client_1.Unit),
+    __metadata("design:type", String)
+], CreateInventoryItemDto.prototype, "unit", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 0 }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreateInventoryItemDto.prototype, "quantity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 5 }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreateInventoryItemDto.prototype, "minStockLevel", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 350, required: false }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateInventoryItemDto.prototype, "purchasePrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 400, required: false }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateInventoryItemDto.prototype, "sellingPrice", void 0);
 class AddInventoryDto {
 }
 exports.AddInventoryDto = AddInventoryDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.InventoryType, example: 'MEAT' }),
-    (0, class_validator_1.IsEnum)(client_1.InventoryType),
+    (0, swagger_1.ApiProperty)({ example: "Rui Fish" }),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], AddInventoryDto.prototype, "type", void 0);
+], AddInventoryDto.prototype, "itemName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 25, description: 'কত পিস যোগ করবেন' }),
+    (0, swagger_1.ApiProperty)({ example: 5 }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], AddInventoryDto.prototype, "quantity", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
+    (0, class_validator_1.IsEnum)(client_1.Unit),
+    __metadata("design:type", String)
+], AddInventoryDto.prototype, "unit", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({
-        example: 'marketing-id-123',
-        description: 'কোন বাজার থেকে যোগ করছেন (Marketing ID)',
-        required: false
+        example: "marketing-item-id-123",
+        description: "কোন বাজার থেকে যোগ করছেন (Marketing Item ID)",
+        required: false,
     }),
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], AddInventoryDto.prototype, "marketingId", void 0);
+], AddInventoryDto.prototype, "marketingItemId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'বাজার থেকে ২৫ পিস মুরগি কেনা হয়েছে', required: false }),
+    (0, swagger_1.ApiProperty)({ example: "বাজার থেকে কেনা হয়েছে", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
@@ -47,18 +94,18 @@ class RemoveInventoryDto {
 }
 exports.RemoveInventoryDto = RemoveInventoryDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.InventoryType, example: 'MEAT' }),
-    (0, class_validator_1.IsEnum)(client_1.InventoryType),
+    (0, swagger_1.ApiProperty)({ example: "Rui Fish" }),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], RemoveInventoryDto.prototype, "type", void 0);
+], RemoveInventoryDto.prototype, "itemName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 10, description: 'কত পিস বিয়োগ করবেন' }),
+    (0, swagger_1.ApiProperty)({ example: 2 }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], RemoveInventoryDto.prototype, "quantity", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'রান্নায় ১০ পিস ব্যবহার করা হয়েছে', required: false }),
+    (0, swagger_1.ApiProperty)({ example: "রান্নায় ব্যবহার করা হয়েছে", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
@@ -67,20 +114,60 @@ class SetInventoryDto {
 }
 exports.SetInventoryDto = SetInventoryDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.InventoryType, example: 'MEAT' }),
-    (0, class_validator_1.IsEnum)(client_1.InventoryType),
+    (0, swagger_1.ApiProperty)({ example: "Rui Fish" }),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], SetInventoryDto.prototype, "type", void 0);
+], SetInventoryDto.prototype, "itemName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 15, description: 'মোট কত পিস আছে' }),
+    (0, swagger_1.ApiProperty)({ example: 10 }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], SetInventoryDto.prototype, "quantity", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'স্টক চেক করে আপডেট করা হয়েছে', required: false }),
+    (0, swagger_1.ApiProperty)({ example: "স্টক চেক করে আপডেট করা হয়েছে", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], SetInventoryDto.prototype, "note", void 0);
+class UpdateInventoryItemDto {
+}
+exports.UpdateInventoryItemDto = UpdateInventoryItemDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateInventoryItemDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.InventoryCategory, required: false }),
+    (0, class_validator_1.IsEnum)(client_1.InventoryCategory),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateInventoryItemDto.prototype, "category", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, required: false }),
+    (0, class_validator_1.IsEnum)(client_1.Unit),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateInventoryItemDto.prototype, "unit", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateInventoryItemDto.prototype, "minStockLevel", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateInventoryItemDto.prototype, "purchasePrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateInventoryItemDto.prototype, "sellingPrice", void 0);
 //# sourceMappingURL=update-inventory.dto.js.map

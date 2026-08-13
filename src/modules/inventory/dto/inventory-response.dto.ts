@@ -1,19 +1,37 @@
 // src/modules/inventory/dto/inventory-response.dto.ts
-import { ApiProperty } from '@nestjs/swagger';
-import { InventoryType } from '@prisma/client';
+import { ApiProperty } from "@nestjs/swagger";
+import { InventoryCategory, Unit } from "@prisma/client";
 
-export class InventoryResponseDto {
+export class InventoryItemResponseDto {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  type: InventoryType;
+  name: string;
+
+  @ApiProperty({ enum: InventoryCategory })
+  category: InventoryCategory;
+
+  @ApiProperty({ enum: Unit })
+  unit: Unit;
 
   @ApiProperty()
   quantity: number;
 
   @ApiProperty()
+  minStockLevel: number;
+
+  @ApiProperty()
+  purchasePrice?: number;
+
+  @ApiProperty()
+  sellingPrice?: number;
+
+  @ApiProperty()
   lastUpdated: Date;
+
+  @ApiProperty()
+  status: string;
 
   @ApiProperty()
   createdAt: Date;
@@ -27,19 +45,25 @@ export class InventoryLogResponseDto {
   id: string;
 
   @ApiProperty()
-  inventoryId: string;
+  inventoryItemId: string;
 
   @ApiProperty()
   change: number;
 
   @ApiProperty()
+  previousQuantity: number;
+
+  @ApiProperty()
+  newQuantity: number;
+
+  @ApiProperty()
   reason: string;
 
   @ApiProperty()
-  marketingId?: string;
+  note?: string;
 
   @ApiProperty()
-  note?: string;
+  marketingItemId?: string;
 
   @ApiProperty()
   date: Date;
@@ -48,30 +72,56 @@ export class InventoryLogResponseDto {
   createdAt: Date;
 
   @ApiProperty()
-  marketing?: {
+  inventoryItem?: {
+    id: string;
+    name: string;
+    category: InventoryCategory;
+    unit: Unit;
+  };
+
+  @ApiProperty()
+  marketingItem?: {
     id: string;
     itemName: string;
-    quantity: string;
-    amount: number;
-    shopName: string;
-    date: Date;
+    quantity: number;
+    price: number;
+    totalPrice: number;
+    marketing: {
+      id: string;
+      shopName: string;
+      date: Date;
+    };
   };
 }
 
 export class InventorySummaryDto {
   @ApiProperty()
-  meat: {
-    available: number;
-    unit: string;
-    lastUpdated: Date;
-    logs?: InventoryLogResponseDto[];
-  };
+  totalItems: number;
 
   @ApiProperty()
-  fish: {
-    available: number;
-    unit: string;
-    lastUpdated: Date;
-    logs?: InventoryLogResponseDto[];
-  };
+  lowStockItems: number;
+
+  @ApiProperty()
+  categories: Record<
+    string,
+    {
+      items: InventoryItemResponseDto[];
+      totalItems: number;
+      lowStockItems: number;
+    }
+  >;
+}
+
+export class InventoryCategorySummaryDto {
+  @ApiProperty()
+  category: InventoryCategory;
+
+  @ApiProperty()
+  totalItems: number;
+
+  @ApiProperty()
+  totalQuantity: number;
+
+  @ApiProperty()
+  lowStockItems: number;
 }

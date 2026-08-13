@@ -1,41 +1,60 @@
-import { InventoryType } from '@prisma/client';
-export declare class InventoryResponseDto {
+import { InventoryCategory, Unit } from "@prisma/client";
+export declare class InventoryItemResponseDto {
     id: string;
-    type: InventoryType;
+    name: string;
+    category: InventoryCategory;
+    unit: Unit;
     quantity: number;
+    minStockLevel: number;
+    purchasePrice?: number;
+    sellingPrice?: number;
     lastUpdated: Date;
+    status: string;
     createdAt: Date;
     updatedAt: Date;
 }
 export declare class InventoryLogResponseDto {
     id: string;
-    inventoryId: string;
+    inventoryItemId: string;
     change: number;
+    previousQuantity: number;
+    newQuantity: number;
     reason: string;
-    marketingId?: string;
     note?: string;
+    marketingItemId?: string;
     date: Date;
     createdAt: Date;
-    marketing?: {
+    inventoryItem?: {
+        id: string;
+        name: string;
+        category: InventoryCategory;
+        unit: Unit;
+    };
+    marketingItem?: {
         id: string;
         itemName: string;
-        quantity: string;
-        amount: number;
-        shopName: string;
-        date: Date;
+        quantity: number;
+        price: number;
+        totalPrice: number;
+        marketing: {
+            id: string;
+            shopName: string;
+            date: Date;
+        };
     };
 }
 export declare class InventorySummaryDto {
-    meat: {
-        available: number;
-        unit: string;
-        lastUpdated: Date;
-        logs?: InventoryLogResponseDto[];
-    };
-    fish: {
-        available: number;
-        unit: string;
-        lastUpdated: Date;
-        logs?: InventoryLogResponseDto[];
-    };
+    totalItems: number;
+    lowStockItems: number;
+    categories: Record<string, {
+        items: InventoryItemResponseDto[];
+        totalItems: number;
+        lowStockItems: number;
+    }>;
+}
+export declare class InventoryCategorySummaryDto {
+    category: InventoryCategory;
+    totalItems: number;
+    totalQuantity: number;
+    lowStockItems: number;
 }

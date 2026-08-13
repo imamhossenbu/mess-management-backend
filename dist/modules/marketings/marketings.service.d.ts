@@ -8,53 +8,53 @@ export declare class MarketingsService {
     private notificationsService;
     constructor(prisma: PrismaService, inventoryService: InventoryService, notificationsService: NotificationsService);
     create(messId: string, userId: string, createMarketingDto: CreateMarketingDto): Promise<{
-        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        shopName: string | null;
         note: string | null;
+        userId: string;
+        shopName: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
     }>;
     findAll(messId: string): Promise<{
-        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        shopName: string | null;
         note: string | null;
+        userId: string;
+        shopName: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     findOne(messId: string, id: string): Promise<{
-        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        shopName: string | null;
         note: string | null;
+        userId: string;
+        shopName: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
     }>;
     findByUser(messId: string, userId: string, startDate?: Date, endDate?: Date): Promise<{
-        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        shopName: string | null;
         note: string | null;
+        userId: string;
+        shopName: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     findByDate(messId: string, date: Date): Promise<{
-        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        shopName: string | null;
         note: string | null;
+        userId: string;
+        shopName: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     getDailySummary(messId: string, date: Date): Promise<{
@@ -65,13 +65,13 @@ export declare class MarketingsService {
         totalSelf: number;
         totalItems: number;
         items: {
-            userId: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             date: Date;
-            shopName: string | null;
             note: string | null;
+            userId: string;
+            shopName: string | null;
             totalAmount: import("@prisma/client/runtime/library").Decimal;
         }[];
     }>;
@@ -90,13 +90,13 @@ export declare class MarketingsService {
         }[];
     }>;
     update(messId: string, id: string, updateMarketingDto: UpdateMarketingDto): Promise<{
-        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        shopName: string | null;
         note: string | null;
+        userId: string;
+        shopName: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
     }>;
     remove(messId: string, id: string): Promise<{

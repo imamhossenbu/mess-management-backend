@@ -5,8 +5,14 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
-import { InventoryType } from "@prisma/client";
-import { AddInventoryDto, RemoveInventoryDto, SetInventoryDto } from "./dto";
+import { InventoryCategory, Unit } from "@prisma/client";
+import {
+  AddInventoryDto,
+  RemoveInventoryDto,
+  SetInventoryDto,
+  CreateInventoryItemDto,
+  UpdateInventoryItemDto,
+} from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
@@ -16,495 +22,430 @@ export class InventoryService {
     private notificationsService: NotificationsService,
   ) {}
 
-  // ==================== GET ====================
+  // ==================== GET ALL INVENTORY ====================
 
-  async getAllInventory(messId: string) {
-    let meat = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type: InventoryType.MEAT,
-        },
-      },
+  async getAllInventory() {
+    const inventoryItems = await this.prisma.inventoryItem.findMany({
       include: {
-        logs: {
+        stockLogs: {
           orderBy: { date: "desc" },
-          take: 10,
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                itemName: true,
-                quantity: true,
-                amount: true,
-                shopName: true,
-                date: true,
-              },
-            },
-          },
+          take: 5,
         },
       },
-    });
-    let fish = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type: InventoryType.FISH,
-        },
-      },
-      include: {
-        logs: {
-          orderBy: { date: "desc" },
-          take: 10,
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                itemName: true,
-                quantity: true,
-                amount: true,
-                shopName: true,
-                date: true,
-              },
-            },
-          },
-        },
-      },
+      orderBy: [{ category: "asc" }, { name: "asc" }],
     });
 
-    if (!meat) {
-      meat = await this.prisma.inventory.create({
-        data: { messId, type: InventoryType.MEAT, quantity: 0 },
-        include: {
-          logs: {
-            orderBy: { date: "desc" },
-            take: 10,
-            include: {
-              marketing: {
-                select: {
-                  id: true,
-                  itemName: true,
-                  quantity: true,
-                  amount: true,
-                  shopName: true,
-                  date: true,
-                },
-              },
-            },
-          },
-        },
-      });
-    }
-    if (!fish) {
-      fish = await this.prisma.inventory.create({
-        data: { messId, type: InventoryType.FISH, quantity: 0 },
-        include: {
-          logs: {
-            orderBy: { date: "desc" },
-            take: 10,
-            include: {
-              marketing: {
-                select: {
-                  id: true,
-                  itemName: true,
-                  quantity: true,
-                  amount: true,
-                  shopName: true,
-                  date: true,
-                },
-              },
-            },
-          },
-        },
-      });
-    }
+    // Group by category
+    const grouped = inventoryItems.reduce(
+      (acc, item) => {
+        const category = item.category;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push({
+          ...item,
+          quantity: Number(item.quantity),
+          minStockLevel: Number(item.minStockLevel),
+          purchasePrice: item.purchasePrice
+            ? Number(item.purchasePrice)
+            : undefined,
+          sellingPrice: item.sellingPrice
+            ? Number(item.sellingPrice)
+            : undefined,
+          status:
+            Number(item.quantity) <= Number(item.minStockLevel) &&
+            Number(item.minStockLevel) > 0
+              ? "LOW_STOCK"
+              : "OK",
+        });
+        return acc;
+      },
+      {} as Record<string, any[]>,
+    );
 
-    // Get meat with logs
-    const meatWithLogs = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type: InventoryType.MEAT,
-        },
-      },
-      include: {
-        logs: {
-          orderBy: { date: "desc" },
-          take: 10,
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                itemName: true,
-                quantity: true,
-                amount: true,
-                shopName: true,
-                date: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const fishWithLogs = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type: InventoryType.FISH,
-        },
-      },
-      include: {
-        logs: {
-          orderBy: { date: "desc" },
-          take: 10,
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                itemName: true,
-                quantity: true,
-                amount: true,
-                shopName: true,
-                date: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return [meatWithLogs || meat, fishWithLogs || fish];
+    return grouped;
   }
 
-  async getInventory(messId: string, type: InventoryType) {
-    let inventory = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
-      },
-      include: {
-        logs: {
-          orderBy: { date: "desc" },
-          take: 20,
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                itemName: true,
-                quantity: true,
-                amount: true,
-                shopName: true,
-                date: true,
-              },
-            },
-          },
-        },
-      },
-    });
+  // ==================== GET INVENTORY SUMMARY ====================
 
-    if (!inventory) {
-      inventory = await this.prisma.inventory.create({
-        data: { messId, type, quantity: 0 },
-        include: {
-          logs: {
-            orderBy: { date: "desc" },
-            take: 20,
-            include: {
-              marketing: {
-                select: {
-                  id: true,
-                  itemName: true,
-                  quantity: true,
-                  amount: true,
-                  shopName: true,
-                  date: true,
-                },
-              },
-            },
-          },
-        },
-      });
-    }
+  async getSummary() {
+    const inventoryItems = await this.prisma.inventoryItem.findMany();
 
-    // Get inventory with logs
-    const inventoryWithLogs = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
+    const categories = inventoryItems.reduce(
+      (acc, item) => {
+        const category = item.category;
+        if (!acc[category]) {
+          acc[category] = {
+            items: [],
+            totalItems: 0,
+            lowStockItems: 0,
+          };
+        }
+        acc[category].items.push(item);
+        acc[category].totalItems++;
+        if (
+          Number(item.quantity) <= Number(item.minStockLevel) &&
+          Number(item.minStockLevel) > 0
+        ) {
+          acc[category].lowStockItems++;
+        }
+        return acc;
       },
-      include: {
-        logs: {
-          orderBy: { date: "desc" },
-          take: 20,
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                itemName: true,
-                quantity: true,
-                amount: true,
-                shopName: true,
-                date: true,
-              },
-            },
-          },
-        },
-      },
-    });
+      {} as Record<string, any>,
+    );
 
-    return inventoryWithLogs || inventory;
-  }
-
-  async getSummary(messId: string) {
-    const meat = await this.getInventory(messId, InventoryType.MEAT);
-    const fish = await this.getInventory(messId, InventoryType.FISH);
+    const totalItems = inventoryItems.length;
+    const lowStockItems = inventoryItems.filter(
+      (item) =>
+        Number(item.quantity) <= Number(item.minStockLevel) &&
+        Number(item.minStockLevel) > 0,
+    ).length;
 
     return {
-      meat: {
-        available: meat.quantity,
-        unit: "পিস",
-        lastUpdated: meat.lastUpdated,
-        logs: meat.logs?.slice(0, 5) || [],
-      },
-      fish: {
-        available: fish.quantity,
-        unit: "পিস",
-        lastUpdated: fish.lastUpdated,
-        logs: fish.logs?.slice(0, 5) || [],
-      },
+      totalItems,
+      lowStockItems,
+      categories,
     };
   }
 
-  async getLogs(messId: string, type?: InventoryType) {
-    const where: any = { messId };
+  // ==================== GET INVENTORY BY CATEGORY ====================
 
-    if (type) {
-      const inventory = await this.prisma.inventory.findUnique({
-        where: {
-          messId_type: {
-            messId,
-            type,
-          },
-        },
-      });
-      if (!inventory) {
-        throw new NotFoundException(`Inventory for ${type} not found`);
-      }
-      where.inventoryId = inventory.id;
-    }
-
-    return this.prisma.inventoryLog.findMany({
-      where,
+  async getByCategory(category: InventoryCategory) {
+    const items = await this.prisma.inventoryItem.findMany({
+      where: { category },
       include: {
-        inventory: true,
-        marketing: {
-          select: {
-            id: true,
-            itemName: true,
-            quantity: true,
-            amount: true,
-            shopName: true,
-            date: true,
+        stockLogs: {
+          orderBy: { date: "desc" },
+          take: 10,
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    return items.map((item) => ({
+      ...item,
+      quantity: Number(item.quantity),
+      minStockLevel: Number(item.minStockLevel),
+      purchasePrice: item.purchasePrice
+        ? Number(item.purchasePrice)
+        : undefined,
+      sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
+      status:
+        Number(item.quantity) <= Number(item.minStockLevel) &&
+        Number(item.minStockLevel) > 0
+          ? "LOW_STOCK"
+          : "OK",
+    }));
+  }
+
+  // ==================== GET SINGLE INVENTORY ITEM ====================
+
+  async getInventoryItem(itemName: string) {
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
+      include: {
+        stockLogs: {
+          orderBy: { date: "desc" },
+          take: 20,
+          include: {
+            marketingItem: {
+              include: {
+                marketing: {
+                  select: {
+                    id: true,
+                    shopName: true,
+                    date: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
-      orderBy: {
-        date: "desc",
-      },
     });
+
+    if (!item) {
+      throw new NotFoundException(`Inventory item "${itemName}" not found`);
+    }
+
+    return {
+      ...item,
+      quantity: Number(item.quantity),
+      minStockLevel: Number(item.minStockLevel),
+      purchasePrice: item.purchasePrice
+        ? Number(item.purchasePrice)
+        : undefined,
+      sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
+    };
   }
 
-  // ==================== ADD ====================
+  // ==================== CREATE INVENTORY ITEM ====================
 
-  async addInventory(messId: string, addInventoryDto: AddInventoryDto) {
-    const { type, quantity, marketingId, note } = addInventoryDto;
-
-    if (quantity <= 0) {
-      throw new BadRequestException("Quantity must be greater than 0");
-    }
-
-    if (marketingId) {
-      const marketing = await this.prisma.marketing.findUnique({
-        where: { id: marketingId },
-      });
-      if (!marketing) {
-        throw new NotFoundException(
-          `Marketing with ID ${marketingId} not found`,
-        );
-      }
-    }
-
-    let inventory = await this.prisma.inventory.findUnique({
+  async createInventoryItem(dto: CreateInventoryItemDto) {
+    const existing = await this.prisma.inventoryItem.findFirst({
       where: {
-        messId_type: {
-          messId,
-          type,
-        },
+        name: dto.name,
+        category: dto.category,
       },
     });
 
-    if (!inventory) {
-      inventory = await this.prisma.inventory.create({
-        data: { messId, type, quantity: 0 },
-      });
-    }
-
-    const updated = await this.prisma.inventory.update({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
-      },
-      data: {
-        quantity: inventory.quantity + quantity,
-        lastUpdated: new Date(),
-      },
-    });
-
-    await this.prisma.inventoryLog.create({
-      data: {
-        messId,
-        inventoryId: inventory.id,
-        change: quantity,
-        reason: "ADD",
-        marketingId: marketingId || null,
-        note: note || `${quantity} পিস যোগ করা হয়েছে`,
-      },
-    });
-
-    const updatedInventory = await this.getInventory(messId, type);
-    if (updatedInventory.quantity > 50) {
-      const admins = await this.prisma.messMember.findMany({
-        where: {
-          messId,
-          role: { in: ["SUPER_ADMIN", "ADMIN"] },
-          isActive: true,
-        },
-        include: {
-          user: true,
-        },
-      });
-
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId: admin.userId,
-          type: "INVENTORY",
-          title: "Stock Level High",
-          message: `${type} stock is now ${updatedInventory.quantity} pieces. Consider reducing purchases.`,
-          link: "/inventory",
-        });
-      }
-    }
-
-    return updated;
-  }
-
-  // ==================== REMOVE ====================
-
-  async removeInventory(
-    messId: string,
-    removeInventoryDto: RemoveInventoryDto,
-  ) {
-    const { type, quantity, note } = removeInventoryDto;
-
-    if (quantity <= 0) {
-      throw new BadRequestException("Quantity must be greater than 0");
-    }
-
-    const inventory = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
-      },
-    });
-
-    if (!inventory) {
-      throw new NotFoundException(`Inventory for ${type} not found`);
-    }
-
-    if (inventory.quantity < quantity) {
+    if (existing) {
       throw new BadRequestException(
-        `Insufficient quantity. Available: ${inventory.quantity}, Requested: ${quantity}`,
+        `Item "${dto.name}" already exists in ${dto.category}`,
       );
     }
 
-    const updated = await this.prisma.inventory.update({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
-      },
+    const item = await this.prisma.inventoryItem.create({
       data: {
-        quantity: inventory.quantity - quantity,
+        name: dto.name,
+        category: dto.category,
+        unit: dto.unit,
+        quantity: dto.quantity,
+        minStockLevel: dto.minStockLevel,
+        purchasePrice: dto.purchasePrice,
+        sellingPrice: dto.sellingPrice,
+      },
+    });
+
+    // Create initial stock log
+    await this.prisma.inventoryLog.create({
+      data: {
+        inventoryItemId: item.id,
+        change: dto.quantity,
+        previousQuantity: 0,
+        newQuantity: dto.quantity,
+        reason: "INITIAL",
+        note: "Initial inventory setup",
+      },
+    });
+
+    // Notify admins
+    const admins = await this.prisma.user.findMany({
+      where: { role: "ADMIN", isActive: true },
+    });
+
+    for (const admin of admins) {
+      await this.notificationsService.create({
+        userId: admin.id,
+        type: "INVENTORY",
+        title: `New Inventory Item: ${dto.name}`,
+        message: `${dto.name} has been added to ${dto.category} with ${dto.quantity} ${dto.unit}.`,
+        link: "/inventory",
+      });
+    }
+
+    return {
+      ...item,
+      quantity: Number(item.quantity),
+      minStockLevel: Number(item.minStockLevel),
+      purchasePrice: item.purchasePrice
+        ? Number(item.purchasePrice)
+        : undefined,
+      sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
+    };
+  }
+
+  // ==================== UPDATE INVENTORY ITEM ====================
+
+  async updateInventoryItem(itemName: string, dto: UpdateInventoryItemDto) {
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
+    });
+
+    if (!item) {
+      throw new NotFoundException(`Inventory item "${itemName}" not found`);
+    }
+
+    const updated = await this.prisma.inventoryItem.update({
+      where: { id: item.id },
+      data: {
+        name: dto.name,
+        category: dto.category,
+        unit: dto.unit,
+        minStockLevel: dto.minStockLevel,
+        purchasePrice: dto.purchasePrice,
+        sellingPrice: dto.sellingPrice,
+      },
+    });
+
+    return {
+      ...updated,
+      quantity: Number(updated.quantity),
+      minStockLevel: Number(updated.minStockLevel),
+      purchasePrice: updated.purchasePrice
+        ? Number(updated.purchasePrice)
+        : undefined,
+      sellingPrice: updated.sellingPrice
+        ? Number(updated.sellingPrice)
+        : undefined,
+    };
+  }
+
+  // ==================== ADD INVENTORY ====================
+
+  async addInventory(dto: AddInventoryDto) {
+    const { itemName, quantity, unit, marketingItemId, note } = dto;
+
+    if (quantity <= 0) {
+      throw new BadRequestException("Quantity must be greater than 0");
+    }
+
+    // Find or create inventory item
+    let item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
+    });
+
+    if (!item) {
+      // Auto-detect category
+      const category = this.detectCategory(itemName);
+      item = await this.prisma.inventoryItem.create({
+        data: {
+          name: itemName,
+          category,
+          unit: unit || "KG",
+          quantity: 0,
+          minStockLevel: 5,
+        },
+      });
+    }
+
+    const previousQuantity = Number(item.quantity);
+    const newQuantity = previousQuantity + quantity;
+
+    const updated = await this.prisma.inventoryItem.update({
+      where: { id: item.id },
+      data: {
+        quantity: newQuantity,
         lastUpdated: new Date(),
       },
     });
 
+    // Create stock log
     await this.prisma.inventoryLog.create({
       data: {
-        messId,
-        inventoryId: inventory.id,
-        change: -quantity,
-        reason: "REMOVE",
-        note: note || `${quantity} পিস ব্যবহার করা হয়েছে`,
+        inventoryItemId: item.id,
+        change: quantity,
+        previousQuantity: previousQuantity,
+        newQuantity: newQuantity,
+        reason: "PURCHASE",
+        note: note || `${quantity} ${unit || "KG"} added to inventory`,
+        marketingItemId: marketingItemId || null,
       },
     });
 
-    const updatedInventory = await this.getInventory(messId, type);
-    if (updatedInventory.quantity < 10) {
-      await this.notificationsService.sendInventoryAlert(
-        type,
-        updatedInventory.quantity,
+    // Update marketing item if linked
+    if (marketingItemId) {
+      await this.prisma.marketingItem.update({
+        where: { id: marketingItemId },
+        data: {
+          addedToInventory: true,
+        },
+      });
+    }
+
+    // Check for low stock notification
+    if (newQuantity <= Number(item.minStockLevel)) {
+      await this.sendLowStockAlert(item.name, newQuantity);
+    }
+
+    return {
+      ...updated,
+      quantity: Number(updated.quantity),
+      minStockLevel: Number(updated.minStockLevel),
+    };
+  }
+
+  // ==================== REMOVE INVENTORY ====================
+
+  async removeInventory(dto: RemoveInventoryDto) {
+    const { itemName, quantity, note } = dto;
+
+    if (quantity <= 0) {
+      throw new BadRequestException("Quantity must be greater than 0");
+    }
+
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
+    });
+
+    if (!item) {
+      throw new NotFoundException(`Inventory item "${itemName}" not found`);
+    }
+
+    const currentQuantity = Number(item.quantity);
+    if (currentQuantity < quantity) {
+      throw new BadRequestException(
+        `Insufficient quantity. Available: ${currentQuantity}, Requested: ${quantity}`,
       );
     }
 
-    return updated;
+    const newQuantity = currentQuantity - quantity;
+
+    const updated = await this.prisma.inventoryItem.update({
+      where: { id: item.id },
+      data: {
+        quantity: newQuantity,
+        lastUpdated: new Date(),
+      },
+    });
+
+    // Create stock log
+    await this.prisma.inventoryLog.create({
+      data: {
+        inventoryItemId: item.id,
+        change: -quantity,
+        previousQuantity: currentQuantity,
+        newQuantity: newQuantity,
+        reason: "USED",
+        note: note || `${quantity} used from inventory`,
+      },
+    });
+
+    // Check for low stock
+    if (newQuantity <= Number(item.minStockLevel)) {
+      await this.sendLowStockAlert(item.name, newQuantity);
+    }
+
+    return {
+      ...updated,
+      quantity: Number(updated.quantity),
+      minStockLevel: Number(updated.minStockLevel),
+    };
   }
 
-  // ==================== SET (Manual) ====================
+  // ==================== SET INVENTORY (Manual) ====================
 
-  async setInventory(messId: string, setInventoryDto: SetInventoryDto) {
-    const { type, quantity, note } = setInventoryDto;
+  async setInventory(dto: SetInventoryDto) {
+    const { itemName, quantity, note } = dto;
 
     if (quantity < 0) {
       throw new BadRequestException("Quantity cannot be negative");
     }
 
-    let inventory = await this.prisma.inventory.findUnique({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
-      },
+    let item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
     });
 
-    if (!inventory) {
-      inventory = await this.prisma.inventory.create({
-        data: { messId, type, quantity: 0 },
+    if (!item) {
+      const category = this.detectCategory(itemName);
+      item = await this.prisma.inventoryItem.create({
+        data: {
+          name: itemName,
+          category,
+          unit: "KG",
+          quantity: 0,
+          minStockLevel: 5,
+        },
       });
     }
 
-    const change = quantity - inventory.quantity;
+    const previousQuantity = Number(item.quantity);
+    const change = quantity - previousQuantity;
 
-    const updated = await this.prisma.inventory.update({
-      where: {
-        messId_type: {
-          messId,
-          type,
-        },
-      },
+    const updated = await this.prisma.inventoryItem.update({
+      where: { id: item.id },
       data: {
-        quantity,
+        quantity: quantity,
         lastUpdated: new Date(),
       },
     });
@@ -512,71 +453,125 @@ export class InventoryService {
     if (change !== 0) {
       await this.prisma.inventoryLog.create({
         data: {
-          messId,
-          inventoryId: inventory.id,
-          change,
+          inventoryItemId: item.id,
+          change: change,
+          previousQuantity: previousQuantity,
+          newQuantity: quantity,
           reason: "MANUAL",
-          note: note || `ম্যানুয়ালি সেট করা হয়েছে: ${quantity} পিস`,
+          note: note || `Manually set to ${quantity}`,
         },
       });
     }
 
-    const admins = await this.prisma.messMember.findMany({
-      where: {
-        messId,
-        role: { in: ["SUPER_ADMIN", "ADMIN"] },
-        isActive: true,
-      },
-      include: {
-        user: true,
-      },
+    // Notify admins
+    const admins = await this.prisma.user.findMany({
+      where: { role: "ADMIN", isActive: true },
     });
 
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.userId,
+        userId: admin.id,
         type: "INVENTORY",
-        title: "Inventory Manually Updated",
-        message: `${type} stock has been manually set to ${quantity} pieces.`,
+        title: `Inventory Updated: ${itemName}`,
+        message: `${itemName} stock manually set to ${quantity}. Previous: ${previousQuantity}.`,
         link: "/inventory",
       });
     }
 
-    if (quantity < 10) {
-      await this.notificationsService.sendInventoryAlert(type, quantity);
+    if (quantity <= Number(item.minStockLevel)) {
+      await this.sendLowStockAlert(item.name, quantity);
     }
 
-    return updated;
+    return {
+      ...updated,
+      quantity: Number(updated.quantity),
+      minStockLevel: Number(updated.minStockLevel),
+    };
+  }
+
+  // ==================== GET STOCK LOGS ====================
+
+  async getStockLogs(itemName?: string) {
+    if (itemName) {
+      const item = await this.prisma.inventoryItem.findFirst({
+        where: { name: itemName },
+      });
+
+      if (!item) {
+        throw new NotFoundException(`Inventory item "${itemName}" not found`);
+      }
+
+      return this.prisma.inventoryLog.findMany({
+        where: { inventoryItemId: item.id },
+        include: {
+          inventoryItem: true,
+          marketingItem: {
+            include: {
+              marketing: {
+                select: {
+                  id: true,
+                  shopName: true,
+                  date: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { date: "desc" },
+      });
+    }
+
+    return this.prisma.inventoryLog.findMany({
+      include: {
+        inventoryItem: true,
+        marketingItem: {
+          include: {
+            marketing: {
+              select: {
+                id: true,
+                shopName: true,
+                date: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+      take: 50,
+    });
   }
 
   // ==================== CHECK AVAILABILITY ====================
 
-  async checkAvailability(
-    messId: string,
-    type: InventoryType,
-    requiredQuantity: number,
-  ) {
-    const inventory = await this.getInventory(messId, type);
-    const isAvailable = inventory.quantity >= requiredQuantity;
+  async checkAvailability(itemName: string, requiredQuantity: number) {
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
+    });
+
+    if (!item) {
+      return {
+        available: false,
+        availableQuantity: 0,
+        requiredQuantity,
+        itemName,
+        message: `Item "${itemName}" not found in inventory`,
+      };
+    }
+
+    const availableQuantity = Number(item.quantity);
+    const isAvailable = availableQuantity >= requiredQuantity;
 
     if (!isAvailable) {
-      const admins = await this.prisma.messMember.findMany({
-        where: {
-          messId,
-          role: { in: ["SUPER_ADMIN", "ADMIN"] },
-          isActive: true,
-        },
-        include: {
-          user: true,
-        },
+      const admins = await this.prisma.user.findMany({
+        where: { role: "ADMIN", isActive: true },
       });
 
       for (const admin of admins) {
         await this.notificationsService.create({
-          userId: admin.userId,
+          userId: admin.id,
           type: "INVENTORY",
-          title: "Stock Check Alert",
-          message: `${type} stock check failed. Required: ${requiredQuantity}, Available: ${inventory.quantity}`,
+          title: `Stock Check Failed: ${itemName}`,
+          message: `Stock check failed for ${itemName}. Required: ${requiredQuantity}, Available: ${availableQuantity}`,
           link: "/inventory",
         });
       }
@@ -584,98 +579,80 @@ export class InventoryService {
 
     return {
       available: isAvailable,
-      availableQuantity: inventory.quantity,
+      availableQuantity,
       requiredQuantity,
-      type,
+      itemName,
+      unit: item.unit,
     };
   }
 
-  // ==================== BULK ====================
+  // ==================== LOW STOCK ALERT ====================
 
-  async bulkAdd(
-    messId: string,
-    items: {
-      type: InventoryType;
-      quantity: number;
-      marketingId?: string;
-      note?: string;
-    }[],
-  ) {
-    const results = [];
-    for (const item of items) {
-      try {
-        const result = await this.addInventory(messId, item);
-        results.push({ success: true, type: item.type, result });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
-        results.push({ success: false, type: item.type, error: errorMessage });
-      }
-    }
-
-    const admins = await this.prisma.messMember.findMany({
-      where: {
-        messId,
-        role: { in: ["SUPER_ADMIN", "ADMIN"] },
-        isActive: true,
-      },
-      include: {
-        user: true,
-      },
+  private async sendLowStockAlert(itemName: string, quantity: number) {
+    const admins = await this.prisma.user.findMany({
+      where: { role: "ADMIN", isActive: true },
     });
 
-    const successCount = results.filter((r) => r.success).length;
     for (const admin of admins) {
       await this.notificationsService.create({
-        userId: admin.userId,
-        type: "INVENTORY",
-        title: "Bulk Inventory Add",
-        message: `${successCount} items added to inventory successfully.`,
+        userId: admin.id,
+        type: "STOCK_ALERT",
+        title: `Low Stock: ${itemName}`,
+        message: `${itemName} is running low. Current stock: ${quantity}. Please restock soon.`,
         link: "/inventory",
       });
     }
-
-    return results;
   }
 
-  async bulkRemove(
-    messId: string,
-    items: { type: InventoryType; quantity: number; note?: string }[],
-  ) {
-    const results = [];
-    for (const item of items) {
-      try {
-        const result = await this.removeInventory(messId, item);
-        results.push({ success: true, type: item.type, result });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
-        results.push({ success: false, type: item.type, error: errorMessage });
-      }
-    }
+  // ==================== AUTO-DETECT CATEGORY ====================
 
-    const admins = await this.prisma.messMember.findMany({
-      where: {
-        messId,
-        role: { in: ["SUPER_ADMIN", "ADMIN"] },
-        isActive: true,
-      },
-      include: {
-        user: true,
-      },
-    });
+  private detectCategory(name: string): InventoryCategory {
+    const nameLower = name.toLowerCase();
 
-    const successCount = results.filter((r) => r.success).length;
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.userId,
-        type: "INVENTORY",
-        title: "Bulk Inventory Remove",
-        message: `${successCount} items removed from inventory successfully.`,
-        link: "/inventory",
-      });
-    }
+    const fishKeywords = [
+      "fish",
+      "rui",
+      "koi",
+      "pabda",
+      "mrigel",
+      "shrimp",
+      "chingri",
+      "koral",
+      "prawn",
+    ];
+    const meatKeywords = ["chicken", "beef", "mutton", "egg", "meat"];
+    const vegetableKeywords = [
+      "potato",
+      "onion",
+      "garlic",
+      "ginger",
+      "tomato",
+      "chilli",
+      "cucumber",
+      "vegetable",
+    ];
+    const riceKeywords = ["rice", "miniket", "nazirshail", "irri"];
+    const oilKeywords = ["oil", "soybean", "mustard"];
+    const spiceKeywords = [
+      "salt",
+      "turmeric",
+      "chilli powder",
+      "cumin",
+      "coriander",
+    ];
+    const dairyKeywords = ["milk", "yogurt", "butter", "cheese"];
+    const fruitKeywords = ["apple", "banana", "orange", "mango", "fruit"];
 
-    return results;
+    if (fishKeywords.some((k) => nameLower.includes(k))) return "FISH";
+    if (meatKeywords.some((k) => nameLower.includes(k))) return "MEAT";
+    if (vegetableKeywords.some((k) => nameLower.includes(k)))
+      return "VEGETABLE";
+    if (riceKeywords.some((k) => nameLower.includes(k))) return "RICE";
+    if (oilKeywords.some((k) => nameLower.includes(k))) return "OIL";
+    if (spiceKeywords.some((k) => nameLower.includes(k))) return "SPICE";
+    if (dairyKeywords.some((k) => nameLower.includes(k))) return "DAIRY";
+    if (fruitKeywords.some((k) => nameLower.includes(k))) return "FRUIT";
+
+    return "OTHER";
   }
 }

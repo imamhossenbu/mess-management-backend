@@ -6,11 +6,11 @@ export declare class MessController {
     create(req: any, createMessDto: CreateMessDto): Promise<void>;
     getUserMesses(req: any): Promise<any>;
     getPendingRegistrations(): Promise<{
-        id: string;
-        name: string;
         email: string;
-        phone: string;
+        id: string;
         createdAt: Date;
+        name: string;
+        phone: string;
     }[]>;
     findOne(id: string): Promise<any>;
     update(id: string, updateMessDto: UpdateMessDto): Promise<any>;

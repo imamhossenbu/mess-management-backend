@@ -7,8 +7,8 @@ export declare class UtilityBillsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        note: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
@@ -17,8 +17,8 @@ export declare class UtilityBillsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        note: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
@@ -48,8 +48,8 @@ export declare class UtilityBillsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            note: string | null;
             amount: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
             billType: string;
             monthYear: Date;
             paidBy: string | null;
@@ -59,8 +59,8 @@ export declare class UtilityBillsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        note: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
@@ -69,8 +69,8 @@ export declare class UtilityBillsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        note: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
@@ -85,8 +85,8 @@ export declare class UtilityBillsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        note: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;

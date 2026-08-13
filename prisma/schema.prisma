@@ -178,7 +178,7 @@ model Marketing {
   shopName          String?
   totalAmount       Decimal           @default(0)
   note              String?
-  
+  paymentType       PaymentType       @default(CASH)
   // Relations
   items             MarketingItem[]
   

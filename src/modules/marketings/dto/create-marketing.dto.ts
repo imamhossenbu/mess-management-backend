@@ -6,9 +6,50 @@ import {
   IsNumber,
   Min,
   IsDateString,
+  IsArray,
+  ValidateNested,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { PaymentType } from "@prisma/client";
+import { PaymentType, Unit } from "@prisma/client";
+import { Type } from "class-transformer";
+
+export class MarketingItemDto {
+  @ApiProperty({ example: "Rui Fish" })
+  @IsString()
+  itemName: string;
+
+  @ApiProperty({ example: 2 })
+  @IsNumber()
+  @Min(0.01)
+  quantity: number;
+
+  @ApiProperty({ enum: Unit, example: "KG" })
+  @IsEnum(Unit)
+  unit: Unit;
+
+  @ApiProperty({ example: 350 })
+  @IsNumber()
+  @Min(0)
+  price: number;
+
+  @ApiProperty({ example: 700 })
+  @IsNumber()
+  @Min(0)
+  totalPrice: number;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  note?: string;
+
+  // Inventory related
+  @ApiProperty({
+    required: false,
+    description: "Add this item to inventory",
+  })
+  @IsOptional()
+  addToInventory?: boolean;
+}
 
 export class CreateMarketingDto {
   @ApiProperty({ example: "2026-08-08", required: false })
@@ -16,61 +57,23 @@ export class CreateMarketingDto {
   @IsOptional()
   date?: string;
 
-  @ApiProperty({ example: "মুরগি" })
-  @IsString()
-  itemName: string;
-
-  @ApiProperty({ example: "2 kg", required: false })
+  @ApiProperty({ example: "Kacha Bazar", required: false })
   @IsString()
   @IsOptional()
-  quantity?: string;
-
-  @ApiProperty({ example: 500 })
-  @IsNumber()
-  @Min(0)
-  amount: number;
+  shopName?: string;
 
   @ApiProperty({ enum: PaymentType, default: PaymentType.CASH })
   @IsEnum(PaymentType)
   @IsOptional()
   paymentType?: PaymentType;
 
-  @ApiProperty({ example: "MR Traders", required: false })
-  @IsString()
-  @IsOptional()
-  shopName?: string;
+  @ApiProperty({ type: [MarketingItemDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MarketingItemDto)
+  items: MarketingItemDto[];
 
-  // ============ ইনভেন্টরি ফিল্ড ============
-  @ApiProperty({
-    enum: ["MEAT", "FISH"],
-    required: false,
-    description: "ইনভেন্টরি টাইপ (মাংস বা মাছ)",
-  })
-  @IsEnum(["MEAT", "FISH"])
-  @IsOptional()
-  inventoryType?: "MEAT" | "FISH";
-
-  @ApiProperty({
-    example: 25,
-    required: false,
-    description: "মোট কত পিস পেলেন (ইনভেন্টরিতে যোগ হবে)",
-  })
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  totalPieces?: number;
-
-  @ApiProperty({
-    example: 10,
-    required: false,
-    description: "আজকে রান্নায় কত পিস ব্যবহার করলেন (ইনভেন্টরি থেকে বিয়োগ হবে)",
-  })
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  usedPieces?: number;
-
-  @ApiProperty({ example: "আজকে ২৫ পিস মুরগি পেয়েছি", required: false })
+  @ApiProperty({ example: "Daily bazar purchase", required: false })
   @IsString()
   @IsOptional()
   note?: string;

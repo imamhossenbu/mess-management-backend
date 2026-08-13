@@ -33,8 +33,6 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("marketings")
 @ApiBearerAuth("JWT-auth")
@@ -44,102 +42,81 @@ export class MarketingsController {
   constructor(private readonly marketingsService: MarketingsService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async create(
-    @CurrentMess() messId: string,
-    @Request() req,
-    @Body() createMarketingDto: CreateMarketingDto,
-  ) {
-    return this.marketingsService.create(messId, req.user.id, createMarketingDto);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Create a new marketing/bazar entry" })
+  async create(@Request() req, @Body() createMarketingDto: CreateMarketingDto) {
+    return this.marketingsService.create(req.user.id, createMarketingDto);
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findAll(@CurrentMess() messId: string) {
-    return this.marketingsService.findAll(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get all marketing entries" })
+  async findAll() {
+    return this.marketingsService.findAll();
   }
 
   @Get("daily")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async getDailySummary(
-    @CurrentMess() messId: string,
-    @Query("date") date?: string,
-  ) {
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get daily marketing summary" })
+  async getDailySummary(@Query("date") date?: string) {
     const queryDate = date ? new Date(date) : new Date();
-    return this.marketingsService.getDailySummary(messId, queryDate);
+    return this.marketingsService.getDailySummary(queryDate);
   }
 
   @Get("monthly")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly marketing summary" })
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
-    return this.marketingsService.getMonthlySummary(
-      messId,
-      queryYear,
-      queryMonth,
-    );
+    return this.marketingsService.getMonthlySummary(queryYear, queryMonth);
   }
 
   @Get("user/:userId")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get marketing entries by user" })
   async findByUser(
-    @CurrentMess() messId: string,
     @Param("userId") userId: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.marketingsService.findByUser(messId, userId, start, end);
+    return this.marketingsService.findByUser(userId, start, end);
   }
 
   @Get("date/:date")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findByDate(@CurrentMess() messId: string, @Param("date") date: string) {
-    return this.marketingsService.findByDate(messId, new Date(date));
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get marketing entries by date" })
+  async findByDate(@Param("date") date: string) {
+    return this.marketingsService.findByDate(new Date(date));
   }
 
   @Get(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findOne(
-    @CurrentMess() messId: string,
-    @Param("id") id: string,
-  ) {
-    return this.marketingsService.findOne(messId, id);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get marketing entry by ID" })
+  async findOne(@Param("id") id: string) {
+    return this.marketingsService.findOne(id);
   }
 
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Update marketing entry" })
   async update(
-    @CurrentMess() messId: string,
     @Param("id") id: string,
     @Body() updateMarketingDto: UpdateMarketingDto,
   ) {
-    return this.marketingsService.update(messId, id, updateMarketingDto);
+    return this.marketingsService.update(id, updateMarketingDto);
   }
 
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
-  async remove(
-    @CurrentMess() messId: string,
-    @Param("id") id: string,
-  ) {
-    return this.marketingsService.remove(messId, id);
-  }
-
-  @Delete("date/:date")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @HttpCode(HttpStatus.OK)
-  async removeByDate(
-    @CurrentMess() messId: string,
-    @Param("date") date: string,
-  ) {
-    return this.marketingsService.removeByDate(messId, new Date(date));
+  @ApiOperation({ summary: "Delete marketing entry" })
+  async remove(@Param("id") id: string) {
+    return this.marketingsService.remove(id);
   }
 }

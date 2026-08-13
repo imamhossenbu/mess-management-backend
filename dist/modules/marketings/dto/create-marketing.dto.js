@@ -9,10 +9,56 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateMarketingDto = void 0;
+exports.CreateMarketingDto = exports.MarketingItemDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
+const class_transformer_1 = require("class-transformer");
+class MarketingItemDto {
+}
+exports.MarketingItemDto = MarketingItemDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: "Rui Fish" }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], MarketingItemDto.prototype, "itemName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 2 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0.01),
+    __metadata("design:type", Number)
+], MarketingItemDto.prototype, "quantity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
+    (0, class_validator_1.IsEnum)(client_1.Unit),
+    __metadata("design:type", String)
+], MarketingItemDto.prototype, "unit", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 350 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], MarketingItemDto.prototype, "price", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 700 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], MarketingItemDto.prototype, "totalPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], MarketingItemDto.prototype, "note", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        required: false,
+        description: "Add this item to inventory",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], MarketingItemDto.prototype, "addToInventory", void 0);
 class CreateMarketingDto {
 }
 exports.CreateMarketingDto = CreateMarketingDto;
@@ -23,22 +69,11 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMarketingDto.prototype, "date", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "মুরগি" }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateMarketingDto.prototype, "itemName", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: "2 kg", required: false }),
+    (0, swagger_1.ApiProperty)({ example: "Kacha Bazar", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], CreateMarketingDto.prototype, "quantity", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: 500 }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
-    __metadata("design:type", Number)
-], CreateMarketingDto.prototype, "amount", void 0);
+], CreateMarketingDto.prototype, "shopName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.PaymentType, default: client_1.PaymentType.CASH }),
     (0, class_validator_1.IsEnum)(client_1.PaymentType),
@@ -46,45 +81,14 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMarketingDto.prototype, "paymentType", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "MR Traders", required: false }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateMarketingDto.prototype, "shopName", void 0);
+    (0, swagger_1.ApiProperty)({ type: [MarketingItemDto] }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => MarketingItemDto),
+    __metadata("design:type", Array)
+], CreateMarketingDto.prototype, "items", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        enum: ["MEAT", "FISH"],
-        required: false,
-        description: "ইনভেন্টরি টাইপ (মাংস বা মাছ)",
-    }),
-    (0, class_validator_1.IsEnum)(["MEAT", "FISH"]),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateMarketingDto.prototype, "inventoryType", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        example: 25,
-        required: false,
-        description: "মোট কত পিস পেলেন (ইনভেন্টরিতে যোগ হবে)",
-    }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateMarketingDto.prototype, "totalPieces", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        example: 10,
-        required: false,
-        description: "আজকে রান্নায় কত পিস ব্যবহার করলেন (ইনভেন্টরি থেকে বিয়োগ হবে)",
-    }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateMarketingDto.prototype, "usedPieces", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: "আজকে ২৫ পিস মুরগি পেয়েছি", required: false }),
+    (0, swagger_1.ApiProperty)({ example: "Daily bazar purchase", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)

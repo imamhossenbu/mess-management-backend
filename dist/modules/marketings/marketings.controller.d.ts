@@ -3,27 +3,57 @@ import { CreateMarketingDto, UpdateMarketingDto } from "./dto";
 export declare class MarketingsController {
     private readonly marketingsService;
     constructor(marketingsService: MarketingsService);
-    create(messId: string, req: any, createMarketingDto: CreateMarketingDto): Promise<{
+    create(req: any, createMarketingDto: CreateMarketingDto): Promise<{
         id: string;
+        userId: string;
+        date: Date;
+        shopName: string;
+        totalAmount: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        note: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        note: string | null;
-        userId: string;
-        shopName: string | null;
-        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        userName: string;
+        items: {
+            id: string;
+            itemName: string;
+            quantity: number;
+            unit: import(".prisma/client").$Enums.Unit;
+            price: number;
+            totalPrice: number;
+            note: string;
+            addedToInventory: boolean;
+            inventoryItemId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
     }>;
-    findAll(messId: string): Promise<{
+    findAll(): Promise<{
         id: string;
+        userId: string;
+        date: Date;
+        shopName: string;
+        totalAmount: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        note: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        note: string | null;
-        userId: string;
-        shopName: string | null;
-        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        userName: string;
+        items: {
+            id: string;
+            itemName: string;
+            quantity: number;
+            unit: import(".prisma/client").$Enums.Unit;
+            price: number;
+            totalPrice: number;
+            note: string;
+            addedToInventory: boolean;
+            inventoryItemId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
     }[]>;
-    getDailySummary(messId: string, date?: string): Promise<{
+    getDailySummary(date?: string): Promise<{
         date: string;
         totalAmount: number;
         totalCash: number;
@@ -32,16 +62,31 @@ export declare class MarketingsController {
         totalItems: number;
         items: {
             id: string;
+            userId: string;
+            date: Date;
+            shopName: string;
+            totalAmount: number;
+            paymentType: import(".prisma/client").$Enums.PaymentType;
+            note: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
-            note: string | null;
-            userId: string;
-            shopName: string | null;
-            totalAmount: import("@prisma/client/runtime/library").Decimal;
+            userName: string;
+            items: {
+                id: string;
+                itemName: string;
+                quantity: number;
+                unit: import(".prisma/client").$Enums.Unit;
+                price: number;
+                totalPrice: number;
+                note: string;
+                addedToInventory: boolean;
+                inventoryItemId: string;
+                createdAt: Date;
+                updatedAt: Date;
+            }[];
         }[];
     }>;
-    getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
+    getMonthlySummary(year?: number, month?: number): Promise<{
         month: string;
         year: number;
         totalAmount: number;
@@ -55,51 +100,107 @@ export declare class MarketingsController {
             count: number;
         }[];
     }>;
-    findByUser(messId: string, userId: string, startDate?: string, endDate?: string): Promise<{
+    findByUser(userId: string, startDate?: string, endDate?: string): Promise<{
         id: string;
+        userId: string;
+        date: Date;
+        shopName: string;
+        totalAmount: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        note: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        note: string | null;
-        userId: string;
-        shopName: string | null;
-        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        userName: string;
+        items: {
+            id: string;
+            itemName: string;
+            quantity: number;
+            unit: import(".prisma/client").$Enums.Unit;
+            price: number;
+            totalPrice: number;
+            note: string;
+            addedToInventory: boolean;
+            inventoryItemId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
     }[]>;
-    findByDate(messId: string, date: string): Promise<{
+    findByDate(date: string): Promise<{
         id: string;
+        userId: string;
+        date: Date;
+        shopName: string;
+        totalAmount: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        note: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        note: string | null;
-        userId: string;
-        shopName: string | null;
-        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        userName: string;
+        items: {
+            id: string;
+            itemName: string;
+            quantity: number;
+            unit: import(".prisma/client").$Enums.Unit;
+            price: number;
+            totalPrice: number;
+            note: string;
+            addedToInventory: boolean;
+            inventoryItemId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
     }[]>;
-    findOne(messId: string, id: string): Promise<{
+    findOne(id: string): Promise<{
         id: string;
+        userId: string;
+        date: Date;
+        shopName: string;
+        totalAmount: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        note: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        note: string | null;
-        userId: string;
-        shopName: string | null;
-        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        userName: string;
+        items: {
+            id: string;
+            itemName: string;
+            quantity: number;
+            unit: import(".prisma/client").$Enums.Unit;
+            price: number;
+            totalPrice: number;
+            note: string;
+            addedToInventory: boolean;
+            inventoryItemId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
     }>;
-    update(messId: string, id: string, updateMarketingDto: UpdateMarketingDto): Promise<{
+    update(id: string, updateMarketingDto: UpdateMarketingDto): Promise<{
         id: string;
+        userId: string;
+        date: Date;
+        shopName: string;
+        totalAmount: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        note: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        note: string | null;
-        userId: string;
-        shopName: string | null;
-        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        userName: string;
+        items: {
+            id: string;
+            itemName: string;
+            quantity: number;
+            unit: import(".prisma/client").$Enums.Unit;
+            price: number;
+            totalPrice: number;
+            note: string;
+            addedToInventory: boolean;
+            inventoryItemId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
     }>;
-    remove(messId: string, id: string): Promise<{
+    remove(id: string): Promise<{
         message: string;
-    }>;
-    removeByDate(messId: string, date: string): Promise<{
-        message: string;
-        count: number;
     }>;
 }

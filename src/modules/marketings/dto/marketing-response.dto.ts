@@ -1,6 +1,38 @@
 // src/modules/marketings/dto/marketing-response.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
-import { PaymentType } from "@prisma/client";
+import { PaymentType, Unit } from "@prisma/client";
+
+export class MarketingItemResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  itemName: string;
+
+  @ApiProperty()
+  quantity: number;
+
+  @ApiProperty()
+  unit: Unit;
+
+  @ApiProperty()
+  price: number;
+
+  @ApiProperty()
+  totalPrice: number;
+
+  @ApiProperty()
+  note?: string;
+
+  @ApiProperty()
+  addedToInventory: boolean;
+
+  @ApiProperty()
+  inventoryItemId?: string;
+
+  @ApiProperty()
+  createdAt: Date;
+}
 
 export class MarketingResponseDto {
   @ApiProperty()
@@ -16,22 +48,19 @@ export class MarketingResponseDto {
   date: Date;
 
   @ApiProperty()
-  itemName: string;
+  shopName?: string;
 
   @ApiProperty()
-  quantity?: string;
-
-  @ApiProperty()
-  amount: number;
+  totalAmount: number;
 
   @ApiProperty()
   paymentType: PaymentType;
 
   @ApiProperty()
-  shopName?: string;
-
-  @ApiProperty()
   note?: string;
+
+  @ApiProperty({ type: [MarketingItemResponseDto] })
+  items: MarketingItemResponseDto[];
 
   @ApiProperty()
   createdAt: Date;

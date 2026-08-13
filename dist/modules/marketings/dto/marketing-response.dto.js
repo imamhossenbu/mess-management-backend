@@ -9,9 +9,52 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MonthlyMarketingSummaryDto = exports.DailyMarketingSummaryDto = exports.MarketingResponseDto = void 0;
+exports.MonthlyMarketingSummaryDto = exports.DailyMarketingSummaryDto = exports.MarketingResponseDto = exports.MarketingItemResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
+class MarketingItemResponseDto {
+}
+exports.MarketingItemResponseDto = MarketingItemResponseDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], MarketingItemResponseDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], MarketingItemResponseDto.prototype, "itemName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], MarketingItemResponseDto.prototype, "quantity", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], MarketingItemResponseDto.prototype, "unit", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], MarketingItemResponseDto.prototype, "price", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], MarketingItemResponseDto.prototype, "totalPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], MarketingItemResponseDto.prototype, "note", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], MarketingItemResponseDto.prototype, "addedToInventory", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], MarketingItemResponseDto.prototype, "inventoryItemId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Date)
+], MarketingItemResponseDto.prototype, "createdAt", void 0);
 class MarketingResponseDto {
 }
 exports.MarketingResponseDto = MarketingResponseDto;
@@ -34,15 +77,11 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], MarketingResponseDto.prototype, "itemName", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], MarketingResponseDto.prototype, "quantity", void 0);
+], MarketingResponseDto.prototype, "shopName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
-], MarketingResponseDto.prototype, "amount", void 0);
+], MarketingResponseDto.prototype, "totalAmount", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
@@ -50,11 +89,11 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], MarketingResponseDto.prototype, "shopName", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
 ], MarketingResponseDto.prototype, "note", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [MarketingItemResponseDto] }),
+    __metadata("design:type", Array)
+], MarketingResponseDto.prototype, "items", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)

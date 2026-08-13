@@ -4,15 +4,15 @@ export declare class MealsController {
     private readonly mealsService;
     constructor(mealsService: MealsService);
     create(messId: string, createMealDto: CreateMealDto): Promise<{
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
-        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }>;
     bulkEntry(messId: string, bulkMealDto: BulkMealEntryDto): Promise<{
         date: string;
@@ -24,15 +24,15 @@ export declare class MealsController {
             totalMeals: number;
         };
         meals: {
+            userId: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             date: Date;
-            totalMeal: number;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
     }>;
     singleMealEntry(messId: string, singleMealDto: SingleMealEntryDto): Promise<{
@@ -46,27 +46,27 @@ export declare class MealsController {
             totalMeals: number;
         };
         meals: {
+            userId: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             date: Date;
-            totalMeal: number;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
     }>;
     findAll(messId: string): Promise<{
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
-        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }[]>;
     getDailySummary(messId: string, date?: string): Promise<{
         date: string;
@@ -79,15 +79,15 @@ export declare class MealsController {
         runningMarketCost: number;
         runningTotalMeal: number;
         meals: {
+            userId: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             date: Date;
-            totalMeal: number;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
     }>;
     getMonthlySummary(messId: string, year?: number, month?: number): Promise<{
@@ -108,48 +108,48 @@ export declare class MealsController {
         }[];
     }>;
     findByUser(messId: string, userId: string, startDate?: string, endDate?: string): Promise<{
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
-        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }[]>;
     findByDate(messId: string, date: string): Promise<{
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
-        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }[]>;
     findOne(messId: string, id: string): Promise<{
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
-        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }>;
     update(messId: string, id: string, updateMealDto: UpdateMealDto): Promise<{
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         date: Date;
-        totalMeal: number;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }>;
     remove(messId: string, id: string): Promise<{
         message: string;

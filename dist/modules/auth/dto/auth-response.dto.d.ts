@@ -1,0 +1,12 @@
+export declare class AuthResponseDto {
+    accessToken: string;
+    user: {
+        id: string;
+        name: string;
+        phone: string;
+        email?: string;
+        role: string;
+        profileImage?: string;
+        isActive: boolean;
+    };
+}

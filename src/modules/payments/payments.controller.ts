@@ -13,27 +13,12 @@ import {
   Query,
   ParseIntPipe,
 } from "@nestjs/common";
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { PaymentsService } from "./payments.service";
-import {
-  CreatePaymentDto,
-  UpdatePaymentDto,
-  PaymentResponseDto,
-  UserBalanceDto,
-  MonthlyPaymentSummaryDto,
-} from "./dto";
+import { CreatePaymentDto, UpdatePaymentDto } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../../common/roles.decorator";
-import { Role } from "../auth/dto/register.dto";
-import { CurrentMess } from "../../common/current-mess.decorator";
 
 @ApiTags("payments")
 @ApiBearerAuth("JWT-auth")
@@ -43,106 +28,97 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async create(
-    @CurrentMess() messId: string,
-    @Body() createPaymentDto: CreatePaymentDto,
-  ) {
-    return this.paymentsService.create(messId, createPaymentDto);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Create a new payment" })
+  async create(@Body() createPaymentDto: CreatePaymentDto) {
+    return this.paymentsService.create(createPaymentDto);
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findAll(@CurrentMess() messId: string) {
-    return this.paymentsService.findAll(messId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get all payments" })
+  async findAll() {
+    return this.paymentsService.findAll();
   }
 
   @Get("balances")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  async getAllUserBalances(@CurrentMess() messId: string) {
-    return this.paymentsService.getAllUserBalances(messId);
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Get all user balances" })
+  async getAllUserBalances() {
+    return this.paymentsService.getAllUserBalances();
   }
 
   @Get("monthly")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get monthly payment summary" })
   async getMonthlySummary(
-    @CurrentMess() messId: string,
     @Query("year", ParseIntPipe) year?: number,
     @Query("month", ParseIntPipe) month?: number,
   ) {
     const queryYear = year || new Date().getFullYear();
     const queryMonth = month || new Date().getMonth() + 1;
-    return this.paymentsService.getMonthlySummary(
-      messId,
-      queryYear,
-      queryMonth,
-    );
+    return this.paymentsService.getMonthlySummary(queryYear, queryMonth);
   }
 
   @Get("user/:userId")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get payments by user" })
   async findByUser(
-    @CurrentMess() messId: string,
     @Param("userId") userId: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.paymentsService.findByUser(messId, userId, start, end);
+    return this.paymentsService.findByUser(userId, start, end);
   }
 
   @Get("user/:userId/balance")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async getUserBalance(
-    @CurrentMess() messId: string,
-    @Param("userId") userId: string,
-  ) {
-    return this.paymentsService.getUserBalance(messId, userId);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get user balance" })
+  async getUserBalance(@Param("userId") userId: string) {
+    return this.paymentsService.getUserBalance(userId);
   }
 
   @Get("date/:date")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findByDate(@CurrentMess() messId: string, @Param("date") date: string) {
-    return this.paymentsService.findByDate(messId, new Date(date));
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get payments by date" })
+  async findByDate(@Param("date") date: string) {
+    return this.paymentsService.findByDate(new Date(date));
   }
 
   @Get("month/:year/:month")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get payments by month" })
   async findByMonth(
-    @CurrentMess() messId: string,
     @Param("year", ParseIntPipe) year: number,
     @Param("month", ParseIntPipe) month: number,
   ) {
-    return this.paymentsService.findByMonth(messId, year, month);
+    return this.paymentsService.findByMonth(year, month);
   }
 
   @Get(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.MEMBER)
-  async findOne(
-    @CurrentMess() messId: string,
-    @Param("id") id: string,
-  ) {
-    return this.paymentsService.findOne(messId, id);
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+  @ApiOperation({ summary: "Get payment by ID" })
+  async findOne(@Param("id") id: string) {
+    return this.paymentsService.findOne(id);
   }
 
   @Patch(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
+  @ApiOperation({ summary: "Update payment" })
   async update(
-    @CurrentMess() messId: string,
     @Param("id") id: string,
     @Body() updatePaymentDto: UpdatePaymentDto,
   ) {
-    return this.paymentsService.update(messId, id, updatePaymentDto);
+    return this.paymentsService.update(id, updatePaymentDto);
   }
 
   @Delete(":id")
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
+  @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
-  async remove(
-    @CurrentMess() messId: string,
-    @Param("id") id: string,
-  ) {
-    return this.paymentsService.remove(messId, id);
+  @ApiOperation({ summary: "Delete payment" })
+  async remove(@Param("id") id: string) {
+    return this.paymentsService.remove(id);
   }
 }

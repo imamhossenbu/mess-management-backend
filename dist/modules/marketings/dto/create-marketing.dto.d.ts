@@ -1,0 +1,17 @@
+import { PaymentType, Unit } from "@prisma/client";
+export declare class MarketingItemDto {
+    itemName: string;
+    quantity: number;
+    unit: Unit;
+    price: number;
+    totalPrice: number;
+    note?: string;
+    addToInventory?: boolean;
+}
+export declare class CreateMarketingDto {
+    date?: string;
+    shopName?: string;
+    paymentType?: PaymentType;
+    items: MarketingItemDto[];
+    note?: string;
+}

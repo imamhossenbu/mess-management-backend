@@ -5,20 +5,20 @@ export declare class UtilityBillsController {
     constructor(utilityBillsService: UtilityBillsService);
     create(messId: string, createUtilityBillDto: CreateUtilityBillDto): Promise<{
         id: string;
+        note: string | null;
         createdAt: Date;
         updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
     }>;
     findAll(messId: string): Promise<{
         id: string;
+        note: string | null;
         createdAt: Date;
         updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
@@ -46,10 +46,10 @@ export declare class UtilityBillsController {
         totalMembers: any;
         bills: {
             id: string;
+            note: string | null;
             createdAt: Date;
             updatedAt: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             billType: string;
             monthYear: Date;
             paidBy: string | null;
@@ -57,20 +57,20 @@ export declare class UtilityBillsController {
     }>;
     findByMonth(messId: string, year: number, month: number): Promise<{
         id: string;
+        note: string | null;
         createdAt: Date;
         updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
     }[]>;
     findOne(messId: string, id: string): Promise<{
         id: string;
+        note: string | null;
         createdAt: Date;
         updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;
@@ -83,10 +83,10 @@ export declare class UtilityBillsController {
         };
     } & {
         id: string;
+        note: string | null;
         createdAt: Date;
         updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         billType: string;
         monthYear: Date;
         paidBy: string | null;

@@ -18,9 +18,9 @@ export declare class InventoryController {
         status: string;
         stockLogs: {
             id: string;
-            createdAt: Date;
             date: Date;
             note: string | null;
+            createdAt: Date;
             inventoryItemId: string;
             change: import("@prisma/client/runtime/library").Decimal;
             previousQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -32,9 +32,9 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
     }[]>;
     getInventoryItem(name: string): Promise<{
         quantity: number;
@@ -50,23 +50,23 @@ export declare class InventoryController {
                 };
             } & {
                 id: string;
+                note: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                note: string | null;
-                quantity: import("@prisma/client/runtime/library").Decimal;
-                itemName: string;
                 unit: import(".prisma/client").$Enums.Unit;
+                quantity: import("@prisma/client/runtime/library").Decimal;
+                inventoryItemId: string | null;
+                marketingId: string;
+                itemName: string;
                 price: import("@prisma/client/runtime/library").Decimal;
                 totalPrice: import("@prisma/client/runtime/library").Decimal;
                 addedToInventory: boolean;
-                inventoryItemId: string | null;
-                marketingId: string;
             };
         } & {
             id: string;
-            createdAt: Date;
             date: Date;
             note: string | null;
+            createdAt: Date;
             inventoryItemId: string;
             change: import("@prisma/client/runtime/library").Decimal;
             previousQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -78,9 +78,9 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
     }>;
     getStockLogs(itemName?: string): Promise<({
         inventoryItem: {
@@ -88,13 +88,13 @@ export declare class InventoryController {
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            lastUpdated: Date;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            unit: import(".prisma/client").$Enums.Unit;
             category: import(".prisma/client").$Enums.InventoryCategory;
+            unit: import(".prisma/client").$Enums.Unit;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             minStockLevel: import("@prisma/client/runtime/library").Decimal;
             purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
             sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+            lastUpdated: Date;
         };
         marketingItem: {
             marketing: {
@@ -104,23 +104,23 @@ export declare class InventoryController {
             };
         } & {
             id: string;
+            note: string | null;
             createdAt: Date;
             updatedAt: Date;
-            note: string | null;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            itemName: string;
             unit: import(".prisma/client").$Enums.Unit;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            inventoryItemId: string | null;
+            marketingId: string;
+            itemName: string;
             price: import("@prisma/client/runtime/library").Decimal;
             totalPrice: import("@prisma/client/runtime/library").Decimal;
             addedToInventory: boolean;
-            inventoryItemId: string | null;
-            marketingId: string;
         };
     } & {
         id: string;
-        createdAt: Date;
         date: Date;
         note: string | null;
+        createdAt: Date;
         inventoryItemId: string;
         change: import("@prisma/client/runtime/library").Decimal;
         previousQuantity: import("@prisma/client/runtime/library").Decimal;
@@ -152,9 +152,9 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
     }>;
     updateInventoryItem(name: string, dto: UpdateInventoryItemDto): Promise<{
         quantity: number;
@@ -165,9 +165,9 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
+        lastUpdated: Date;
     }>;
     addInventory(dto: AddInventoryDto): Promise<{
         quantity: number;
@@ -176,11 +176,11 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
         purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
         sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+        lastUpdated: Date;
     }>;
     removeInventory(dto: RemoveInventoryDto): Promise<{
         quantity: number;
@@ -189,11 +189,11 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
         purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
         sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+        lastUpdated: Date;
     }>;
     setInventory(dto: SetInventoryDto): Promise<{
         quantity: number;
@@ -202,11 +202,11 @@ export declare class InventoryController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        lastUpdated: Date;
-        unit: import(".prisma/client").$Enums.Unit;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        unit: import(".prisma/client").$Enums.Unit;
         purchasePrice: import("@prisma/client/runtime/library").Decimal | null;
         sellingPrice: import("@prisma/client/runtime/library").Decimal | null;
+        lastUpdated: Date;
     }>;
     deleteInventoryItem(name: string): Promise<void>;
 }

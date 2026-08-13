@@ -13,7 +13,6 @@ import { PaymentsModule } from "./modules/payments/payments.module";
 import { MonthlySummaryModule } from "./modules/monthly-summary/monthly-summary.module";
 import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
-import { MessModule } from "./modules/mess/mess.module";
 import { HealthModule } from "./modules/health/health.module";
 import { CloudinaryModule } from "./modules/cloudinary/cloudinary.module";
 import { MessMiddleware } from "./common/middleware/mess.middleware";
@@ -37,7 +36,6 @@ import { MessMiddleware } from "./common/middleware/mess.middleware";
     MonthlySummaryModule,
     DashboardModule,
     NotificationsModule,
-    MessModule,
     HealthModule,
   ],
   controllers: [],

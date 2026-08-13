@@ -4,11 +4,11 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     create(createUserDto: CreateUserDto): Promise<{
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -20,11 +20,11 @@ export declare class UsersController {
     findAll(): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -36,11 +36,11 @@ export declare class UsersController {
     findOne(id: string): Promise<{
         balance: any;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;
@@ -53,11 +53,11 @@ export declare class UsersController {
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -69,11 +69,11 @@ export declare class UsersController {
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -85,11 +85,11 @@ export declare class UsersController {
     uploadProfileImage(req: any, file: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -101,11 +101,11 @@ export declare class UsersController {
     removeProfileImage(req: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: any;
-        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
@@ -115,9 +115,9 @@ export declare class UsersController {
         leftDate: Date;
     }>;
     remove(id: string): Promise<{
-        email: string;
         id: string;
         name: string;
+        email: string;
         phone: string;
         role: import(".prisma/client").$Enums.Role;
         isActive: boolean;

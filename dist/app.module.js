@@ -21,7 +21,6 @@ const payments_module_1 = require("./modules/payments/payments.module");
 const monthly_summary_module_1 = require("./modules/monthly-summary/monthly-summary.module");
 const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
-const mess_module_1 = require("./modules/mess/mess.module");
 const health_module_1 = require("./modules/health/health.module");
 const cloudinary_module_1 = require("./modules/cloudinary/cloudinary.module");
 const mess_middleware_1 = require("./common/middleware/mess.middleware");
@@ -54,7 +53,6 @@ exports.AppModule = AppModule = __decorate([
             monthly_summary_module_1.MonthlySummaryModule,
             dashboard_module_1.DashboardModule,
             notifications_module_1.NotificationsModule,
-            mess_module_1.MessModule,
             health_module_1.HealthModule,
         ],
         controllers: [],

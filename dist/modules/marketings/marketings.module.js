@@ -11,12 +11,16 @@ const common_1 = require("@nestjs/common");
 const marketings_service_1 = require("./marketings.service");
 const marketings_controller_1 = require("./marketings.controller");
 const notifications_module_1 = require("../notifications/notifications.module");
+const cloudinary_module_1 = require("../cloudinary/cloudinary.module");
 let MarketingsModule = class MarketingsModule {
 };
 exports.MarketingsModule = MarketingsModule;
 exports.MarketingsModule = MarketingsModule = __decorate([
     (0, common_1.Module)({
-        imports: [notifications_module_1.NotificationsModule],
+        imports: [
+            notifications_module_1.NotificationsModule,
+            cloudinary_module_1.CloudinaryModule,
+        ],
         controllers: [marketings_controller_1.MarketingsController],
         providers: [marketings_service_1.MarketingsService],
         exports: [marketings_service_1.MarketingsService],

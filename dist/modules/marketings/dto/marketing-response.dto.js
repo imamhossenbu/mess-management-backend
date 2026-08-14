@@ -91,6 +91,10 @@ __decorate([
     __metadata("design:type", String)
 ], MarketingResponseDto.prototype, "note", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], MarketingResponseDto.prototype, "imageUrl", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ type: [MarketingItemResponseDto] }),
     __metadata("design:type", Array)
 ], MarketingResponseDto.prototype, "items", void 0);
@@ -168,4 +172,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ type: [Object] }),
     __metadata("design:type", Array)
 ], MonthlyMarketingSummaryDto.prototype, "categorySummary", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [MarketingResponseDto] }),
+    __metadata("design:type", Array)
+], MonthlyMarketingSummaryDto.prototype, "marketings", void 0);
 //# sourceMappingURL=marketing-response.dto.js.map

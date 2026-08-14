@@ -36,7 +36,7 @@ __decorate([
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
-], CreateInventoryItemDto.prototype, "quantity", void 0);
+], CreateInventoryItemDto.prototype, "initialQuantity", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 5 }),
     (0, class_validator_1.IsInt)(),
@@ -65,31 +65,28 @@ __decorate([
 ], AddInventoryDto.prototype, "itemName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 5 }),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
 ], AddInventoryDto.prototype, "quantity", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
     (0, class_validator_1.IsEnum)(client_1.Unit),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AddInventoryDto.prototype, "unit", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        example: "marketing-item-id-123",
-        description: "কোন বাজার থেকে যোগ করছেন (Marketing Item ID)",
-        required: false,
-    }),
-    (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], AddInventoryDto.prototype, "marketingItemId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: "বাজার থেকে কেনা হয়েছে", required: false }),
+    (0, swagger_1.ApiProperty)({ example: "Purchase from bazar", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AddInventoryDto.prototype, "note", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], AddInventoryDto.prototype, "marketingId", void 0);
 class RemoveInventoryDto {
 }
 exports.RemoveInventoryDto = RemoveInventoryDto;
@@ -100,12 +97,12 @@ __decorate([
 ], RemoveInventoryDto.prototype, "itemName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 2 }),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
 ], RemoveInventoryDto.prototype, "quantity", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "রান্নায় ব্যবহার করা হয়েছে", required: false }),
+    (0, swagger_1.ApiProperty)({ example: "Used for cooking", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
@@ -120,12 +117,12 @@ __decorate([
 ], SetInventoryDto.prototype, "itemName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 10 }),
-    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], SetInventoryDto.prototype, "quantity", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "স্টক চেক করে আপডেট করা হয়েছে", required: false }),
+    (0, swagger_1.ApiProperty)({ example: "Stock updated", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
@@ -170,4 +167,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], UpdateInventoryItemDto.prototype, "sellingPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], UpdateInventoryItemDto.prototype, "isActive", void 0);
 //# sourceMappingURL=update-inventory.dto.js.map

@@ -9,11 +9,7 @@ async function bootstrap() {
 
   // Complete CORS configuration
   app.enableCors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "https://yourdomain.com",
-    ],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [
@@ -28,11 +24,15 @@ async function bootstrap() {
     exposedHeaders: ["Content-Type", "Authorization"],
   });
 
+  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 

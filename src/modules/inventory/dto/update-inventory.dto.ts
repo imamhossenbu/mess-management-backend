@@ -6,8 +6,8 @@ import {
   IsString,
   Min,
   IsUUID,
-  IsDecimal,
   IsNumber,
+  IsBoolean,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { InventoryCategory, Unit } from "@prisma/client";
@@ -28,7 +28,7 @@ export class CreateInventoryItemDto {
   @ApiProperty({ example: 0 })
   @IsInt()
   @Min(0)
-  quantity: number;
+  initialQuantity: number;
 
   @ApiProperty({ example: 5 })
   @IsInt()
@@ -52,27 +52,24 @@ export class AddInventoryDto {
   itemName: string;
 
   @ApiProperty({ example: 5 })
-  @IsInt()
-  @Min(1)
+  @IsNumber()
+  @Min(0.01)
   quantity: number;
 
   @ApiProperty({ enum: Unit, example: "KG" })
   @IsEnum(Unit)
-  unit: Unit;
-
-  @ApiProperty({
-    example: "marketing-item-id-123",
-    description: "কোন বাজার থেকে যোগ করছেন (Marketing Item ID)",
-    required: false,
-  })
-  @IsUUID()
   @IsOptional()
-  marketingItemId?: string;
+  unit?: Unit;
 
-  @ApiProperty({ example: "বাজার থেকে কেনা হয়েছে", required: false })
+  @ApiProperty({ example: "Purchase from bazar", required: false })
   @IsString()
   @IsOptional()
   note?: string;
+
+  @ApiProperty({ required: false })
+  @IsUUID()
+  @IsOptional()
+  marketingId?: string;
 }
 
 export class RemoveInventoryDto {
@@ -81,11 +78,11 @@ export class RemoveInventoryDto {
   itemName: string;
 
   @ApiProperty({ example: 2 })
-  @IsInt()
-  @Min(1)
+  @IsNumber()
+  @Min(0.01)
   quantity: number;
 
-  @ApiProperty({ example: "রান্নায় ব্যবহার করা হয়েছে", required: false })
+  @ApiProperty({ example: "Used for cooking", required: false })
   @IsString()
   @IsOptional()
   note?: string;
@@ -97,11 +94,11 @@ export class SetInventoryDto {
   itemName: string;
 
   @ApiProperty({ example: 10 })
-  @IsInt()
+  @IsNumber()
   @Min(0)
   quantity: number;
 
-  @ApiProperty({ example: "স্টক চেক করে আপডেট করা হয়েছে", required: false })
+  @ApiProperty({ example: "Stock updated", required: false })
   @IsString()
   @IsOptional()
   note?: string;
@@ -138,4 +135,9 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsOptional()
   sellingPrice?: number;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

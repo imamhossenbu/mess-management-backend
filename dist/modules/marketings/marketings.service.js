@@ -15,17 +15,28 @@ const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
 const notifications_service_1 = require("../notifications/notifications.service");
+const cloudinary_service_1 = require("../cloudinary/cloudinary.service");
 let MarketingsService = class MarketingsService {
-    constructor(prisma, notificationsService) {
+    constructor(prisma, notificationsService, cloudinaryService) {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
+        this.cloudinaryService = cloudinaryService;
     }
-    async create(userId, createMarketingDto) {
+    async create(userId, createMarketingDto, file) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId, isActive: true },
         });
         if (!user) {
             throw new common_1.NotFoundException(`User not found or inactive`);
+        }
+        let imageUrl = null;
+        if (file) {
+            try {
+                imageUrl = await this.cloudinaryService.uploadFile(file, `marketings/${userId}`);
+            }
+            catch (error) {
+                throw new common_1.BadRequestException("Failed to upload image");
+            }
         }
         const date = createMarketingDto.date
             ? new Date(createMarketingDto.date)
@@ -39,6 +50,7 @@ let MarketingsService = class MarketingsService {
                 totalAmount: totalAmount,
                 paymentType: createMarketingDto.paymentType || client_1.PaymentType.CASH,
                 note: createMarketingDto.note,
+                imageUrl: imageUrl,
                 items: {
                     create: createMarketingDto.items.map((item) => ({
                         itemName: item.itemName,
@@ -47,7 +59,6 @@ let MarketingsService = class MarketingsService {
                         price: item.price,
                         totalPrice: item.totalPrice,
                         note: item.note,
-                        addedToInventory: false,
                     })),
                 },
             },
@@ -62,11 +73,6 @@ let MarketingsService = class MarketingsService {
                 items: true,
             },
         });
-        for (const item of createMarketingDto.items) {
-            if (item.addToInventory) {
-                await this.addToInventory(item, marketing.id);
-            }
-        }
         await this.updateDailySummary(date);
         await this.sendNotifications(marketing, user);
         return {
@@ -77,6 +83,7 @@ let MarketingsService = class MarketingsService {
             totalAmount: Number(marketing.totalAmount),
             paymentType: marketing.paymentType,
             note: marketing.note,
+            imageUrl: marketing.imageUrl,
             createdAt: marketing.createdAt,
             updatedAt: marketing.updatedAt,
             userName: marketing.user?.name || "Unknown",
@@ -88,68 +95,10 @@ let MarketingsService = class MarketingsService {
                 price: Number(i.price),
                 totalPrice: Number(i.totalPrice),
                 note: i.note,
-                addedToInventory: i.addedToInventory,
-                inventoryItemId: i.inventoryItemId,
                 createdAt: i.createdAt,
                 updatedAt: i.updatedAt,
             })),
         };
-    }
-    async addToInventory(item, marketingId) {
-        let inventoryItem = await this.prisma.inventoryItem.findFirst({
-            where: { name: item.itemName },
-        });
-        if (!inventoryItem) {
-            const category = this.detectCategory(item.itemName);
-            inventoryItem = await this.prisma.inventoryItem.create({
-                data: {
-                    name: item.itemName,
-                    category,
-                    unit: item.unit,
-                    quantity: 0,
-                    minStockLevel: 5,
-                },
-            });
-        }
-        const marketingItem = await this.prisma.marketingItem.findFirst({
-            where: {
-                marketingId,
-                itemName: item.itemName,
-            },
-        });
-        if (!marketingItem) {
-            throw new common_1.NotFoundException(`Marketing item not found`);
-        }
-        const previousQuantity = Number(inventoryItem.quantity);
-        const newQuantity = previousQuantity + item.quantity;
-        await this.prisma.inventoryItem.update({
-            where: { id: inventoryItem.id },
-            data: {
-                quantity: newQuantity,
-                lastUpdated: new Date(),
-            },
-        });
-        await this.prisma.inventoryLog.create({
-            data: {
-                inventoryItemId: inventoryItem.id,
-                change: item.quantity,
-                previousQuantity: previousQuantity,
-                newQuantity: newQuantity,
-                reason: "PURCHASE",
-                note: `Added from marketing ${marketingId}`,
-                marketingItemId: marketingItem.id,
-            },
-        });
-        await this.prisma.marketingItem.update({
-            where: { id: marketingItem.id },
-            data: {
-                addedToInventory: true,
-                inventoryItemId: inventoryItem.id,
-            },
-        });
-        if (newQuantity <= Number(inventoryItem.minStockLevel)) {
-            await this.sendLowStockAlert(inventoryItem.name, newQuantity);
-        }
     }
     async findAll() {
         const marketings = await this.prisma.marketing.findMany({
@@ -175,6 +124,7 @@ let MarketingsService = class MarketingsService {
             totalAmount: Number(m.totalAmount),
             paymentType: m.paymentType,
             note: m.note,
+            imageUrl: m.imageUrl,
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
             userName: m.user?.name || "Unknown",
@@ -186,8 +136,6 @@ let MarketingsService = class MarketingsService {
                 price: Number(i.price),
                 totalPrice: Number(i.totalPrice),
                 note: i.note,
-                addedToInventory: i.addedToInventory,
-                inventoryItemId: i.inventoryItemId,
                 createdAt: i.createdAt,
                 updatedAt: i.updatedAt,
             })),
@@ -218,6 +166,7 @@ let MarketingsService = class MarketingsService {
             totalAmount: Number(marketing.totalAmount),
             paymentType: marketing.paymentType,
             note: marketing.note,
+            imageUrl: marketing.imageUrl,
             createdAt: marketing.createdAt,
             updatedAt: marketing.updatedAt,
             userName: marketing.user?.name || "Unknown",
@@ -229,8 +178,6 @@ let MarketingsService = class MarketingsService {
                 price: Number(i.price),
                 totalPrice: Number(i.totalPrice),
                 note: i.note,
-                addedToInventory: i.addedToInventory,
-                inventoryItemId: i.inventoryItemId,
                 createdAt: i.createdAt,
                 updatedAt: i.updatedAt,
             })),
@@ -268,6 +215,7 @@ let MarketingsService = class MarketingsService {
             totalAmount: Number(m.totalAmount),
             paymentType: m.paymentType,
             note: m.note,
+            imageUrl: m.imageUrl,
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
             userName: m.user?.name || "Unknown",
@@ -279,8 +227,6 @@ let MarketingsService = class MarketingsService {
                 price: Number(i.price),
                 totalPrice: Number(i.totalPrice),
                 note: i.note,
-                addedToInventory: i.addedToInventory,
-                inventoryItemId: i.inventoryItemId,
                 createdAt: i.createdAt,
                 updatedAt: i.updatedAt,
             })),
@@ -318,6 +264,7 @@ let MarketingsService = class MarketingsService {
             totalAmount: Number(m.totalAmount),
             paymentType: m.paymentType,
             note: m.note,
+            imageUrl: m.imageUrl,
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
             userName: m.user?.name || "Unknown",
@@ -329,8 +276,6 @@ let MarketingsService = class MarketingsService {
                 price: Number(i.price),
                 totalPrice: Number(i.totalPrice),
                 note: i.note,
-                addedToInventory: i.addedToInventory,
-                inventoryItemId: i.inventoryItemId,
                 createdAt: i.createdAt,
                 updatedAt: i.updatedAt,
             })),
@@ -370,20 +315,6 @@ let MarketingsService = class MarketingsService {
         const totalSelf = items
             .filter((item) => item.paymentType === client_1.PaymentType.SELF)
             .reduce((sum, item) => sum + Number(item.totalAmount), 0);
-        if (totalAmount > 10000) {
-            const admins = await this.prisma.user.findMany({
-                where: { role: "ADMIN", isActive: true },
-            });
-            for (const admin of admins) {
-                await this.notificationsService.create({
-                    userId: admin.id,
-                    type: "SYSTEM",
-                    title: "High Bazar Spending Alert",
-                    message: `Total bazar cost for today is ${totalAmount} TK. Please review.`,
-                    link: "/marketings",
-                });
-            }
-        }
         return {
             date: (0, date_fns_1.format)(date, "yyyy-MM-dd"),
             totalAmount,
@@ -399,6 +330,7 @@ let MarketingsService = class MarketingsService {
                 totalAmount: Number(m.totalAmount),
                 paymentType: m.paymentType,
                 note: m.note,
+                imageUrl: m.imageUrl,
                 createdAt: m.createdAt,
                 updatedAt: m.updatedAt,
                 userName: m.user?.name || "Unknown",
@@ -410,8 +342,6 @@ let MarketingsService = class MarketingsService {
                     price: Number(i.price),
                     totalPrice: Number(i.totalPrice),
                     note: i.note,
-                    addedToInventory: i.addedToInventory,
-                    inventoryItemId: i.inventoryItemId,
                     createdAt: i.createdAt,
                     updatedAt: i.updatedAt,
                 })),
@@ -421,7 +351,7 @@ let MarketingsService = class MarketingsService {
     async getMonthlySummary(year, month) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
-        const items = await this.prisma.marketing.findMany({
+        const marketings = await this.prisma.marketing.findMany({
             where: {
                 date: {
                     gte: (0, date_fns_1.startOfDay)(startDate),
@@ -437,19 +367,22 @@ let MarketingsService = class MarketingsService {
                 },
                 items: true,
             },
+            orderBy: {
+                date: "desc",
+            },
         });
-        const totalAmount = items.reduce((sum, item) => sum + Number(item.totalAmount), 0);
-        const totalCash = items
+        const totalAmount = marketings.reduce((sum, item) => sum + Number(item.totalAmount), 0);
+        const totalCash = marketings
             .filter((item) => item.paymentType === client_1.PaymentType.CASH)
             .reduce((sum, item) => sum + Number(item.totalAmount), 0);
-        const totalDebt = items
+        const totalDebt = marketings
             .filter((item) => item.paymentType === client_1.PaymentType.DEBT)
             .reduce((sum, item) => sum + Number(item.totalAmount), 0);
-        const totalSelf = items
+        const totalSelf = marketings
             .filter((item) => item.paymentType === client_1.PaymentType.SELF)
             .reduce((sum, item) => sum + Number(item.totalAmount), 0);
         const categoryMap = new Map();
-        for (const item of items) {
+        for (const item of marketings) {
             for (const subItem of item.items) {
                 const existing = categoryMap.get(subItem.itemName);
                 if (existing) {
@@ -469,20 +402,30 @@ let MarketingsService = class MarketingsService {
             totalAmount: data.totalAmount,
             count: data.count,
         }));
-        if (totalAmount > 50000) {
-            const admins = await this.prisma.user.findMany({
-                where: { role: "ADMIN", isActive: true },
-            });
-            for (const admin of admins) {
-                await this.notificationsService.create({
-                    userId: admin.id,
-                    type: "SYSTEM",
-                    title: "High Monthly Bazar Spending",
-                    message: `Total bazar cost for ${(0, date_fns_1.format)(startDate, "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
-                    link: "/marketings/monthly",
-                });
-            }
-        }
+        const formattedMarketings = marketings.map((m) => ({
+            id: m.id,
+            userId: m.userId,
+            date: m.date,
+            shopName: m.shopName,
+            totalAmount: Number(m.totalAmount),
+            paymentType: m.paymentType,
+            note: m.note,
+            imageUrl: m.imageUrl,
+            createdAt: m.createdAt,
+            updatedAt: m.updatedAt,
+            userName: m.user?.name || "Unknown",
+            items: m.items.map((i) => ({
+                id: i.id,
+                itemName: i.itemName,
+                quantity: Number(i.quantity),
+                unit: i.unit,
+                price: Number(i.price),
+                totalPrice: Number(i.totalPrice),
+                note: i.note,
+                createdAt: i.createdAt,
+                updatedAt: i.updatedAt,
+            })),
+        }));
         return {
             month: (0, date_fns_1.format)(startDate, "MMMM"),
             year,
@@ -490,11 +433,18 @@ let MarketingsService = class MarketingsService {
             totalCash,
             totalDebt,
             totalSelf,
-            totalItems: items.length,
+            totalItems: marketings.length,
             categorySummary: categorySummary.sort((a, b) => b.totalAmount - a.totalAmount),
+            marketings: formattedMarketings,
         };
     }
-    async update(id, updateMarketingDto) {
+    async update(id, updateMarketingDto, file) {
+        console.log("📦 [SERVICE] Update called with:", {
+            id,
+            updateMarketingDto,
+            file: file ? "Yes" : "No",
+        });
+        console.log("📦 [SERVICE] Items:", updateMarketingDto.items);
         const existing = await this.prisma.marketing.findUnique({
             where: { id },
             include: { items: true },
@@ -502,12 +452,25 @@ let MarketingsService = class MarketingsService {
         if (!existing) {
             throw new common_1.NotFoundException(`Marketing with ID ${id} not found`);
         }
+        let imageUrl = existing.imageUrl;
+        if (file) {
+            if (existing.imageUrl) {
+                await this.cloudinaryService.deleteFile(existing.imageUrl);
+            }
+            try {
+                imageUrl = await this.cloudinaryService.uploadFile(file, `marketings/${existing.userId}`);
+            }
+            catch (error) {
+                throw new common_1.BadRequestException("Failed to upload image");
+            }
+        }
         const updated = await this.prisma.marketing.update({
             where: { id },
             data: {
                 shopName: updateMarketingDto.shopName,
                 paymentType: updateMarketingDto.paymentType,
                 note: updateMarketingDto.note,
+                imageUrl: imageUrl,
             },
             include: {
                 user: {
@@ -520,6 +483,31 @@ let MarketingsService = class MarketingsService {
                 items: true,
             },
         });
+        if (updateMarketingDto.items && updateMarketingDto.items.length > 0) {
+            console.log("📦 [SERVICE] Updating items:", updateMarketingDto.items);
+            await this.prisma.marketingItem.deleteMany({
+                where: { marketingId: id },
+            });
+            await this.prisma.marketingItem.createMany({
+                data: updateMarketingDto.items.map((item) => ({
+                    marketingId: id,
+                    itemName: item.itemName,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    price: item.price,
+                    totalPrice: item.totalPrice,
+                    note: item.note,
+                })),
+            });
+            const totalAmount = updateMarketingDto.items.reduce((sum, item) => sum + item.totalPrice, 0);
+            await this.prisma.marketing.update({
+                where: { id },
+                data: {
+                    totalAmount: totalAmount,
+                },
+            });
+            console.log("✅ [SERVICE] Items updated, total amount:", totalAmount);
+        }
         const admins = await this.prisma.user.findMany({
             where: { role: "ADMIN", isActive: true },
         });
@@ -532,18 +520,32 @@ let MarketingsService = class MarketingsService {
                 link: `/marketings/${id}`,
             });
         }
+        const finalMarketing = await this.prisma.marketing.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phone: true,
+                    },
+                },
+                items: true,
+            },
+        });
         return {
-            id: updated.id,
-            userId: updated.userId,
-            date: updated.date,
-            shopName: updated.shopName,
-            totalAmount: Number(updated.totalAmount),
-            paymentType: updated.paymentType,
-            note: updated.note,
-            createdAt: updated.createdAt,
-            updatedAt: updated.updatedAt,
-            userName: updated.user?.name || "Unknown",
-            items: updated.items.map((i) => ({
+            id: finalMarketing.id,
+            userId: finalMarketing.userId,
+            date: finalMarketing.date,
+            shopName: finalMarketing.shopName,
+            totalAmount: Number(finalMarketing.totalAmount),
+            paymentType: finalMarketing.paymentType,
+            note: finalMarketing.note,
+            imageUrl: finalMarketing.imageUrl,
+            createdAt: finalMarketing.createdAt,
+            updatedAt: finalMarketing.updatedAt,
+            userName: finalMarketing.user?.name || "Unknown",
+            items: finalMarketing.items.map((i) => ({
                 id: i.id,
                 itemName: i.itemName,
                 quantity: Number(i.quantity),
@@ -551,8 +553,6 @@ let MarketingsService = class MarketingsService {
                 price: Number(i.price),
                 totalPrice: Number(i.totalPrice),
                 note: i.note,
-                addedToInventory: i.addedToInventory,
-                inventoryItemId: i.inventoryItemId,
                 createdAt: i.createdAt,
                 updatedAt: i.updatedAt,
             })),
@@ -565,6 +565,9 @@ let MarketingsService = class MarketingsService {
         });
         if (!marketing) {
             throw new common_1.NotFoundException(`Marketing with ID ${id} not found`);
+        }
+        if (marketing.imageUrl) {
+            await this.cloudinaryService.deleteFile(marketing.imageUrl);
         }
         await this.prisma.marketingItem.deleteMany({
             where: { marketingId: id },
@@ -585,6 +588,36 @@ let MarketingsService = class MarketingsService {
             });
         }
         return { message: `Marketing with ID ${id} deleted successfully` };
+    }
+    async removeByDate(date) {
+        const start = (0, date_fns_1.startOfDay)(date);
+        const end = (0, date_fns_1.endOfDay)(date);
+        const marketings = await this.prisma.marketing.findMany({
+            where: {
+                date: {
+                    gte: start,
+                    lte: end,
+                },
+            },
+            select: { id: true, imageUrl: true },
+        });
+        for (const marketing of marketings) {
+            if (marketing.imageUrl) {
+                await this.cloudinaryService.deleteFile(marketing.imageUrl);
+            }
+        }
+        const deleted = await this.prisma.marketing.deleteMany({
+            where: {
+                date: {
+                    gte: start,
+                    lte: end,
+                },
+            },
+        });
+        return {
+            message: `Deleted ${deleted.count} marketing entries for ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`,
+            count: deleted.count,
+        };
     }
     async sendNotifications(marketing, user) {
         await this.notificationsService.create({
@@ -607,20 +640,6 @@ let MarketingsService = class MarketingsService {
             });
         }
     }
-    async sendLowStockAlert(itemName, quantity) {
-        const admins = await this.prisma.user.findMany({
-            where: { role: "ADMIN", isActive: true },
-        });
-        for (const admin of admins) {
-            await this.notificationsService.create({
-                userId: admin.id,
-                type: "STOCK_ALERT",
-                title: `Low Stock: ${itemName}`,
-                message: `${itemName} is running low. Current stock: ${quantity}. Please restock soon.`,
-                link: "/inventory",
-            });
-        }
-    }
     async updateDailySummary(date) {
         const start = (0, date_fns_1.startOfDay)(date);
         const end = (0, date_fns_1.endOfDay)(date);
@@ -637,9 +656,7 @@ let MarketingsService = class MarketingsService {
         previousDay.setDate(previousDay.getDate() - 1);
         const previousStart = (0, date_fns_1.startOfDay)(previousDay);
         const previousSummary = await this.prisma.dailySummary.findUnique({
-            where: {
-                date: previousStart,
-            },
+            where: { date: previousStart },
         });
         const previousRunningCost = previousSummary?.runningMarketCost || 0;
         const meals = await this.prisma.meal.findMany({
@@ -655,9 +672,7 @@ let MarketingsService = class MarketingsService {
         const runningMarketCost = Number(previousRunningCost) + dailyMarketCost;
         const mealRate = runningTotalMeal > 0 ? runningMarketCost / runningTotalMeal : 0;
         const existing = await this.prisma.dailySummary.findUnique({
-            where: {
-                date: start,
-            },
+            where: { date: start },
         });
         if (existing) {
             await this.prisma.dailySummary.update({
@@ -684,62 +699,12 @@ let MarketingsService = class MarketingsService {
             });
         }
     }
-    detectCategory(name) {
-        const nameLower = name.toLowerCase();
-        const fishKeywords = [
-            "fish",
-            "rui",
-            "koi",
-            "pabda",
-            "mrigel",
-            "shrimp",
-            "chingri",
-            "koral",
-        ];
-        const meatKeywords = ["chicken", "beef", "mutton", "egg"];
-        const vegetableKeywords = [
-            "potato",
-            "onion",
-            "garlic",
-            "ginger",
-            "tomato",
-            "chilli",
-            "cucumber",
-        ];
-        const riceKeywords = ["rice", "miniket", "nazirshail", "irri"];
-        const oilKeywords = ["oil", "soybean", "mustard"];
-        const spiceKeywords = [
-            "salt",
-            "turmeric",
-            "chilli powder",
-            "cumin",
-            "coriander",
-        ];
-        const dairyKeywords = ["milk", "yogurt", "butter", "cheese"];
-        const fruitKeywords = ["apple", "banana", "orange", "mango"];
-        if (fishKeywords.some((k) => nameLower.includes(k)))
-            return "FISH";
-        if (meatKeywords.some((k) => nameLower.includes(k)))
-            return "MEAT";
-        if (vegetableKeywords.some((k) => nameLower.includes(k)))
-            return "VEGETABLE";
-        if (riceKeywords.some((k) => nameLower.includes(k)))
-            return "RICE";
-        if (oilKeywords.some((k) => nameLower.includes(k)))
-            return "OIL";
-        if (spiceKeywords.some((k) => nameLower.includes(k)))
-            return "SPICE";
-        if (dairyKeywords.some((k) => nameLower.includes(k)))
-            return "DAIRY";
-        if (fruitKeywords.some((k) => nameLower.includes(k)))
-            return "FRUIT";
-        return "OTHER";
-    }
 };
 exports.MarketingsService = MarketingsService;
 exports.MarketingsService = MarketingsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        cloudinary_service_1.CloudinaryService])
 ], MarketingsService);
 //# sourceMappingURL=marketings.service.js.map

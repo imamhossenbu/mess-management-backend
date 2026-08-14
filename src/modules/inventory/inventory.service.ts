@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
-import { InventoryCategory, Unit } from "@prisma/client";
+import { InventoryCategory } from "@prisma/client";
 import {
   AddInventoryDto,
   RemoveInventoryDto,
@@ -26,6 +26,7 @@ export class InventoryService {
 
   async getAllInventory() {
     const inventoryItems = await this.prisma.inventoryItem.findMany({
+      where: { isActive: true },
       include: {
         stockLogs: {
           orderBy: { date: "desc" },
@@ -35,7 +36,6 @@ export class InventoryService {
       orderBy: [{ category: "asc" }, { name: "asc" }],
     });
 
-    // Group by category
     const grouped = inventoryItems.reduce(
       (acc, item) => {
         const category = item.category;
@@ -43,7 +43,10 @@ export class InventoryService {
           acc[category] = [];
         }
         acc[category].push({
-          ...item,
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          unit: item.unit,
           quantity: Number(item.quantity),
           minStockLevel: Number(item.minStockLevel),
           purchasePrice: item.purchasePrice
@@ -52,11 +55,15 @@ export class InventoryService {
           sellingPrice: item.sellingPrice
             ? Number(item.sellingPrice)
             : undefined,
+          lastUpdated: item.lastUpdated,
+          isActive: item.isActive,
           status:
             Number(item.quantity) <= Number(item.minStockLevel) &&
             Number(item.minStockLevel) > 0
               ? "LOW_STOCK"
               : "OK",
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
         });
         return acc;
       },
@@ -66,10 +73,12 @@ export class InventoryService {
     return grouped;
   }
 
-  // ==================== GET INVENTORY SUMMARY ====================
+  // ==================== GET SUMMARY ====================
 
   async getSummary() {
-    const inventoryItems = await this.prisma.inventoryItem.findMany();
+    const inventoryItems = await this.prisma.inventoryItem.findMany({
+      where: { isActive: true },
+    });
 
     const categories = inventoryItems.reduce(
       (acc, item) => {
@@ -108,11 +117,11 @@ export class InventoryService {
     };
   }
 
-  // ==================== GET INVENTORY BY CATEGORY ====================
+  // ==================== GET BY CATEGORY ====================
 
   async getByCategory(category: InventoryCategory) {
     const items = await this.prisma.inventoryItem.findMany({
-      where: { category },
+      where: { category, isActive: true },
       include: {
         stockLogs: {
           orderBy: { date: "desc" },
@@ -138,28 +147,15 @@ export class InventoryService {
     }));
   }
 
-  // ==================== GET SINGLE INVENTORY ITEM ====================
+  // ==================== GET SINGLE ITEM ====================
 
   async getInventoryItem(itemName: string) {
     const item = await this.prisma.inventoryItem.findFirst({
-      where: { name: itemName },
+      where: { name: itemName, isActive: true },
       include: {
         stockLogs: {
           orderBy: { date: "desc" },
           take: 20,
-          include: {
-            marketingItem: {
-              include: {
-                marketing: {
-                  select: {
-                    id: true,
-                    shopName: true,
-                    date: true,
-                  },
-                },
-              },
-            },
-          },
         },
       },
     });
@@ -176,10 +172,15 @@ export class InventoryService {
         ? Number(item.purchasePrice)
         : undefined,
       sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
+      status:
+        Number(item.quantity) <= Number(item.minStockLevel) &&
+        Number(item.minStockLevel) > 0
+          ? "LOW_STOCK"
+          : "OK",
     };
   }
 
-  // ==================== CREATE INVENTORY ITEM ====================
+  // ==================== CREATE ITEM ====================
 
   async createInventoryItem(dto: CreateInventoryItemDto) {
     const existing = await this.prisma.inventoryItem.findFirst({
@@ -200,10 +201,11 @@ export class InventoryService {
         name: dto.name,
         category: dto.category,
         unit: dto.unit,
-        quantity: dto.quantity,
+        quantity: dto.initialQuantity,
         minStockLevel: dto.minStockLevel,
         purchasePrice: dto.purchasePrice,
         sellingPrice: dto.sellingPrice,
+        isActive: true,
       },
     });
 
@@ -211,25 +213,25 @@ export class InventoryService {
     await this.prisma.inventoryLog.create({
       data: {
         inventoryItemId: item.id,
-        change: dto.quantity,
+        change: dto.initialQuantity,
         previousQuantity: 0,
-        newQuantity: dto.quantity,
+        newQuantity: dto.initialQuantity,
         reason: "INITIAL",
         note: "Initial inventory setup",
       },
     });
 
-    // Notify admins
-    const admins = await this.prisma.user.findMany({
-      where: { role: "ADMIN", isActive: true },
+    // Notify everyone
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
     });
 
-    for (const admin of admins) {
+    for (const user of users) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: user.id,
         type: "INVENTORY",
         title: `New Inventory Item: ${dto.name}`,
-        message: `${dto.name} has been added to ${dto.category} with ${dto.quantity} ${dto.unit}.`,
+        message: `${dto.name} has been added to ${dto.category} with ${dto.initialQuantity} ${dto.unit}.`,
         link: "/inventory",
       });
     }
@@ -245,7 +247,7 @@ export class InventoryService {
     };
   }
 
-  // ==================== UPDATE INVENTORY ITEM ====================
+  // ==================== UPDATE ITEM ====================
 
   async updateInventoryItem(itemName: string, dto: UpdateInventoryItemDto) {
     const item = await this.prisma.inventoryItem.findFirst({
@@ -265,8 +267,24 @@ export class InventoryService {
         minStockLevel: dto.minStockLevel,
         purchasePrice: dto.purchasePrice,
         sellingPrice: dto.sellingPrice,
+        isActive: dto.isActive,
       },
     });
+
+    // Notify everyone
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "INVENTORY",
+        title: `Inventory Item Updated: ${dto.name || itemName}`,
+        message: `${dto.name || itemName} has been updated.`,
+        link: "/inventory",
+      });
+    }
 
     return {
       ...updated,
@@ -284,19 +302,17 @@ export class InventoryService {
   // ==================== ADD INVENTORY ====================
 
   async addInventory(dto: AddInventoryDto) {
-    const { itemName, quantity, unit, marketingItemId, note } = dto;
+    const { itemName, quantity, unit, note, marketingId } = dto;
 
     if (quantity <= 0) {
       throw new BadRequestException("Quantity must be greater than 0");
     }
 
-    // Find or create inventory item
     let item = await this.prisma.inventoryItem.findFirst({
-      where: { name: itemName },
+      where: { name: itemName, isActive: true },
     });
 
     if (!item) {
-      // Auto-detect category
       const category = this.detectCategory(itemName);
       item = await this.prisma.inventoryItem.create({
         data: {
@@ -305,6 +321,7 @@ export class InventoryService {
           unit: unit || "KG",
           quantity: 0,
           minStockLevel: 5,
+          isActive: true,
         },
       });
     }
@@ -320,7 +337,6 @@ export class InventoryService {
       },
     });
 
-    // Create stock log
     await this.prisma.inventoryLog.create({
       data: {
         inventoryItemId: item.id,
@@ -329,21 +345,25 @@ export class InventoryService {
         newQuantity: newQuantity,
         reason: "PURCHASE",
         note: note || `${quantity} ${unit || "KG"} added to inventory`,
-        marketingItemId: marketingItemId || null,
+        marketingId: marketingId || null,
       },
     });
 
-    // Update marketing item if linked
-    if (marketingItemId) {
-      await this.prisma.marketingItem.update({
-        where: { id: marketingItemId },
-        data: {
-          addedToInventory: true,
-        },
+    // Notify everyone about stock update
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "INVENTORY",
+        title: `Stock Updated: ${itemName}`,
+        message: `${quantity} ${unit || "KG"} ${itemName} added. New stock: ${newQuantity}`,
+        link: "/inventory",
       });
     }
 
-    // Check for low stock notification
     if (newQuantity <= Number(item.minStockLevel)) {
       await this.sendLowStockAlert(item.name, newQuantity);
     }
@@ -365,7 +385,7 @@ export class InventoryService {
     }
 
     const item = await this.prisma.inventoryItem.findFirst({
-      where: { name: itemName },
+      where: { name: itemName, isActive: true },
     });
 
     if (!item) {
@@ -389,7 +409,6 @@ export class InventoryService {
       },
     });
 
-    // Create stock log
     await this.prisma.inventoryLog.create({
       data: {
         inventoryItemId: item.id,
@@ -401,7 +420,21 @@ export class InventoryService {
       },
     });
 
-    // Check for low stock
+    // Notify everyone about stock update
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "INVENTORY",
+        title: `Stock Updated: ${itemName}`,
+        message: `${quantity} ${item.unit} ${itemName} removed. New stock: ${newQuantity}`,
+        link: "/inventory",
+      });
+    }
+
     if (newQuantity <= Number(item.minStockLevel)) {
       await this.sendLowStockAlert(item.name, newQuantity);
     }
@@ -413,7 +446,7 @@ export class InventoryService {
     };
   }
 
-  // ==================== SET INVENTORY (Manual) ====================
+  // ==================== SET INVENTORY ====================
 
   async setInventory(dto: SetInventoryDto) {
     const { itemName, quantity, note } = dto;
@@ -423,7 +456,7 @@ export class InventoryService {
     }
 
     let item = await this.prisma.inventoryItem.findFirst({
-      where: { name: itemName },
+      where: { name: itemName, isActive: true },
     });
 
     if (!item) {
@@ -435,6 +468,7 @@ export class InventoryService {
           unit: "KG",
           quantity: 0,
           minStockLevel: 5,
+          isActive: true,
         },
       });
     }
@@ -463,17 +497,17 @@ export class InventoryService {
       });
     }
 
-    // Notify admins
-    const admins = await this.prisma.user.findMany({
-      where: { role: "ADMIN", isActive: true },
+    // Notify everyone
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
     });
 
-    for (const admin of admins) {
+    for (const user of users) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: user.id,
         type: "INVENTORY",
         title: `Inventory Updated: ${itemName}`,
-        message: `${itemName} stock manually set to ${quantity}. Previous: ${previousQuantity}.`,
+        message: `${itemName} stock set to ${quantity}. Previous: ${previousQuantity}.`,
         link: "/inventory",
       });
     }
@@ -504,16 +538,12 @@ export class InventoryService {
       return this.prisma.inventoryLog.findMany({
         where: { inventoryItemId: item.id },
         include: {
-          inventoryItem: true,
-          marketingItem: {
-            include: {
-              marketing: {
-                select: {
-                  id: true,
-                  shopName: true,
-                  date: true,
-                },
-              },
+          inventoryItem: {
+            select: {
+              id: true,
+              name: true,
+              category: true,
+              unit: true,
             },
           },
         },
@@ -523,16 +553,12 @@ export class InventoryService {
 
     return this.prisma.inventoryLog.findMany({
       include: {
-        inventoryItem: true,
-        marketingItem: {
-          include: {
-            marketing: {
-              select: {
-                id: true,
-                shopName: true,
-                date: true,
-              },
-            },
+        inventoryItem: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            unit: true,
           },
         },
       },
@@ -545,7 +571,7 @@ export class InventoryService {
 
   async checkAvailability(itemName: string, requiredQuantity: number) {
     const item = await this.prisma.inventoryItem.findFirst({
-      where: { name: itemName },
+      where: { name: itemName, isActive: true },
     });
 
     if (!item) {
@@ -562,13 +588,13 @@ export class InventoryService {
     const isAvailable = availableQuantity >= requiredQuantity;
 
     if (!isAvailable) {
-      const admins = await this.prisma.user.findMany({
-        where: { role: "ADMIN", isActive: true },
+      const users = await this.prisma.user.findMany({
+        where: { isActive: true },
       });
 
-      for (const admin of admins) {
+      for (const user of users) {
         await this.notificationsService.create({
-          userId: admin.id,
+          userId: user.id,
           type: "INVENTORY",
           title: `Stock Check Failed: ${itemName}`,
           message: `Stock check failed for ${itemName}. Required: ${requiredQuantity}, Available: ${availableQuantity}`,
@@ -586,16 +612,51 @@ export class InventoryService {
     };
   }
 
+  // ==================== DELETE ITEM ====================
+
+  async deleteInventoryItem(itemName: string) {
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { name: itemName },
+    });
+
+    if (!item) {
+      throw new NotFoundException(`Inventory item "${itemName}" not found`);
+    }
+
+    // Soft delete - just deactivate
+    await this.prisma.inventoryItem.update({
+      where: { id: item.id },
+      data: { isActive: false },
+    });
+
+    // Notify everyone
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+    });
+
+    for (const user of users) {
+      await this.notificationsService.create({
+        userId: user.id,
+        type: "INVENTORY",
+        title: `Inventory Item Deleted: ${itemName}`,
+        message: `${itemName} has been removed from inventory.`,
+        link: "/inventory",
+      });
+    }
+
+    return { message: `Item "${itemName}" deleted successfully` };
+  }
+
   // ==================== LOW STOCK ALERT ====================
 
   private async sendLowStockAlert(itemName: string, quantity: number) {
-    const admins = await this.prisma.user.findMany({
-      where: { role: "ADMIN", isActive: true },
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
     });
 
-    for (const admin of admins) {
+    for (const user of users) {
       await this.notificationsService.create({
-        userId: admin.id,
+        userId: user.id,
         type: "STOCK_ALERT",
         title: `Low Stock: ${itemName}`,
         message: `${itemName} is running low. Current stock: ${quantity}. Please restock soon.`,
@@ -619,8 +680,18 @@ export class InventoryService {
       "chingri",
       "koral",
       "prawn",
+      "tilapia",
+      "catfish",
     ];
-    const meatKeywords = ["chicken", "beef", "mutton", "egg", "meat"];
+    const meatKeywords = [
+      "chicken",
+      "beef",
+      "mutton",
+      "egg",
+      "meat",
+      "lamb",
+      "pork",
+    ];
     const vegetableKeywords = [
       "potato",
       "onion",
@@ -630,18 +701,51 @@ export class InventoryService {
       "chilli",
       "cucumber",
       "vegetable",
+      "brinjal",
+      "carrot",
+      "beans",
+      "peas",
+      "cabbage",
+      "cauliflower",
     ];
-    const riceKeywords = ["rice", "miniket", "nazirshail", "irri"];
-    const oilKeywords = ["oil", "soybean", "mustard"];
+    const riceKeywords = [
+      "rice",
+      "miniket",
+      "nazirshail",
+      "irri",
+      "polao",
+      "biriyani",
+    ];
+    const oilKeywords = ["oil", "soybean", "mustard", "sunflower", "olive"];
     const spiceKeywords = [
       "salt",
       "turmeric",
       "chilli powder",
       "cumin",
       "coriander",
+      "spice",
+      "pepper",
+      "cinnamon",
+      "cardamom",
+      "clove",
     ];
-    const dairyKeywords = ["milk", "yogurt", "butter", "cheese"];
-    const fruitKeywords = ["apple", "banana", "orange", "mango", "fruit"];
+    const dairyKeywords = [
+      "milk",
+      "yogurt",
+      "butter",
+      "cheese",
+      "curd",
+      "ghee",
+    ];
+    const fruitKeywords = [
+      "apple",
+      "banana",
+      "orange",
+      "mango",
+      "fruit",
+      "grape",
+      "watermelon",
+    ];
 
     if (fishKeywords.some((k) => nameLower.includes(k))) return "FISH";
     if (meatKeywords.some((k) => nameLower.includes(k))) return "MEAT";

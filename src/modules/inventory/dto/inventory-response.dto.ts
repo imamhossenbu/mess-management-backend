@@ -34,6 +34,9 @@ export class InventoryItemResponseDto {
   status: string;
 
   @ApiProperty()
+  isActive: boolean;
+
+  @ApiProperty()
   createdAt: Date;
 
   @ApiProperty()
@@ -63,7 +66,7 @@ export class InventoryLogResponseDto {
   note?: string;
 
   @ApiProperty()
-  marketingItemId?: string;
+  marketingId?: string;
 
   @ApiProperty()
   date: Date;
@@ -77,20 +80,6 @@ export class InventoryLogResponseDto {
     name: string;
     category: InventoryCategory;
     unit: Unit;
-  };
-
-  @ApiProperty()
-  marketingItem?: {
-    id: string;
-    itemName: string;
-    quantity: number;
-    price: number;
-    totalPrice: number;
-    marketing: {
-      id: string;
-      shopName: string;
-      date: Date;
-    };
   };
 }
 

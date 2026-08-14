@@ -7,11 +7,7 @@ const swagger_1 = require("@nestjs/swagger");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "https://yourdomain.com",
-        ],
+        origin: ["http://localhost:3000", "http://localhost:3001"],
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: [
@@ -29,6 +25,9 @@ async function bootstrap() {
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,
+        transformOptions: {
+            enableImplicitConversion: true,
+        },
     }));
     const config = new swagger_1.DocumentBuilder()
         .setTitle("Mess Management System API")

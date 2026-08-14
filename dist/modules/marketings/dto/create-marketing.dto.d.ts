@@ -6,7 +6,6 @@ export declare class MarketingItemDto {
     price: number;
     totalPrice: number;
     note?: string;
-    addToInventory?: boolean;
 }
 export declare class CreateMarketingDto {
     date?: string;
@@ -14,4 +13,5 @@ export declare class CreateMarketingDto {
     paymentType?: PaymentType;
     items: MarketingItemDto[];
     note?: string;
+    image?: any;
 }

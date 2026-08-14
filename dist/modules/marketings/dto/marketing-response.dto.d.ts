@@ -20,6 +20,7 @@ export declare class MarketingResponseDto {
     totalAmount: number;
     paymentType: PaymentType;
     note?: string;
+    imageUrl?: string;
     items: MarketingItemResponseDto[];
     createdAt: Date;
     updatedAt: Date;
@@ -46,4 +47,5 @@ export declare class MonthlyMarketingSummaryDto {
         totalAmount: number;
         count: number;
     }[];
+    marketings?: MarketingResponseDto[];
 }

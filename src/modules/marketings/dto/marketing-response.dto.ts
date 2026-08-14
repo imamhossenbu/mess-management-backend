@@ -59,6 +59,9 @@ export class MarketingResponseDto {
   @ApiProperty()
   note?: string;
 
+  @ApiProperty()
+  imageUrl?: string; // ✅ Added
+
   @ApiProperty({ type: [MarketingItemResponseDto] })
   items: MarketingItemResponseDto[];
 
@@ -120,4 +123,7 @@ export class MonthlyMarketingSummaryDto {
     totalAmount: number;
     count: number;
   }[];
+
+  @ApiProperty({ type: [MarketingResponseDto] })
+  marketings?: MarketingResponseDto[]; // ✅ Added
 }

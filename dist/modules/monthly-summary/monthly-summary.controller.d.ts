@@ -29,12 +29,12 @@ export declare class MonthlySummaryController {
             name: string;
             phone: string;
         };
-        monthYear: Date;
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         totalMeal: number;
+        monthYear: Date;
     }[]>;
     getMonthlySummary(year: number, month: number): Promise<MonthlySummaryResponseDto>;
     getUserSummaries(userId: string, year?: number, month?: number): Promise<{
@@ -51,12 +51,12 @@ export declare class MonthlySummaryController {
             name: string;
             phone: string;
         };
-        monthYear: Date;
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         totalMeal: number;
+        monthYear: Date;
     }[]>;
     update(id: string, updateDto: UpdateMonthlySummaryDto): Promise<{
         mealRate: number;
@@ -72,12 +72,12 @@ export declare class MonthlySummaryController {
             name: string;
             phone: string;
         };
-        monthYear: Date;
+        userId: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         totalMeal: number;
+        monthYear: Date;
     }>;
     deleteMonthlySummary(year: number, month: number): Promise<{
         message: string;

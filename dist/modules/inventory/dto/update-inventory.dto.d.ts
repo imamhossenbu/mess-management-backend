@@ -3,7 +3,7 @@ export declare class CreateInventoryItemDto {
     name: string;
     category: InventoryCategory;
     unit: Unit;
-    quantity: number;
+    initialQuantity: number;
     minStockLevel: number;
     purchasePrice?: number;
     sellingPrice?: number;
@@ -11,9 +11,9 @@ export declare class CreateInventoryItemDto {
 export declare class AddInventoryDto {
     itemName: string;
     quantity: number;
-    unit: Unit;
-    marketingItemId?: string;
+    unit?: Unit;
     note?: string;
+    marketingId?: string;
 }
 export declare class RemoveInventoryDto {
     itemName: string;
@@ -32,4 +32,5 @@ export declare class UpdateInventoryItemDto {
     minStockLevel?: number;
     purchasePrice?: number;
     sellingPrice?: number;
+    isActive?: boolean;
 }

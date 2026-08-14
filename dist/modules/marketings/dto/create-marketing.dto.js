@@ -23,7 +23,7 @@ __decorate([
     __metadata("design:type", String)
 ], MarketingItemDto.prototype, "itemName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 2 }),
+    (0, swagger_1.ApiProperty)({ example: 1 }),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
@@ -40,7 +40,7 @@ __decorate([
     __metadata("design:type", Number)
 ], MarketingItemDto.prototype, "price", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 700 }),
+    (0, swagger_1.ApiProperty)({ example: 350 }),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
@@ -51,14 +51,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], MarketingItemDto.prototype, "note", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        required: false,
-        description: "Add this item to inventory",
-    }),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Boolean)
-], MarketingItemDto.prototype, "addToInventory", void 0);
 class CreateMarketingDto {
 }
 exports.CreateMarketingDto = CreateMarketingDto;
@@ -93,4 +85,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateMarketingDto.prototype, "note", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: "string", format: "binary", required: false }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateMarketingDto.prototype, "image", void 0);
 //# sourceMappingURL=create-marketing.dto.js.map

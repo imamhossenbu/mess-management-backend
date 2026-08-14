@@ -18,7 +18,7 @@ export class MarketingItemDto {
   @IsString()
   itemName: string;
 
-  @ApiProperty({ example: 2 })
+  @ApiProperty({ example: 1 })
   @IsNumber()
   @Min(0.01)
   quantity: number;
@@ -32,7 +32,7 @@ export class MarketingItemDto {
   @Min(0)
   price: number;
 
-  @ApiProperty({ example: 700 })
+  @ApiProperty({ example: 350 })
   @IsNumber()
   @Min(0)
   totalPrice: number;
@@ -41,14 +41,6 @@ export class MarketingItemDto {
   @IsString()
   @IsOptional()
   note?: string;
-
-  // Inventory related
-  @ApiProperty({
-    required: false,
-    description: "Add this item to inventory",
-  })
-  @IsOptional()
-  addToInventory?: boolean;
 }
 
 export class CreateMarketingDto {
@@ -77,4 +69,8 @@ export class CreateMarketingDto {
   @IsString()
   @IsOptional()
   note?: string;
+
+  @ApiProperty({ type: "string", format: "binary", required: false })
+  @IsOptional()
+  image?: any;
 }

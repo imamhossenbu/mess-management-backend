@@ -6,84 +6,84 @@ export declare class ShopDebtsService {
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
     create(createShopDebtDto: CreateShopDebtDto): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
         paidDate: Date | null;
     }>;
     payDebt(id: string, paidDate?: string): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
         paidDate: Date | null;
     }>;
     findAll(): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
         paidDate: Date | null;
     }[]>;
     findOne(id: string): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
         paidDate: Date | null;
     }>;
     findByShop(shopName: string): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
         paidDate: Date | null;
     }[]>;
     findByDate(date: Date): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
         paidDate: Date | null;
     }[]>;
     findByMonth(year: number, month: number): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;
@@ -107,12 +107,12 @@ export declare class ShopDebtsService {
         totalPaid: number;
         currentDue: number;
         debts: {
-            amount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             date: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            note: string | null;
             shopName: string;
             status: import(".prisma/client").$Enums.DebtStatus;
             itemDetails: string | null;
@@ -120,12 +120,12 @@ export declare class ShopDebtsService {
         }[];
     }>;
     update(id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         shopName: string;
         status: import(".prisma/client").$Enums.DebtStatus;
         itemDetails: string | null;

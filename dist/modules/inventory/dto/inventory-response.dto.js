@@ -57,6 +57,10 @@ __decorate([
 ], InventoryItemResponseDto.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], InventoryItemResponseDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
 ], InventoryItemResponseDto.prototype, "createdAt", void 0);
 __decorate([
@@ -97,7 +101,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], InventoryLogResponseDto.prototype, "marketingItemId", void 0);
+], InventoryLogResponseDto.prototype, "marketingId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
@@ -110,10 +114,6 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Object)
 ], InventoryLogResponseDto.prototype, "inventoryItem", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Object)
-], InventoryLogResponseDto.prototype, "marketingItem", void 0);
 class InventorySummaryDto {
 }
 exports.InventorySummaryDto = InventorySummaryDto;

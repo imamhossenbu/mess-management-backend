@@ -5,26 +5,27 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
-import {
-  CreateMarketingDto,
-  UpdateMarketingDto,
-  MarketingItemDto,
-} from "./dto";
+import { CreateMarketingDto, UpdateMarketingDto } from "./dto";
 import { PaymentType } from "@prisma/client";
 import { startOfDay, endOfDay, format } from "date-fns";
 import { NotificationsService } from "../notifications/notifications.service";
+import { CloudinaryService } from "../cloudinary/cloudinary.service";
 
 @Injectable()
 export class MarketingsService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   // ==================== CREATE ====================
 
-  async create(userId: string, createMarketingDto: CreateMarketingDto) {
-    // Check if user exists and is active
+  async create(
+    userId: string,
+    createMarketingDto: CreateMarketingDto,
+    file?: any,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId, isActive: true },
     });
@@ -33,17 +34,28 @@ export class MarketingsService {
       throw new NotFoundException(`User not found or inactive`);
     }
 
+    // Upload image to Cloudinary
+    let imageUrl = null;
+    if (file) {
+      try {
+        imageUrl = await this.cloudinaryService.uploadFile(
+          file,
+          `marketings/${userId}`,
+        );
+      } catch (error) {
+        throw new BadRequestException("Failed to upload image");
+      }
+    }
+
     const date = createMarketingDto.date
       ? new Date(createMarketingDto.date)
       : new Date();
 
-    // Calculate total amount from items
     const totalAmount = createMarketingDto.items.reduce(
       (sum, item) => sum + item.totalPrice,
       0,
     );
 
-    // 1. Create Marketing Entry with items
     const marketing = await this.prisma.marketing.create({
       data: {
         userId,
@@ -52,6 +64,7 @@ export class MarketingsService {
         totalAmount: totalAmount,
         paymentType: createMarketingDto.paymentType || PaymentType.CASH,
         note: createMarketingDto.note,
+        imageUrl: imageUrl,
         items: {
           create: createMarketingDto.items.map((item) => ({
             itemName: item.itemName,
@@ -60,7 +73,6 @@ export class MarketingsService {
             price: item.price,
             totalPrice: item.totalPrice,
             note: item.note,
-            addedToInventory: false,
           })),
         },
       },
@@ -76,20 +88,9 @@ export class MarketingsService {
       },
     });
 
-    // 2. Process inventory for items that need to be added
-    for (const item of createMarketingDto.items) {
-      if (item.addToInventory) {
-        await this.addToInventory(item, marketing.id);
-      }
-    }
-
-    // 3. Update Daily Summary
     await this.updateDailySummary(date);
-
-    // 4. Send notifications
     await this.sendNotifications(marketing, user);
 
-    // Return with proper typing
     return {
       id: marketing.id,
       userId: marketing.userId,
@@ -98,6 +99,7 @@ export class MarketingsService {
       totalAmount: Number(marketing.totalAmount),
       paymentType: marketing.paymentType,
       note: marketing.note,
+      imageUrl: marketing.imageUrl,
       createdAt: marketing.createdAt,
       updatedAt: marketing.updatedAt,
       userName: marketing.user?.name || "Unknown",
@@ -109,85 +111,10 @@ export class MarketingsService {
         price: Number(i.price),
         totalPrice: Number(i.totalPrice),
         note: i.note,
-        addedToInventory: i.addedToInventory,
-        inventoryItemId: i.inventoryItemId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),
     };
-  }
-
-  // ==================== ADD TO INVENTORY ====================
-
-  private async addToInventory(item: MarketingItemDto, marketingId: string) {
-    // Find or create inventory item
-    let inventoryItem = await this.prisma.inventoryItem.findFirst({
-      where: { name: item.itemName },
-    });
-
-    if (!inventoryItem) {
-      const category = this.detectCategory(item.itemName);
-      inventoryItem = await this.prisma.inventoryItem.create({
-        data: {
-          name: item.itemName,
-          category,
-          unit: item.unit,
-          quantity: 0,
-          minStockLevel: 5,
-        },
-      });
-    }
-
-    // Get the marketing item
-    const marketingItem = await this.prisma.marketingItem.findFirst({
-      where: {
-        marketingId,
-        itemName: item.itemName,
-      },
-    });
-
-    if (!marketingItem) {
-      throw new NotFoundException(`Marketing item not found`);
-    }
-
-    const previousQuantity = Number(inventoryItem.quantity);
-    const newQuantity = previousQuantity + item.quantity;
-
-    // Update inventory quantity
-    await this.prisma.inventoryItem.update({
-      where: { id: inventoryItem.id },
-      data: {
-        quantity: newQuantity,
-        lastUpdated: new Date(),
-      },
-    });
-
-    // Create inventory log
-    await this.prisma.inventoryLog.create({
-      data: {
-        inventoryItemId: inventoryItem.id,
-        change: item.quantity,
-        previousQuantity: previousQuantity,
-        newQuantity: newQuantity,
-        reason: "PURCHASE",
-        note: `Added from marketing ${marketingId}`,
-        marketingItemId: marketingItem.id,
-      },
-    });
-
-    // Update marketing item
-    await this.prisma.marketingItem.update({
-      where: { id: marketingItem.id },
-      data: {
-        addedToInventory: true,
-        inventoryItemId: inventoryItem.id,
-      },
-    });
-
-    // Check low stock
-    if (newQuantity <= Number(inventoryItem.minStockLevel)) {
-      await this.sendLowStockAlert(inventoryItem.name, newQuantity);
-    }
   }
 
   // ==================== FIND ALL ====================
@@ -217,6 +144,7 @@ export class MarketingsService {
       totalAmount: Number(m.totalAmount),
       paymentType: m.paymentType,
       note: m.note,
+      imageUrl: m.imageUrl,
       createdAt: m.createdAt,
       updatedAt: m.updatedAt,
       userName: m.user?.name || "Unknown",
@@ -228,8 +156,6 @@ export class MarketingsService {
         price: Number(i.price),
         totalPrice: Number(i.totalPrice),
         note: i.note,
-        addedToInventory: i.addedToInventory,
-        inventoryItemId: i.inventoryItemId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),
@@ -265,6 +191,7 @@ export class MarketingsService {
       totalAmount: Number(marketing.totalAmount),
       paymentType: marketing.paymentType,
       note: marketing.note,
+      imageUrl: marketing.imageUrl,
       createdAt: marketing.createdAt,
       updatedAt: marketing.updatedAt,
       userName: marketing.user?.name || "Unknown",
@@ -276,8 +203,6 @@ export class MarketingsService {
         price: Number(i.price),
         totalPrice: Number(i.totalPrice),
         note: i.note,
-        addedToInventory: i.addedToInventory,
-        inventoryItemId: i.inventoryItemId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),
@@ -321,6 +246,7 @@ export class MarketingsService {
       totalAmount: Number(m.totalAmount),
       paymentType: m.paymentType,
       note: m.note,
+      imageUrl: m.imageUrl,
       createdAt: m.createdAt,
       updatedAt: m.updatedAt,
       userName: m.user?.name || "Unknown",
@@ -332,8 +258,6 @@ export class MarketingsService {
         price: Number(i.price),
         totalPrice: Number(i.totalPrice),
         note: i.note,
-        addedToInventory: i.addedToInventory,
-        inventoryItemId: i.inventoryItemId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),
@@ -376,6 +300,7 @@ export class MarketingsService {
       totalAmount: Number(m.totalAmount),
       paymentType: m.paymentType,
       note: m.note,
+      imageUrl: m.imageUrl,
       createdAt: m.createdAt,
       updatedAt: m.updatedAt,
       userName: m.user?.name || "Unknown",
@@ -387,8 +312,6 @@ export class MarketingsService {
         price: Number(i.price),
         totalPrice: Number(i.totalPrice),
         note: i.note,
-        addedToInventory: i.addedToInventory,
-        inventoryItemId: i.inventoryItemId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),
@@ -437,23 +360,6 @@ export class MarketingsService {
       .filter((item) => item.paymentType === PaymentType.SELF)
       .reduce((sum, item) => sum + Number(item.totalAmount), 0);
 
-    // High spending alert
-    if (totalAmount > 10000) {
-      const admins = await this.prisma.user.findMany({
-        where: { role: "ADMIN", isActive: true },
-      });
-
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId: admin.id,
-          type: "SYSTEM",
-          title: "High Bazar Spending Alert",
-          message: `Total bazar cost for today is ${totalAmount} TK. Please review.`,
-          link: "/marketings",
-        });
-      }
-    }
-
     return {
       date: format(date, "yyyy-MM-dd"),
       totalAmount,
@@ -469,6 +375,7 @@ export class MarketingsService {
         totalAmount: Number(m.totalAmount),
         paymentType: m.paymentType,
         note: m.note,
+        imageUrl: m.imageUrl,
         createdAt: m.createdAt,
         updatedAt: m.updatedAt,
         userName: m.user?.name || "Unknown",
@@ -480,8 +387,6 @@ export class MarketingsService {
           price: Number(i.price),
           totalPrice: Number(i.totalPrice),
           note: i.note,
-          addedToInventory: i.addedToInventory,
-          inventoryItemId: i.inventoryItemId,
           createdAt: i.createdAt,
           updatedAt: i.updatedAt,
         })),
@@ -495,7 +400,7 @@ export class MarketingsService {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
-    const items = await this.prisma.marketing.findMany({
+    const marketings = await this.prisma.marketing.findMany({
       where: {
         date: {
           gte: startOfDay(startDate),
@@ -511,19 +416,22 @@ export class MarketingsService {
         },
         items: true,
       },
+      orderBy: {
+        date: "desc",
+      },
     });
 
-    const totalAmount = items.reduce(
+    const totalAmount = marketings.reduce(
       (sum, item) => sum + Number(item.totalAmount),
       0,
     );
-    const totalCash = items
+    const totalCash = marketings
       .filter((item) => item.paymentType === PaymentType.CASH)
       .reduce((sum, item) => sum + Number(item.totalAmount), 0);
-    const totalDebt = items
+    const totalDebt = marketings
       .filter((item) => item.paymentType === PaymentType.DEBT)
       .reduce((sum, item) => sum + Number(item.totalAmount), 0);
-    const totalSelf = items
+    const totalSelf = marketings
       .filter((item) => item.paymentType === PaymentType.SELF)
       .reduce((sum, item) => sum + Number(item.totalAmount), 0);
 
@@ -533,7 +441,7 @@ export class MarketingsService {
       { totalAmount: number; count: number }
     >();
 
-    for (const item of items) {
+    for (const item of marketings) {
       for (const subItem of item.items) {
         const existing = categoryMap.get(subItem.itemName);
         if (existing) {
@@ -556,22 +464,31 @@ export class MarketingsService {
       }),
     );
 
-    // High monthly spending alert
-    if (totalAmount > 50000) {
-      const admins = await this.prisma.user.findMany({
-        where: { role: "ADMIN", isActive: true },
-      });
-
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId: admin.id,
-          type: "SYSTEM",
-          title: "High Monthly Bazar Spending",
-          message: `Total bazar cost for ${format(startDate, "MMMM yyyy")} is ${totalAmount} TK. Please review.`,
-          link: "/marketings/monthly",
-        });
-      }
-    }
+    // Format marketings for response
+    const formattedMarketings = marketings.map((m) => ({
+      id: m.id,
+      userId: m.userId,
+      date: m.date,
+      shopName: m.shopName,
+      totalAmount: Number(m.totalAmount),
+      paymentType: m.paymentType,
+      note: m.note,
+      imageUrl: m.imageUrl,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+      userName: m.user?.name || "Unknown",
+      items: m.items.map((i) => ({
+        id: i.id,
+        itemName: i.itemName,
+        quantity: Number(i.quantity),
+        unit: i.unit,
+        price: Number(i.price),
+        totalPrice: Number(i.totalPrice),
+        note: i.note,
+        createdAt: i.createdAt,
+        updatedAt: i.updatedAt,
+      })),
+    }));
 
     return {
       month: format(startDate, "MMMM"),
@@ -580,16 +497,26 @@ export class MarketingsService {
       totalCash,
       totalDebt,
       totalSelf,
-      totalItems: items.length,
+      totalItems: marketings.length,
       categorySummary: categorySummary.sort(
         (a, b) => b.totalAmount - a.totalAmount,
       ),
+      marketings: formattedMarketings,
     };
   }
 
   // ==================== UPDATE ====================
 
-  async update(id: string, updateMarketingDto: UpdateMarketingDto) {
+  // src/modules/marketings/marketings.service.ts (Update method only)
+
+  async update(id: string, updateMarketingDto: UpdateMarketingDto, file?: any) {
+    console.log("📦 [SERVICE] Update called with:", {
+      id,
+      updateMarketingDto,
+      file: file ? "Yes" : "No",
+    });
+    console.log("📦 [SERVICE] Items:", updateMarketingDto.items);
+
     const existing = await this.prisma.marketing.findUnique({
       where: { id },
       include: { items: true },
@@ -599,13 +526,30 @@ export class MarketingsService {
       throw new NotFoundException(`Marketing with ID ${id} not found`);
     }
 
-    // Update marketing
+    // Handle image upload
+    let imageUrl = existing.imageUrl;
+    if (file) {
+      if (existing.imageUrl) {
+        await this.cloudinaryService.deleteFile(existing.imageUrl);
+      }
+      try {
+        imageUrl = await this.cloudinaryService.uploadFile(
+          file,
+          `marketings/${existing.userId}`,
+        );
+      } catch (error) {
+        throw new BadRequestException("Failed to upload image");
+      }
+    }
+
+    // Update basic info
     const updated = await this.prisma.marketing.update({
       where: { id },
       data: {
         shopName: updateMarketingDto.shopName,
         paymentType: updateMarketingDto.paymentType,
         note: updateMarketingDto.note,
+        imageUrl: imageUrl,
       },
       include: {
         user: {
@@ -619,7 +563,45 @@ export class MarketingsService {
       },
     });
 
-    // Send notification
+    // If items are provided, update them
+    if (updateMarketingDto.items && updateMarketingDto.items.length > 0) {
+      console.log("📦 [SERVICE] Updating items:", updateMarketingDto.items);
+
+      // Delete existing items
+      await this.prisma.marketingItem.deleteMany({
+        where: { marketingId: id },
+      });
+
+      // Create new items
+      await this.prisma.marketingItem.createMany({
+        data: updateMarketingDto.items.map((item) => ({
+          marketingId: id,
+          itemName: item.itemName,
+          quantity: item.quantity,
+          unit: item.unit,
+          price: item.price,
+          totalPrice: item.totalPrice,
+          note: item.note,
+        })),
+      });
+
+      // Recalculate total amount
+      const totalAmount = updateMarketingDto.items.reduce(
+        (sum, item) => sum + item.totalPrice,
+        0,
+      );
+
+      await this.prisma.marketing.update({
+        where: { id },
+        data: {
+          totalAmount: totalAmount,
+        },
+      });
+
+      console.log("✅ [SERVICE] Items updated, total amount:", totalAmount);
+    }
+
+    // Send notifications
     const admins = await this.prisma.user.findMany({
       where: { role: "ADMIN", isActive: true },
     });
@@ -634,18 +616,34 @@ export class MarketingsService {
       });
     }
 
+    // Fetch final data
+    const finalMarketing = await this.prisma.marketing.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+        items: true,
+      },
+    });
+
     return {
-      id: updated.id,
-      userId: updated.userId,
-      date: updated.date,
-      shopName: updated.shopName,
-      totalAmount: Number(updated.totalAmount),
-      paymentType: updated.paymentType,
-      note: updated.note,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-      userName: updated.user?.name || "Unknown",
-      items: updated.items.map((i) => ({
+      id: finalMarketing.id,
+      userId: finalMarketing.userId,
+      date: finalMarketing.date,
+      shopName: finalMarketing.shopName,
+      totalAmount: Number(finalMarketing.totalAmount),
+      paymentType: finalMarketing.paymentType,
+      note: finalMarketing.note,
+      imageUrl: finalMarketing.imageUrl,
+      createdAt: finalMarketing.createdAt,
+      updatedAt: finalMarketing.updatedAt,
+      userName: finalMarketing.user?.name || "Unknown",
+      items: finalMarketing.items.map((i) => ({
         id: i.id,
         itemName: i.itemName,
         quantity: Number(i.quantity),
@@ -653,8 +651,6 @@ export class MarketingsService {
         price: Number(i.price),
         totalPrice: Number(i.totalPrice),
         note: i.note,
-        addedToInventory: i.addedToInventory,
-        inventoryItemId: i.inventoryItemId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),
@@ -673,17 +669,18 @@ export class MarketingsService {
       throw new NotFoundException(`Marketing with ID ${id} not found`);
     }
 
-    // Delete all items first
+    if (marketing.imageUrl) {
+      await this.cloudinaryService.deleteFile(marketing.imageUrl);
+    }
+
     await this.prisma.marketingItem.deleteMany({
       where: { marketingId: id },
     });
 
-    // Delete marketing
     await this.prisma.marketing.delete({
       where: { id },
     });
 
-    // Send notification
     const admins = await this.prisma.user.findMany({
       where: { role: "ADMIN", isActive: true },
     });
@@ -701,10 +698,46 @@ export class MarketingsService {
     return { message: `Marketing with ID ${id} deleted successfully` };
   }
 
+  // ==================== DELETE BY DATE ====================
+
+  async removeByDate(date: Date) {
+    const start = startOfDay(date);
+    const end = endOfDay(date);
+
+    const marketings = await this.prisma.marketing.findMany({
+      where: {
+        date: {
+          gte: start,
+          lte: end,
+        },
+      },
+      select: { id: true, imageUrl: true },
+    });
+
+    for (const marketing of marketings) {
+      if (marketing.imageUrl) {
+        await this.cloudinaryService.deleteFile(marketing.imageUrl);
+      }
+    }
+
+    const deleted = await this.prisma.marketing.deleteMany({
+      where: {
+        date: {
+          gte: start,
+          lte: end,
+        },
+      },
+    });
+
+    return {
+      message: `Deleted ${deleted.count} marketing entries for ${format(date, "yyyy-MM-dd")}`,
+      count: deleted.count,
+    };
+  }
+
   // ==================== NOTIFICATIONS ====================
 
   private async sendNotifications(marketing: any, user: any) {
-    // Notify the user who created
     await this.notificationsService.create({
       userId: user.id,
       type: "SYSTEM",
@@ -713,7 +746,6 @@ export class MarketingsService {
       link: `/marketings/${marketing.id}`,
     });
 
-    // Notify all admins
     const admins = await this.prisma.user.findMany({
       where: { role: "ADMIN", isActive: true },
     });
@@ -725,22 +757,6 @@ export class MarketingsService {
         title: "New Bazar Entry",
         message: `${user.name} added bazar: ${marketing.shopName || "Bazar"} - ${marketing.totalAmount} TK`,
         link: `/marketings/${marketing.id}`,
-      });
-    }
-  }
-
-  private async sendLowStockAlert(itemName: string, quantity: number) {
-    const admins = await this.prisma.user.findMany({
-      where: { role: "ADMIN", isActive: true },
-    });
-
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "STOCK_ALERT",
-        title: `Low Stock: ${itemName}`,
-        message: `${itemName} is running low. Current stock: ${quantity}. Please restock soon.`,
-        link: "/inventory",
       });
     }
   }
@@ -770,9 +786,7 @@ export class MarketingsService {
     const previousStart = startOfDay(previousDay);
 
     const previousSummary = await this.prisma.dailySummary.findUnique({
-      where: {
-        date: previousStart,
-      },
+      where: { date: previousStart },
     });
 
     const previousRunningCost = previousSummary?.runningMarketCost || 0;
@@ -795,9 +809,7 @@ export class MarketingsService {
       runningTotalMeal > 0 ? runningMarketCost / runningTotalMeal : 0;
 
     const existing = await this.prisma.dailySummary.findUnique({
-      where: {
-        date: start,
-      },
+      where: { date: start },
     });
 
     if (existing) {
@@ -823,55 +835,5 @@ export class MarketingsService {
         },
       });
     }
-  }
-
-  // ==================== AUTO-DETECT CATEGORY ====================
-
-  private detectCategory(name: string): any {
-    const nameLower = name.toLowerCase();
-
-    const fishKeywords = [
-      "fish",
-      "rui",
-      "koi",
-      "pabda",
-      "mrigel",
-      "shrimp",
-      "chingri",
-      "koral",
-    ];
-    const meatKeywords = ["chicken", "beef", "mutton", "egg"];
-    const vegetableKeywords = [
-      "potato",
-      "onion",
-      "garlic",
-      "ginger",
-      "tomato",
-      "chilli",
-      "cucumber",
-    ];
-    const riceKeywords = ["rice", "miniket", "nazirshail", "irri"];
-    const oilKeywords = ["oil", "soybean", "mustard"];
-    const spiceKeywords = [
-      "salt",
-      "turmeric",
-      "chilli powder",
-      "cumin",
-      "coriander",
-    ];
-    const dairyKeywords = ["milk", "yogurt", "butter", "cheese"];
-    const fruitKeywords = ["apple", "banana", "orange", "mango"];
-
-    if (fishKeywords.some((k) => nameLower.includes(k))) return "FISH";
-    if (meatKeywords.some((k) => nameLower.includes(k))) return "MEAT";
-    if (vegetableKeywords.some((k) => nameLower.includes(k)))
-      return "VEGETABLE";
-    if (riceKeywords.some((k) => nameLower.includes(k))) return "RICE";
-    if (oilKeywords.some((k) => nameLower.includes(k))) return "OIL";
-    if (spiceKeywords.some((k) => nameLower.includes(k))) return "SPICE";
-    if (dairyKeywords.some((k) => nameLower.includes(k))) return "DAIRY";
-    if (fruitKeywords.some((k) => nameLower.includes(k))) return "FRUIT";
-
-    return "OTHER";
   }
 }

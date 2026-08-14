@@ -10,6 +10,7 @@ export declare class InventoryItemResponseDto {
     sellingPrice?: number;
     lastUpdated: Date;
     status: string;
+    isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -21,7 +22,7 @@ export declare class InventoryLogResponseDto {
     newQuantity: number;
     reason: string;
     note?: string;
-    marketingItemId?: string;
+    marketingId?: string;
     date: Date;
     createdAt: Date;
     inventoryItem?: {
@@ -29,18 +30,6 @@ export declare class InventoryLogResponseDto {
         name: string;
         category: InventoryCategory;
         unit: Unit;
-    };
-    marketingItem?: {
-        id: string;
-        itemName: string;
-        quantity: number;
-        price: number;
-        totalPrice: number;
-        marketing: {
-            id: string;
-            shopName: string;
-            date: Date;
-        };
     };
 }
 export declare class InventorySummaryDto {

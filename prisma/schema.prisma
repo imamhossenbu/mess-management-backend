@@ -24,7 +24,6 @@ enum BillType {
   KHALA
 }
 
-
 enum ApprovalStatus {
   PENDING
   APPROVED
@@ -139,7 +138,7 @@ model Meal {
   @@unique([userId, date])
 }
 
-// ==================== INVENTORY ITEM ====================
+// ==================== INVENTORY ITEM (Alada) ====================
 model InventoryItem {
   id                String            @id @default(cuid())
   name              String
@@ -150,10 +149,10 @@ model InventoryItem {
   purchasePrice     Decimal?
   sellingPrice      Decimal?
   lastUpdated       DateTime          @default(now())
+  isActive          Boolean           @default(true)
   
   // Relations
   stockLogs         InventoryLog[]
-  marketingItems    MarketingItem[]
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -169,25 +168,29 @@ model InventoryLog {
   change            Decimal
   previousQuantity  Decimal
   newQuantity       Decimal
-  reason            String
+  reason            String            // "PURCHASE", "USED", "WASTE", "ADJUSTMENT", "RETURN"
   note              String?
-  marketingItemId   String?
-  marketingItem     MarketingItem?    @relation(fields: [marketingItemId], references: [id])
   date              DateTime          @default(now())
   
+  // Optional: reference to marketing if item was purchased
+  marketingId       String?
+  
   createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
 
-// ==================== MARKETING (Bazar) ====================
+// ==================== MARKETING (Bazar) - Inventory সম্পূর্ণ আলাদা ====================
 model Marketing {
   id                String            @id @default(cuid())
   userId            String
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   date              DateTime          @default(now())
+  imageUrl          String?  
   shopName          String?
   totalAmount       Decimal           @default(0)
   note              String?
   paymentType       PaymentType       @default(CASH)
+  
   // Relations
   items             MarketingItem[]
   
@@ -195,25 +198,17 @@ model Marketing {
   updatedAt         DateTime          @updatedAt
 }
 
-// ==================== MARKETING ITEM ====================
+// ==================== MARKETING ITEM (Bazar Items - Inventory relation নেই) ====================
 model MarketingItem {
   id                String            @id @default(cuid())
   marketingId       String
   marketing         Marketing         @relation(fields: [marketingId], references: [id], onDelete: Cascade)
-  inventoryItemId   String?
-  inventoryItem     InventoryItem?    @relation(fields: [inventoryItemId], references: [id])
   itemName          String
   quantity          Decimal
   unit              Unit              @default(KG)
   price             Decimal
   totalPrice        Decimal
   note              String?
-  
-  // If this item is added to inventory
-  addedToInventory  Boolean           @default(false)
-  
-  // Relations
-  inventoryLogs     InventoryLog[]    // ✅ Added this relation
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

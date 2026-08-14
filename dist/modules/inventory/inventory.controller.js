@@ -59,6 +59,7 @@ let InventoryController = class InventoryController {
         return this.inventoryService.setInventory(dto);
     }
     async deleteInventoryItem(name) {
+        return this.inventoryService.deleteInventoryItem(name);
     }
 };
 exports.InventoryController = InventoryController;
@@ -82,6 +83,7 @@ __decorate([
     (0, common_1.Get)("category/:category"),
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Get inventory by category" }),
+    (0, swagger_1.ApiParam)({ name: "category", enum: client_1.InventoryCategory }),
     __param(0, (0, common_1.Param)("category")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -91,6 +93,7 @@ __decorate([
     (0, common_1.Get)("item/:name"),
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Get single inventory item" }),
+    (0, swagger_1.ApiParam)({ name: "name", description: "Item name" }),
     __param(0, (0, common_1.Param)("name")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -98,8 +101,9 @@ __decorate([
 ], InventoryController.prototype, "getInventoryItem", null);
 __decorate([
     (0, common_1.Get)("logs"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Get stock logs" }),
+    (0, swagger_1.ApiQuery)({ name: "itemName", required: false, type: String }),
     __param(0, (0, common_1.Query)("itemName")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -107,8 +111,9 @@ __decorate([
 ], InventoryController.prototype, "getStockLogs", null);
 __decorate([
     (0, common_1.Get)("check/:name"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Check inventory availability" }),
+    (0, swagger_1.ApiQuery)({ name: "quantity", type: Number }),
     __param(0, (0, common_1.Param)("name")),
     __param(1, (0, common_1.Query)("quantity")),
     __metadata("design:type", Function),
@@ -117,7 +122,7 @@ __decorate([
 ], InventoryController.prototype, "checkAvailability", null);
 __decorate([
     (0, common_1.Post)("items"),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Create new inventory item" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -126,8 +131,9 @@ __decorate([
 ], InventoryController.prototype, "createInventoryItem", null);
 __decorate([
     (0, common_1.Patch)("items/:name"),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Update inventory item" }),
+    (0, swagger_1.ApiParam)({ name: "name", description: "Item name" }),
     __param(0, (0, common_1.Param)("name")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -136,7 +142,7 @@ __decorate([
 ], InventoryController.prototype, "updateInventoryItem", null);
 __decorate([
     (0, common_1.Post)("add"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Add inventory (increase stock)" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -145,7 +151,7 @@ __decorate([
 ], InventoryController.prototype, "addInventory", null);
 __decorate([
     (0, common_1.Post)("remove"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Remove inventory (decrease stock)" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -154,7 +160,7 @@ __decorate([
 ], InventoryController.prototype, "removeInventory", null);
 __decorate([
     (0, common_1.Post)("set"),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Set inventory manually" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -163,8 +169,10 @@ __decorate([
 ], InventoryController.prototype, "setInventory", null);
 __decorate([
     (0, common_1.Delete)("items/:name"),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete inventory item" }),
+    (0, swagger_1.ApiParam)({ name: "name", description: "Item name" }),
     __param(0, (0, common_1.Param)("name")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

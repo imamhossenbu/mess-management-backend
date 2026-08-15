@@ -79,10 +79,34 @@ __decorate([
 ], UpdateMarketingDto.prototype, "note", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ type: [UpdateMarketingItemDto], required: false }),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        let parsed = value;
+        if (typeof value === "string") {
+            try {
+                parsed = JSON.parse(value);
+            }
+            catch {
+                return value;
+            }
+        }
+        if (!Array.isArray(parsed))
+            return parsed;
+        return (0, class_transformer_1.plainToInstance)(UpdateMarketingItemDto, parsed);
+    }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ValidateNested)({ each: true }),
     (0, class_transformer_1.Type)(() => UpdateMarketingItemDto),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], UpdateMarketingDto.prototype, "items", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        required: false,
+        description: "Set to true to remove the existing image",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => value === "true" || value === true),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateMarketingDto.prototype, "removeImage", void 0);
 //# sourceMappingURL=update-marketing.dto.js.map

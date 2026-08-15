@@ -12,4 +12,5 @@ export declare class UpdateMarketingDto {
     paymentType?: PaymentType;
     note?: string;
     items?: UpdateMarketingItemDto[];
+    removeImage?: boolean;
 }

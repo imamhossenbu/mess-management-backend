@@ -10,12 +10,12 @@ export declare class AuthService {
     register(dto: RegisterDto): Promise<{
         message: string;
         user: {
+            name: string;
             email: string;
+            phone: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            phone: string | null;
             role: import(".prisma/client").$Enums.Role;
             profileImage: string | null;
             isActive: boolean;

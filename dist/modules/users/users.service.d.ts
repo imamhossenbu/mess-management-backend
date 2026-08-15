@@ -17,12 +17,12 @@ export declare class UsersService {
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -32,12 +32,12 @@ export declare class UsersService {
     }>;
     findAll(): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -87,12 +87,12 @@ export declare class UsersService {
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string;
         }[];
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -102,12 +102,12 @@ export declare class UsersService {
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -117,12 +117,12 @@ export declare class UsersService {
     }>;
     updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -132,12 +132,12 @@ export declare class UsersService {
     }>;
     updateProfileImage(userId: string, file: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -147,12 +147,12 @@ export declare class UsersService {
     }>;
     removeProfileImage(userId: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -162,12 +162,12 @@ export declare class UsersService {
     }>;
     remove(id: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -188,13 +188,13 @@ export declare class UsersService {
             lastUpdated: Date;
         };
     } & {
+        name: string;
         email: string;
+        password: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
-        password: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -212,13 +212,13 @@ export declare class UsersService {
             lastUpdated: Date;
         };
     } & {
+        name: string;
         email: string;
+        password: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
-        password: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;

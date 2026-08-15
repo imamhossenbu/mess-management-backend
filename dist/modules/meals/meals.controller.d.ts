@@ -6,9 +6,9 @@ export declare class MealsController {
     create(createMealDto: CreateMealDto): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -32,9 +32,9 @@ export declare class MealsController {
         meals: {
             userName: string;
             user: {
-                id: string;
                 name: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -60,9 +60,9 @@ export declare class MealsController {
         meals: {
             userName: string;
             user: {
-                id: string;
                 name: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -78,9 +78,9 @@ export declare class MealsController {
     findAll(): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -105,9 +105,9 @@ export declare class MealsController {
         meals: {
             userName: string;
             user: {
-                id: string;
                 name: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -176,9 +176,9 @@ export declare class MealsController {
     findByUser(userId: string, startDate?: string, endDate?: string): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -193,9 +193,9 @@ export declare class MealsController {
     findByDate(date: string): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -210,9 +210,9 @@ export declare class MealsController {
     findOne(id: string): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -227,9 +227,9 @@ export declare class MealsController {
     update(id: string, updateMealDto: UpdateMealDto): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;

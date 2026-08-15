@@ -5,10 +5,10 @@ export declare class NotificationsController {
     constructor(notificationsService: NotificationsService);
     create(createNotificationDto: CreateNotificationDto): Promise<{
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -38,10 +38,10 @@ export declare class NotificationsController {
     }>;
     sendBillNotification(userId: string, amount: number, dueDate: string): Promise<{
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -56,10 +56,10 @@ export declare class NotificationsController {
     }>;
     sendPaymentConfirmation(userId: string, amount: number): Promise<{
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -74,10 +74,10 @@ export declare class NotificationsController {
     }>;
     sendMealReminder(userId: string, mealType: string): Promise<{
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -101,9 +101,9 @@ export declare class NotificationsController {
     sendEmail(sendEmailDto: SendEmailDto): Promise<{
         message: string;
         emailLog: {
+            email: string;
             userId: string;
             message: string;
-            email: string;
             subject: string;
             html: string | null;
             id: string;
@@ -113,10 +113,10 @@ export declare class NotificationsController {
     }>;
     findAll(): Promise<({
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -131,10 +131,10 @@ export declare class NotificationsController {
     })[]>;
     getMyNotifications(req: any): Promise<({
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -152,10 +152,10 @@ export declare class NotificationsController {
     }>;
     findByUser(userId: string): Promise<({
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -170,10 +170,10 @@ export declare class NotificationsController {
     })[]>;
     findOne(id: string): Promise<{
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;
@@ -188,10 +188,10 @@ export declare class NotificationsController {
     }>;
     markAsRead(id: string): Promise<{
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
     } & {
         type: import(".prisma/client").$Enums.NotificationType;

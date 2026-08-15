@@ -8,9 +8,9 @@ export declare class MealsService {
     create(createMealDto: CreateMealDto): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -34,9 +34,9 @@ export declare class MealsService {
         meals: {
             userName: string;
             user: {
-                id: string;
                 name: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -62,9 +62,9 @@ export declare class MealsService {
         meals: {
             userName: string;
             user: {
-                id: string;
                 name: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -80,9 +80,9 @@ export declare class MealsService {
     findAll(): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -97,9 +97,9 @@ export declare class MealsService {
     findOne(id: string): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -114,9 +114,9 @@ export declare class MealsService {
     findByUser(userId: string, startDate?: Date, endDate?: Date): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -131,9 +131,9 @@ export declare class MealsService {
     findByDate(date: Date): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -158,9 +158,9 @@ export declare class MealsService {
         meals: {
             userName: string;
             user: {
-                id: string;
                 name: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -229,9 +229,9 @@ export declare class MealsService {
     update(id: string, updateMealDto: UpdateMealDto): Promise<{
         userName: string;
         user: {
-            id: string;
             name: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;

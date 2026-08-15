@@ -21,10 +21,10 @@ export declare class JwtStrategy extends JwtStrategy_base {
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
-        email: string;
-        id: string;
         name: string;
+        email: string;
         phone: string;
+        id: string;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string;
         isActive: boolean;

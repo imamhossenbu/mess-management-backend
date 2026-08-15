@@ -439,12 +439,6 @@ let MarketingsService = class MarketingsService {
         };
     }
     async update(id, updateMarketingDto, file) {
-        console.log("📦 [SERVICE] Update called with:", {
-            id,
-            updateMarketingDto,
-            file: file ? "Yes" : "No",
-        });
-        console.log("📦 [SERVICE] Items:", updateMarketingDto.items);
         const existing = await this.prisma.marketing.findUnique({
             where: { id },
             include: { items: true },
@@ -463,6 +457,12 @@ let MarketingsService = class MarketingsService {
             catch (error) {
                 throw new common_1.BadRequestException("Failed to upload image");
             }
+        }
+        else if (updateMarketingDto.removeImage) {
+            if (existing.imageUrl) {
+                await this.cloudinaryService.deleteFile(existing.imageUrl);
+            }
+            imageUrl = null;
         }
         const updated = await this.prisma.marketing.update({
             where: { id },
@@ -484,7 +484,6 @@ let MarketingsService = class MarketingsService {
             },
         });
         if (updateMarketingDto.items && updateMarketingDto.items.length > 0) {
-            console.log("📦 [SERVICE] Updating items:", updateMarketingDto.items);
             await this.prisma.marketingItem.deleteMany({
                 where: { marketingId: id },
             });
@@ -506,7 +505,6 @@ let MarketingsService = class MarketingsService {
                     totalAmount: totalAmount,
                 },
             });
-            console.log("✅ [SERVICE] Items updated, total amount:", totalAmount);
         }
         const admins = await this.prisma.user.findMany({
             where: { role: "ADMIN", isActive: true },

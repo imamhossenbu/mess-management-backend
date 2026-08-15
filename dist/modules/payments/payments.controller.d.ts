@@ -6,10 +6,10 @@ export declare class PaymentsController {
     create(createPaymentDto: CreatePaymentDto): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -23,10 +23,10 @@ export declare class PaymentsController {
     findAll(): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -53,10 +53,10 @@ export declare class PaymentsController {
         payments: {
             userName: string;
             user: {
-                email: string;
-                id: string;
                 name: string;
+                email: string;
                 phone: string;
+                id: string;
             };
             userId: string;
             id: string;
@@ -71,10 +71,10 @@ export declare class PaymentsController {
     findByUser(userId: string, startDate?: string, endDate?: string): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -104,10 +104,10 @@ export declare class PaymentsController {
     findByDate(date: string): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -121,10 +121,10 @@ export declare class PaymentsController {
     findByMonth(year: number, month: number): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -138,10 +138,10 @@ export declare class PaymentsController {
     findOne(id: string): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;
@@ -155,10 +155,10 @@ export declare class PaymentsController {
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         userName: string;
         user: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         userId: string;
         id: string;

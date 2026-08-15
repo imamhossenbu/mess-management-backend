@@ -125,5 +125,5 @@ export class MonthlyMarketingSummaryDto {
   }[];
 
   @ApiProperty({ type: [MarketingResponseDto] })
-  marketings?: MarketingResponseDto[]; // ✅ Added
+  marketings?: MarketingResponseDto[]; 
 }

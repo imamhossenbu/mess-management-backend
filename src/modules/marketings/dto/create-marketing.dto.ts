@@ -11,7 +11,7 @@ import {
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { PaymentType, Unit } from "@prisma/client";
-import { Type } from "class-transformer";
+import { Transform, Type, plainToInstance } from "class-transformer";
 
 export class MarketingItemDto {
   @ApiProperty({ example: "Rui Fish" })
@@ -60,6 +60,20 @@ export class CreateMarketingDto {
   paymentType?: PaymentType;
 
   @ApiProperty({ type: [MarketingItemDto] })
+  @Transform(({ value }) => {
+    let parsed = value;
+    if (typeof value === "string") {
+      try {
+        parsed = JSON.parse(value);
+      } catch {
+        return value; // let @IsArray produce a clean validation error
+      }
+    }
+    if (!Array.isArray(parsed)) return parsed;
+    // Manually build real class instances so class-validator's
+    // whitelist/forbidNonWhitelisted can see the decorator metadata.
+    return plainToInstance(MarketingItemDto, parsed);
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => MarketingItemDto)

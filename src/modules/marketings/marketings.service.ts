@@ -507,16 +507,7 @@ export class MarketingsService {
 
   // ==================== UPDATE ====================
 
-  // src/modules/marketings/marketings.service.ts (Update method only)
-
   async update(id: string, updateMarketingDto: UpdateMarketingDto, file?: any) {
-    console.log("📦 [SERVICE] Update called with:", {
-      id,
-      updateMarketingDto,
-      file: file ? "Yes" : "No",
-    });
-    console.log("📦 [SERVICE] Items:", updateMarketingDto.items);
-
     const existing = await this.prisma.marketing.findUnique({
       where: { id },
       include: { items: true },
@@ -526,9 +517,11 @@ export class MarketingsService {
       throw new NotFoundException(`Marketing with ID ${id} not found`);
     }
 
-    // Handle image upload
+    // Handle image upload / removal
     let imageUrl = existing.imageUrl;
+
     if (file) {
+      // New image uploaded: delete old one (if any) and upload the new one
       if (existing.imageUrl) {
         await this.cloudinaryService.deleteFile(existing.imageUrl);
       }
@@ -540,6 +533,12 @@ export class MarketingsService {
       } catch (error) {
         throw new BadRequestException("Failed to upload image");
       }
+    } else if (updateMarketingDto.removeImage) {
+      // No new file, but the user explicitly asked to remove the existing image
+      if (existing.imageUrl) {
+        await this.cloudinaryService.deleteFile(existing.imageUrl);
+      }
+      imageUrl = null;
     }
 
     // Update basic info
@@ -565,8 +564,6 @@ export class MarketingsService {
 
     // If items are provided, update them
     if (updateMarketingDto.items && updateMarketingDto.items.length > 0) {
-      console.log("📦 [SERVICE] Updating items:", updateMarketingDto.items);
-
       // Delete existing items
       await this.prisma.marketingItem.deleteMany({
         where: { marketingId: id },
@@ -597,8 +594,6 @@ export class MarketingsService {
           totalAmount: totalAmount,
         },
       });
-
-      console.log("✅ [SERVICE] Items updated, total amount:", totalAmount);
     }
 
     // Send notifications

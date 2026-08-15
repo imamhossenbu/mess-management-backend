@@ -6,10 +6,10 @@ export declare class UtilityBillsController {
     create(createUtilityBillDto: CreateUtilityBillDto): Promise<{
         paidByName: string;
         payer: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         id: string;
         createdAt: Date;
@@ -17,16 +17,16 @@ export declare class UtilityBillsController {
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
-        paidBy: string | null;
         monthYear: Date;
+        paidBy: string | null;
     }>;
     findAll(): Promise<{
         paidByName: string;
         payer: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         id: string;
         createdAt: Date;
@@ -34,8 +34,8 @@ export declare class UtilityBillsController {
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
-        paidBy: string | null;
         monthYear: Date;
+        paidBy: string | null;
     }[]>;
     getSummary(): Promise<{
         totalCurrent: number;
@@ -61,10 +61,10 @@ export declare class UtilityBillsController {
         bills: {
             paidByName: string;
             payer: {
-                email: string;
-                id: string;
                 name: string;
+                email: string;
                 phone: string;
+                id: string;
             };
             id: string;
             createdAt: Date;
@@ -72,17 +72,17 @@ export declare class UtilityBillsController {
             amount: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
             billType: import(".prisma/client").$Enums.BillType;
-            paidBy: string | null;
             monthYear: Date;
+            paidBy: string | null;
         }[];
     }>;
     findByMonth(year: number, month: number): Promise<{
         paidByName: string;
         payer: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         id: string;
         createdAt: Date;
@@ -90,16 +90,16 @@ export declare class UtilityBillsController {
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
-        paidBy: string | null;
         monthYear: Date;
+        paidBy: string | null;
     }[]>;
     findOne(id: string): Promise<{
         paidByName: string;
         payer: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         id: string;
         createdAt: Date;
@@ -107,16 +107,16 @@ export declare class UtilityBillsController {
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
-        paidBy: string | null;
         monthYear: Date;
+        paidBy: string | null;
     }>;
     update(id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
         paidByName: string;
         payer: {
-            email: string;
-            id: string;
             name: string;
+            email: string;
             phone: string;
+            id: string;
         };
         id: string;
         createdAt: Date;
@@ -124,8 +124,8 @@ export declare class UtilityBillsController {
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
         billType: import(".prisma/client").$Enums.BillType;
-        paidBy: string | null;
         monthYear: Date;
+        paidBy: string | null;
     }>;
     remove(id: string): Promise<{
         message: string;

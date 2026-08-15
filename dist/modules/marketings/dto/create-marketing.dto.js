@@ -74,6 +74,20 @@ __decorate([
 ], CreateMarketingDto.prototype, "paymentType", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ type: [MarketingItemDto] }),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        let parsed = value;
+        if (typeof value === "string") {
+            try {
+                parsed = JSON.parse(value);
+            }
+            catch {
+                return value;
+            }
+        }
+        if (!Array.isArray(parsed))
+            return parsed;
+        return (0, class_transformer_1.plainToInstance)(MarketingItemDto, parsed);
+    }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ValidateNested)({ each: true }),
     (0, class_transformer_1.Type)(() => MarketingItemDto),

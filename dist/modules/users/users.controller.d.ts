@@ -13,12 +13,12 @@ export declare class UsersController {
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -28,12 +28,12 @@ export declare class UsersController {
     }>;
     findAll(): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -83,12 +83,12 @@ export declare class UsersController {
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string;
         }[];
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -98,12 +98,12 @@ export declare class UsersController {
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -113,12 +113,12 @@ export declare class UsersController {
     }>;
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -128,12 +128,12 @@ export declare class UsersController {
     }>;
     uploadProfileImage(req: any, file: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -143,12 +143,12 @@ export declare class UsersController {
     }>;
     removeProfileImage(req: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;
@@ -158,12 +158,12 @@ export declare class UsersController {
     }>;
     remove(id: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        name: string;
         email: string;
+        phone: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
         isActive: boolean;

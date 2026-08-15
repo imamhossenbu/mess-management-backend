@@ -12,11 +12,8 @@ import {
   HttpStatus,
   Query,
   Request,
-  BadRequestException,
   UseInterceptors,
   UploadedFile,
-  UsePipes,
-  ValidationPipe,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import {
@@ -45,59 +42,12 @@ export class MarketingsController {
   @ApiOperation({ summary: "Create a new marketing/bazar entry with image" })
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("image"))
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: false }))
   async create(
     @Request() req,
     @Body() createMarketingDto: CreateMarketingDto,
     @UploadedFile() file?: any,
   ) {
-    console.log("🔍 [CREATE] Raw body:", createMarketingDto);
-    console.log("🔍 [CREATE] Raw items:", createMarketingDto.items);
-    console.log("🔍 [CREATE] Type of items:", typeof createMarketingDto.items);
-    console.log("🔍 [CREATE] File:", file ? "Yes" : "No");
-
-    let items = createMarketingDto.items;
-
-    if (typeof items === "string") {
-      try {
-        items = JSON.parse(items);
-        console.log("✅ [CREATE] Parsed items:", items);
-      } catch (e) {
-        console.error("❌ [CREATE] Parse error:", e);
-        throw new BadRequestException(
-          "Invalid items format. Must be valid JSON array.",
-        );
-      }
-    }
-
-    if (!Array.isArray(items)) {
-      console.error("❌ [CREATE] items is not an array:", items);
-      throw new BadRequestException("items must be an array");
-    }
-
-    if (items.length === 0) {
-      throw new BadRequestException("At least one item is required");
-    }
-
-    for (const item of items) {
-      console.log("🔍 [CREATE] Validating item:", item);
-      if (!item.itemName || item.itemName.trim() === "") {
-        throw new BadRequestException("Each item must have a valid itemName");
-      }
-      if (!item.price || item.price <= 0) {
-        throw new BadRequestException(
-          "Each item must have a valid price greater than 0",
-        );
-      }
-    }
-
-    const dto = {
-      ...createMarketingDto,
-      items: items,
-    };
-
-    console.log("✅ [CREATE] Final DTO:", dto);
-    return this.marketingsService.create(req.user.id, dto, file);
+    return this.marketingsService.create(req.user.id, createMarketingDto, file);
   }
 
   @Get()
@@ -181,63 +131,12 @@ export class MarketingsController {
   @ApiConsumes("multipart/form-data")
   @ApiParam({ name: "id", description: "Marketing ID" })
   @UseInterceptors(FileInterceptor("image"))
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: false }))
   async update(
     @Param("id") id: string,
     @Body() updateMarketingDto: UpdateMarketingDto,
     @UploadedFile() file?: any,
   ) {
-    console.log("🔍 [UPDATE] Raw body:", updateMarketingDto);
-    console.log("🔍 [UPDATE] Raw items:", updateMarketingDto.items);
-    console.log("🔍 [UPDATE] Type of items:", typeof updateMarketingDto.items);
-    console.log("🔍 [UPDATE] File:", file ? "Yes" : "No");
-
-    let items = updateMarketingDto.items;
-
-    if (typeof items === "string") {
-      try {
-        items = JSON.parse(items);
-        console.log("✅ [UPDATE] Parsed items:", items);
-      } catch (e) {
-        console.error("❌ [UPDATE] Parse error:", e);
-        throw new BadRequestException(
-          "Invalid items format. Must be valid JSON array.",
-        );
-      }
-    }
-
-    if (items !== undefined && items !== null) {
-      console.log("🔍 [UPDATE] Items after parse:", items);
-      console.log("🔍 [UPDATE] Is array?", Array.isArray(items));
-
-      if (!Array.isArray(items)) {
-        throw new BadRequestException("items must be an array");
-      }
-
-      if (items.length === 0) {
-        throw new BadRequestException("At least one item is required");
-      }
-
-      for (const item of items) {
-        console.log("🔍 [UPDATE] Validating item:", item);
-        if (!item.itemName || item.itemName.trim() === "") {
-          throw new BadRequestException("Each item must have a valid itemName");
-        }
-        if (!item.price || item.price <= 0) {
-          throw new BadRequestException(
-            "Each item must have a valid price greater than 0",
-          );
-        }
-      }
-    }
-
-    const dto = {
-      ...updateMarketingDto,
-      items: items,
-    };
-
-    console.log("✅ [UPDATE] Final DTO:", dto);
-    return this.marketingsService.update(id, dto, file);
+    return this.marketingsService.update(id, updateMarketingDto, file);
   }
 
   @Delete(":id")

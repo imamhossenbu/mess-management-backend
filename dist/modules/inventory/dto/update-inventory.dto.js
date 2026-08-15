@@ -49,12 +49,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateInventoryItemDto.prototype, "purchasePrice", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: 400, required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateInventoryItemDto.prototype, "sellingPrice", void 0);
 class AddInventoryDto {
 }
 exports.AddInventoryDto = AddInventoryDto;
@@ -161,12 +155,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], UpdateInventoryItemDto.prototype, "purchasePrice", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateInventoryItemDto.prototype, "sellingPrice", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
     (0, class_validator_1.IsBoolean)(),

@@ -44,9 +44,6 @@ let InventoryService = class InventoryService {
                 purchasePrice: item.purchasePrice
                     ? Number(item.purchasePrice)
                     : undefined,
-                sellingPrice: item.sellingPrice
-                    ? Number(item.sellingPrice)
-                    : undefined,
                 lastUpdated: item.lastUpdated,
                 isActive: item.isActive,
                 status: Number(item.quantity) <= Number(item.minStockLevel) &&
@@ -108,7 +105,6 @@ let InventoryService = class InventoryService {
             purchasePrice: item.purchasePrice
                 ? Number(item.purchasePrice)
                 : undefined,
-            sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
             status: Number(item.quantity) <= Number(item.minStockLevel) &&
                 Number(item.minStockLevel) > 0
                 ? "LOW_STOCK"
@@ -135,7 +131,6 @@ let InventoryService = class InventoryService {
             purchasePrice: item.purchasePrice
                 ? Number(item.purchasePrice)
                 : undefined,
-            sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
             status: Number(item.quantity) <= Number(item.minStockLevel) &&
                 Number(item.minStockLevel) > 0
                 ? "LOW_STOCK"
@@ -160,7 +155,6 @@ let InventoryService = class InventoryService {
                 quantity: dto.initialQuantity,
                 minStockLevel: dto.minStockLevel,
                 purchasePrice: dto.purchasePrice,
-                sellingPrice: dto.sellingPrice,
                 isActive: true,
             },
         });
@@ -193,7 +187,6 @@ let InventoryService = class InventoryService {
             purchasePrice: item.purchasePrice
                 ? Number(item.purchasePrice)
                 : undefined,
-            sellingPrice: item.sellingPrice ? Number(item.sellingPrice) : undefined,
         };
     }
     async updateInventoryItem(itemName, dto) {
@@ -211,7 +204,6 @@ let InventoryService = class InventoryService {
                 unit: dto.unit,
                 minStockLevel: dto.minStockLevel,
                 purchasePrice: dto.purchasePrice,
-                sellingPrice: dto.sellingPrice,
                 isActive: dto.isActive,
             },
         });
@@ -233,9 +225,6 @@ let InventoryService = class InventoryService {
             minStockLevel: Number(updated.minStockLevel),
             purchasePrice: updated.purchasePrice
                 ? Number(updated.purchasePrice)
-                : undefined,
-            sellingPrice: updated.sellingPrice
-                ? Number(updated.sellingPrice)
                 : undefined,
         };
     }

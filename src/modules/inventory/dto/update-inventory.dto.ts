@@ -39,11 +39,6 @@ export class CreateInventoryItemDto {
   @IsNumber()
   @IsOptional()
   purchasePrice?: number;
-
-  @ApiProperty({ example: 400, required: false })
-  @IsNumber()
-  @IsOptional()
-  sellingPrice?: number;
 }
 
 export class AddInventoryDto {
@@ -130,11 +125,6 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsOptional()
   purchasePrice?: number;
-
-  @ApiProperty({ required: false })
-  @IsNumber()
-  @IsOptional()
-  sellingPrice?: number;
 
   @ApiProperty({ required: false })
   @IsBoolean()

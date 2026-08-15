@@ -25,9 +25,6 @@ export class InventoryItemResponseDto {
   purchasePrice?: number;
 
   @ApiProperty()
-  sellingPrice?: number;
-
-  @ApiProperty()
   lastUpdated: Date;
 
   @ApiProperty()

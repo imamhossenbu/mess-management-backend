@@ -7,7 +7,6 @@ export declare class InventoryItemResponseDto {
     quantity: number;
     minStockLevel: number;
     purchasePrice?: number;
-    sellingPrice?: number;
     lastUpdated: Date;
     status: string;
     isActive: boolean;

@@ -45,10 +45,6 @@ __decorate([
 ], InventoryItemResponseDto.prototype, "purchasePrice", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InventoryItemResponseDto.prototype, "sellingPrice", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
 ], InventoryItemResponseDto.prototype, "lastUpdated", void 0);
 __decorate([

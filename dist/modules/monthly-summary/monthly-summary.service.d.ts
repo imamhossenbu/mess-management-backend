@@ -30,16 +30,16 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
-        userId: string;
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }[]>;
     getAllMonthlySummaries(): Promise<{
         mealRate: number;
@@ -51,16 +51,16 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
-        userId: string;
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }[]>;
     updateMonthlySummary(id: string, updateDto: any): Promise<{
         mealRate: number;
@@ -72,16 +72,16 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
+            id: string;
             name: string;
             phone: string;
-            id: string;
         };
-        userId: string;
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
         monthYear: Date;
+        totalMeal: number;
     }>;
     deleteMonthlySummary(year: number, month: number): Promise<{
         message: string;

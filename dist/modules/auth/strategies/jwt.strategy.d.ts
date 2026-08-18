@@ -13,22 +13,22 @@ export declare class JwtStrategy extends JwtStrategy_base {
         email: string;
         role: string;
     }): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        profileImage: string;
+        isActive: boolean;
+        approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         userBalance: {
-            userId: string;
             id: string;
+            userId: string;
             createdAt: Date;
             updatedAt: Date;
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
-        name: string;
-        email: string;
-        phone: string;
-        id: string;
-        role: import(".prisma/client").$Enums.Role;
-        profileImage: string;
-        isActive: boolean;
-        approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
     }>;
 }
 export {};

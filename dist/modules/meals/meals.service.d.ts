@@ -12,15 +12,15 @@ export declare class MealsService {
             name: string;
             phone: string;
         };
-        id: string;
         userId: string;
-        date: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }>;
     bulkEntry(bulkMealDto: BulkMealEntryDto): Promise<{
         date: string;
@@ -38,15 +38,15 @@ export declare class MealsService {
                 name: string;
                 phone: string;
             };
-            id: string;
             userId: string;
-            date: Date;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
-            totalMeal: number;
+            date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
     }>;
     singleMealEntry(singleMealDto: SingleMealEntryDto): Promise<{
@@ -66,15 +66,15 @@ export declare class MealsService {
                 name: string;
                 phone: string;
             };
-            id: string;
             userId: string;
-            date: Date;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
-            totalMeal: number;
+            date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
     }>;
     findAll(): Promise<{
@@ -84,15 +84,15 @@ export declare class MealsService {
             name: string;
             phone: string;
         };
-        id: string;
         userId: string;
-        date: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }[]>;
     findOne(id: string): Promise<{
         userName: string;
@@ -101,15 +101,15 @@ export declare class MealsService {
             name: string;
             phone: string;
         };
-        id: string;
         userId: string;
-        date: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }>;
     findByUser(userId: string, startDate?: Date, endDate?: Date): Promise<{
         userName: string;
@@ -118,15 +118,15 @@ export declare class MealsService {
             name: string;
             phone: string;
         };
-        id: string;
         userId: string;
-        date: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }[]>;
     findByDate(date: Date): Promise<{
         userName: string;
@@ -135,15 +135,15 @@ export declare class MealsService {
             name: string;
             phone: string;
         };
-        id: string;
         userId: string;
-        date: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }[]>;
     getDailySummary(date: Date): Promise<{
         date: string;
@@ -162,15 +162,15 @@ export declare class MealsService {
                 name: string;
                 phone: string;
             };
-            id: string;
             userId: string;
-            date: Date;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
-            totalMeal: number;
+            date: Date;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
     }>;
     getMonthlySummary(year: number, month: number): Promise<{
@@ -233,15 +233,15 @@ export declare class MealsService {
             name: string;
             phone: string;
         };
-        id: string;
         userId: string;
-        date: Date;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        totalMeal: number;
+        date: Date;
         morning: boolean;
         lunch: boolean;
         dinner: boolean;
+        totalMeal: number;
     }>;
     remove(id: string): Promise<{
         message: string;

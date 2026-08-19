@@ -27,11 +27,6 @@ __decorate([
     __metadata("design:type", String)
 ], CreateInventoryItemDto.prototype, "category", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
-    (0, class_validator_1.IsEnum)(client_1.Unit),
-    __metadata("design:type", String)
-], CreateInventoryItemDto.prototype, "unit", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ example: 0 }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(0),
@@ -43,12 +38,6 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], CreateInventoryItemDto.prototype, "minStockLevel", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: 350, required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateInventoryItemDto.prototype, "purchasePrice", void 0);
 class AddInventoryDto {
 }
 exports.AddInventoryDto = AddInventoryDto;
@@ -59,28 +48,16 @@ __decorate([
 ], AddInventoryDto.prototype, "itemName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 5 }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0.01),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], AddInventoryDto.prototype, "quantity", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
-    (0, class_validator_1.IsEnum)(client_1.Unit),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], AddInventoryDto.prototype, "unit", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: "Purchase from bazar", required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AddInventoryDto.prototype, "note", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ required: false }),
-    (0, class_validator_1.IsUUID)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], AddInventoryDto.prototype, "marketingId", void 0);
 class RemoveInventoryDto {
 }
 exports.RemoveInventoryDto = RemoveInventoryDto;
@@ -91,8 +68,8 @@ __decorate([
 ], RemoveInventoryDto.prototype, "itemName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 2 }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0.01),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], RemoveInventoryDto.prototype, "quantity", void 0);
 __decorate([
@@ -111,7 +88,7 @@ __decorate([
 ], SetInventoryDto.prototype, "itemName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 10 }),
-    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], SetInventoryDto.prototype, "quantity", void 0);
@@ -137,24 +114,12 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateInventoryItemDto.prototype, "category", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, required: false }),
-    (0, class_validator_1.IsEnum)(client_1.Unit),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateInventoryItemDto.prototype, "unit", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(0),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], UpdateInventoryItemDto.prototype, "minStockLevel", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateInventoryItemDto.prototype, "purchasePrice", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
     (0, class_validator_1.IsBoolean)(),

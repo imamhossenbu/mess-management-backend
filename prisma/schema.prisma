@@ -138,16 +138,13 @@ model Meal {
   @@unique([userId, date])
 }
 
-// ==================== INVENTORY ITEM (Alada) ====================
+// ==================== INVENTORY ITEM (সরলীকৃত) ====================
 model InventoryItem {
   id                String            @id @default(cuid())
   name              String
   category          InventoryCategory
-  unit              Unit              @default(KG)
-  quantity          Decimal           @default(0)
-  minStockLevel     Decimal           @default(0)
-  purchasePrice     Decimal?
-  sellingPrice      Decimal?
+  quantity          Decimal           @default(0)           // কত পিস/কেজি আছে
+  minStockLevel     Decimal           @default(5)           // minimum stock alert
   lastUpdated       DateTime          @default(now())
   isActive          Boolean           @default(true)
   
@@ -165,21 +162,18 @@ model InventoryLog {
   id                String            @id @default(cuid())
   inventoryItemId   String
   inventoryItem     InventoryItem     @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
-  change            Decimal
+  change            Decimal           // positive = added, negative = removed
   previousQuantity  Decimal
   newQuantity       Decimal
-  reason            String            // "PURCHASE", "USED", "WASTE", "ADJUSTMENT", "RETURN"
+  reason            String            // "PURCHASE", "USED", "WASTE", "ADJUSTMENT"
   note              String?
   date              DateTime          @default(now())
-  
-  // Optional: reference to marketing if item was purchased
-  marketingId       String?
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
 
-// ==================== MARKETING (Bazar) - Inventory সম্পূর্ণ আলাদা ====================
+// ==================== MARKETING (Bazar) ====================
 model Marketing {
   id                String            @id @default(cuid())
   userId            String
@@ -198,7 +192,7 @@ model Marketing {
   updatedAt         DateTime          @updatedAt
 }
 
-// ==================== MARKETING ITEM (Bazar Items - Inventory relation নেই) ====================
+// ==================== MARKETING ITEM ====================
 model MarketingItem {
   id                String            @id @default(cuid())
   marketingId       String

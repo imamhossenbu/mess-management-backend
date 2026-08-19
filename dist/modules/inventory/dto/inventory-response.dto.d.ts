@@ -1,12 +1,10 @@
-import { InventoryCategory, Unit } from "@prisma/client";
+import { InventoryCategory } from "@prisma/client";
 export declare class InventoryItemResponseDto {
     id: string;
     name: string;
     category: InventoryCategory;
-    unit: Unit;
     quantity: number;
     minStockLevel: number;
-    purchasePrice?: number;
     lastUpdated: Date;
     status: string;
     isActive: boolean;
@@ -21,14 +19,12 @@ export declare class InventoryLogResponseDto {
     newQuantity: number;
     reason: string;
     note?: string;
-    marketingId?: string;
     date: Date;
     createdAt: Date;
     inventoryItem?: {
         id: string;
         name: string;
         category: InventoryCategory;
-        unit: Unit;
     };
 }
 export declare class InventorySummaryDto {
@@ -39,10 +35,4 @@ export declare class InventorySummaryDto {
         totalItems: number;
         lowStockItems: number;
     }>;
-}
-export declare class InventoryCategorySummaryDto {
-    category: InventoryCategory;
-    totalItems: number;
-    totalQuantity: number;
-    lowStockItems: number;
 }

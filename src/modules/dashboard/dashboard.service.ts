@@ -159,6 +159,7 @@ export class DashboardService {
 
     // 9. Inventory - Get all inventory items grouped by category
     const inventoryItems = await this.prisma.inventoryItem.findMany({
+      where: { isActive: true },
       orderBy: [{ category: "asc" }, { name: "asc" }],
     });
 
@@ -179,10 +180,10 @@ export class DashboardService {
       const minStock = Number(item.minStockLevel);
       const status = quantity <= minStock && minStock > 0 ? "LOW_STOCK" : "OK";
 
+      // ✅ Fix: Remove 'unit' field
       inventory[category].items.push({
         name: item.name,
         quantity: quantity,
-        unit: item.unit,
         minStockLevel: minStock,
         status: status,
       });
@@ -252,11 +253,12 @@ export class DashboardService {
       for (const admin of admins) {
         for (const item of lowStockItems) {
           try {
+            // ✅ Fix: Remove 'unit' from message
             await this.notificationsService.create({
               userId: admin.id,
               type: "STOCK_ALERT",
               title: `Low Stock Alert: ${item.name}`,
-              message: `${item.name} is running low. Current stock: ${Number(item.quantity)} ${item.unit}. Minimum required: ${Number(item.minStockLevel)} ${item.unit}.`,
+              message: `${item.name} is running low. Current stock: ${Number(item.quantity)}. Minimum required: ${Number(item.minStockLevel)}.`,
               link: "/inventory",
             });
           } catch (error) {
@@ -331,7 +333,6 @@ export class DashboardService {
     const startMonth = startOfMonth(today);
     const endMonth = endOfMonth(today);
 
-    // Check if user exists
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -343,7 +344,6 @@ export class DashboardService {
       throw new NotFoundException("User not found");
     }
 
-    // 1. This Month's Meals
     const meals = await this.prisma.meal.findMany({
       where: {
         userId,
@@ -356,7 +356,6 @@ export class DashboardService {
 
     const totalMealThisMonth = meals.reduce((sum, m) => sum + m.totalMeal, 0);
 
-    // 2. Get monthly summary
     const monthlySummary = await this.prisma.monthlySummary.findFirst({
       where: {
         userId,
@@ -367,12 +366,10 @@ export class DashboardService {
       },
     });
 
-    // 3. Get user balance
     const userBalance = await this.prisma.userBalance.findUnique({
       where: { userId },
     });
 
-    // 4. Recent Payments
     const recentPayments = await this.prisma.payment.findMany({
       where: { userId },
       take: 5,
@@ -386,7 +383,6 @@ export class DashboardService {
       },
     });
 
-    // 5. Get recent meals
     const recentMeals = await this.prisma.meal.findMany({
       where: { userId },
       take: 5,
@@ -401,7 +397,6 @@ export class DashboardService {
       },
     });
 
-    // 6. Get meal rate
     const dailySummary = await this.prisma.dailySummary.findFirst({
       orderBy: { date: "desc" },
       select: { mealRate: true },
@@ -409,7 +404,6 @@ export class DashboardService {
 
     const balance = userBalance ? Number(userBalance.balance) : 0;
 
-    // 7. Check if user has due balance and send notification
     if (balance < 0) {
       try {
         await this.notificationsService.create({
@@ -457,7 +451,6 @@ export class DashboardService {
     const start = startOfDay(queryDate);
     const end = endOfDay(queryDate);
 
-    // Get meals
     const meals = await this.prisma.meal.findMany({
       where: {
         date: {
@@ -472,7 +465,6 @@ export class DashboardService {
     const totalLunch = meals.filter((m) => m.lunch).length;
     const totalDinner = meals.filter((m) => m.dinner).length;
 
-    // Get marketing cost
     const marketings = await this.prisma.marketing.findMany({
       where: {
         date: {
@@ -490,7 +482,6 @@ export class DashboardService {
       0,
     );
 
-    // Get meal rate
     const dailySummary = await this.prisma.dailySummary.findUnique({
       where: {
         date: start,

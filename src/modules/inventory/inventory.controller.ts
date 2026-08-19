@@ -39,8 +39,6 @@ import { InventoryCategory } from "@prisma/client";
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  // ==================== GET ALL - সবাই দেখতে পারে ====================
-
   @Get()
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Get all inventory items grouped by category" })
@@ -48,16 +46,12 @@ export class InventoryController {
     return this.inventoryService.getAllInventory();
   }
 
-  // ==================== GET SUMMARY - সবাই দেখতে পারে ====================
-
   @Get("summary")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Get inventory summary" })
   async getSummary() {
     return this.inventoryService.getSummary();
   }
-
-  // ==================== GET BY CATEGORY - সবাই দেখতে পারে ====================
 
   @Get("category/:category")
   @Roles("ADMIN", "MANAGER", "MEMBER")
@@ -67,8 +61,6 @@ export class InventoryController {
     return this.inventoryService.getByCategory(category);
   }
 
-  // ==================== GET SINGLE ITEM - সবাই দেখতে পারে ====================
-
   @Get("item/:name")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Get single inventory item" })
@@ -77,8 +69,6 @@ export class InventoryController {
     return this.inventoryService.getInventoryItem(name);
   }
 
-  // ==================== GET LOGS - সবাই দেখতে পারে ====================
-
   @Get("logs")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Get stock logs" })
@@ -86,8 +76,6 @@ export class InventoryController {
   async getStockLogs(@Query("itemName") itemName?: string) {
     return this.inventoryService.getStockLogs(itemName);
   }
-
-  // ==================== CHECK AVAILABILITY - সবাই করতে পারে ====================
 
   @Get("check/:name")
   @Roles("ADMIN", "MANAGER", "MEMBER")
@@ -100,16 +88,12 @@ export class InventoryController {
     return this.inventoryService.checkAvailability(name, quantity);
   }
 
-  // ==================== CREATE ITEM - সবাই করতে পারে ====================
-
   @Post("items")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Create new inventory item" })
   async createInventoryItem(@Body() dto: CreateInventoryItemDto) {
     return this.inventoryService.createInventoryItem(dto);
   }
-
-  // ==================== UPDATE ITEM - সবাই করতে পারে ====================
 
   @Patch("items/:name")
   @Roles("ADMIN", "MANAGER", "MEMBER")
@@ -122,16 +106,12 @@ export class InventoryController {
     return this.inventoryService.updateInventoryItem(name, dto);
   }
 
-  // ==================== ADD INVENTORY - সবাই করতে পারে ====================
-
   @Post("add")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Add inventory (increase stock)" })
   async addInventory(@Body() dto: AddInventoryDto) {
     return this.inventoryService.addInventory(dto);
   }
-
-  // ==================== REMOVE INVENTORY - সবাই করতে পারে ====================
 
   @Post("remove")
   @Roles("ADMIN", "MANAGER", "MEMBER")
@@ -140,16 +120,12 @@ export class InventoryController {
     return this.inventoryService.removeInventory(dto);
   }
 
-  // ==================== SET INVENTORY - সবাই করতে পারে ====================
-
   @Post("set")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Set inventory manually" })
   async setInventory(@Body() dto: SetInventoryDto) {
     return this.inventoryService.setInventory(dto);
   }
-
-  // ==================== DELETE ITEM - সবাই করতে পারে ====================
 
   @Delete("items/:name")
   @Roles("ADMIN", "MANAGER", "MEMBER")

@@ -1,16 +1,7 @@
 // src/modules/inventory/dto/update-inventory.dto.ts
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-  IsUUID,
-  IsNumber,
-  IsBoolean,
-} from "class-validator";
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { InventoryCategory, Unit } from "@prisma/client";
+import { InventoryCategory } from "@prisma/client";
 
 export class CreateInventoryItemDto {
   @ApiProperty({ example: "Rui Fish" })
@@ -21,10 +12,6 @@ export class CreateInventoryItemDto {
   @IsEnum(InventoryCategory)
   category: InventoryCategory;
 
-  @ApiProperty({ enum: Unit, example: "KG" })
-  @IsEnum(Unit)
-  unit: Unit;
-
   @ApiProperty({ example: 0 })
   @IsInt()
   @Min(0)
@@ -34,11 +21,6 @@ export class CreateInventoryItemDto {
   @IsInt()
   @Min(0)
   minStockLevel: number;
-
-  @ApiProperty({ example: 350, required: false })
-  @IsNumber()
-  @IsOptional()
-  purchasePrice?: number;
 }
 
 export class AddInventoryDto {
@@ -47,24 +29,14 @@ export class AddInventoryDto {
   itemName: string;
 
   @ApiProperty({ example: 5 })
-  @IsNumber()
-  @Min(0.01)
+  @IsInt()
+  @Min(1)
   quantity: number;
-
-  @ApiProperty({ enum: Unit, example: "KG" })
-  @IsEnum(Unit)
-  @IsOptional()
-  unit?: Unit;
 
   @ApiProperty({ example: "Purchase from bazar", required: false })
   @IsString()
   @IsOptional()
   note?: string;
-
-  @ApiProperty({ required: false })
-  @IsUUID()
-  @IsOptional()
-  marketingId?: string;
 }
 
 export class RemoveInventoryDto {
@@ -73,8 +45,8 @@ export class RemoveInventoryDto {
   itemName: string;
 
   @ApiProperty({ example: 2 })
-  @IsNumber()
-  @Min(0.01)
+  @IsInt()
+  @Min(1)
   quantity: number;
 
   @ApiProperty({ example: "Used for cooking", required: false })
@@ -89,7 +61,7 @@ export class SetInventoryDto {
   itemName: string;
 
   @ApiProperty({ example: 10 })
-  @IsNumber()
+  @IsInt()
   @Min(0)
   quantity: number;
 
@@ -110,21 +82,11 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   category?: InventoryCategory;
 
-  @ApiProperty({ enum: Unit, required: false })
-  @IsEnum(Unit)
-  @IsOptional()
-  unit?: Unit;
-
   @ApiProperty({ required: false })
   @IsInt()
   @Min(0)
   @IsOptional()
   minStockLevel?: number;
-
-  @ApiProperty({ required: false })
-  @IsNumber()
-  @IsOptional()
-  purchasePrice?: number;
 
   @ApiProperty({ required: false })
   @IsBoolean()

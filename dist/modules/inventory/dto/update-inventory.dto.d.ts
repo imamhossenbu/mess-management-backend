@@ -1,18 +1,14 @@
-import { InventoryCategory, Unit } from "@prisma/client";
+import { InventoryCategory } from "@prisma/client";
 export declare class CreateInventoryItemDto {
     name: string;
     category: InventoryCategory;
-    unit: Unit;
     initialQuantity: number;
     minStockLevel: number;
-    purchasePrice?: number;
 }
 export declare class AddInventoryDto {
     itemName: string;
     quantity: number;
-    unit?: Unit;
     note?: string;
-    marketingId?: string;
 }
 export declare class RemoveInventoryDto {
     itemName: string;
@@ -27,8 +23,6 @@ export declare class SetInventoryDto {
 export declare class UpdateInventoryItemDto {
     name?: string;
     category?: InventoryCategory;
-    unit?: Unit;
     minStockLevel?: number;
-    purchasePrice?: number;
     isActive?: boolean;
 }

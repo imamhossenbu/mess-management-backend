@@ -8,11 +8,11 @@ export declare class AuthController {
     register(dto: RegisterDto): Promise<{
         message: string;
         user: {
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            email: string;
             phone: string | null;
             role: import(".prisma/client").$Enums.Role;
             profileImage: string | null;

@@ -23,7 +23,7 @@ __decorate([
     __metadata("design:type", Number)
 ], InventoryItemDto.prototype, "quantity", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ required: false }),
     __metadata("design:type", String)
 ], InventoryItemDto.prototype, "unit", void 0);
 __decorate([

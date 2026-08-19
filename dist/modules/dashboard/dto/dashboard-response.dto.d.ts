@@ -1,7 +1,7 @@
 export declare class InventoryItemDto {
     name: string;
     quantity: number;
-    unit: string;
+    unit?: string;
     minStockLevel: number;
     status: string;
 }

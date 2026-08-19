@@ -102,6 +102,7 @@ let DashboardService = class DashboardService {
         });
         const mealRate = dailySummary?.mealRate || 0;
         const inventoryItems = await this.prisma.inventoryItem.findMany({
+            where: { isActive: true },
             orderBy: [{ category: "asc" }, { name: "asc" }],
         });
         const inventory = {};
@@ -120,7 +121,6 @@ let DashboardService = class DashboardService {
             inventory[category].items.push({
                 name: item.name,
                 quantity: quantity,
-                unit: item.unit,
                 minStockLevel: minStock,
                 status: status,
             });
@@ -182,7 +182,7 @@ let DashboardService = class DashboardService {
                             userId: admin.id,
                             type: "STOCK_ALERT",
                             title: `Low Stock Alert: ${item.name}`,
-                            message: `${item.name} is running low. Current stock: ${Number(item.quantity)} ${item.unit}. Minimum required: ${Number(item.minStockLevel)} ${item.unit}.`,
+                            message: `${item.name} is running low. Current stock: ${Number(item.quantity)}. Minimum required: ${Number(item.minStockLevel)}.`,
                             link: "/inventory",
                         });
                     }

@@ -10,18 +10,18 @@ export declare class UsersService {
     create(createUserDto: CreateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: {
-            id: string;
             userId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -32,11 +32,11 @@ export declare class UsersService {
     }>;
     findAll(): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -50,48 +50,48 @@ export declare class UsersService {
         meals: {
             id: string;
             date: Date;
-            totalMeal: number;
             morning: boolean;
             lunch: boolean;
             dinner: boolean;
+            totalMeal: number;
         }[];
         marketings: ({
             items: {
                 id: string;
-                note: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                note: string | null;
+                quantity: import("@prisma/client/runtime/library").Decimal;
                 marketingId: string;
                 itemName: string;
-                quantity: import("@prisma/client/runtime/library").Decimal;
                 unit: import(".prisma/client").$Enums.Unit;
                 price: import("@prisma/client/runtime/library").Decimal;
                 totalPrice: import("@prisma/client/runtime/library").Decimal;
             }[];
         } & {
-            id: string;
             userId: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             date: Date;
+            note: string | null;
             imageUrl: string | null;
             shopName: string | null;
             totalAmount: import("@prisma/client/runtime/library").Decimal;
-            note: string | null;
             paymentType: import(".prisma/client").$Enums.PaymentType;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         payments: {
             id: string;
-            note: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
             paymentDate: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+            note: string;
         }[];
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -102,11 +102,11 @@ export declare class UsersService {
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -117,11 +117,11 @@ export declare class UsersService {
     }>;
     updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -132,11 +132,11 @@ export declare class UsersService {
     }>;
     updateProfileImage(userId: string, file: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -147,11 +147,11 @@ export declare class UsersService {
     }>;
     removeProfileImage(userId: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -162,11 +162,11 @@ export declare class UsersService {
     }>;
     remove(id: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -180,19 +180,19 @@ export declare class UsersService {
     }>;
     findByPhone(phone: string): Promise<{
         userBalance: {
-            id: string;
             userId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
     } & {
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;
@@ -204,19 +204,19 @@ export declare class UsersService {
     }>;
     findByEmail(email: string): Promise<{
         userBalance: {
-            id: string;
             userId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
         };
     } & {
+        email: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        email: string;
         phone: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;

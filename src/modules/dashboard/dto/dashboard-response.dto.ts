@@ -8,8 +8,8 @@ export class InventoryItemDto {
   @ApiProperty()
   quantity: number;
 
-  @ApiProperty()
-  unit: string;
+  @ApiProperty({ required: false }) // optional করে দিন
+  unit?: string;
 
   @ApiProperty()
   minStockLevel: number;

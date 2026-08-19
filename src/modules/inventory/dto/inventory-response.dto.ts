@@ -1,6 +1,6 @@
 // src/modules/inventory/dto/inventory-response.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
-import { InventoryCategory, Unit } from "@prisma/client";
+import { InventoryCategory } from "@prisma/client";
 
 export class InventoryItemResponseDto {
   @ApiProperty()
@@ -12,17 +12,11 @@ export class InventoryItemResponseDto {
   @ApiProperty({ enum: InventoryCategory })
   category: InventoryCategory;
 
-  @ApiProperty({ enum: Unit })
-  unit: Unit;
-
   @ApiProperty()
   quantity: number;
 
   @ApiProperty()
   minStockLevel: number;
-
-  @ApiProperty()
-  purchasePrice?: number;
 
   @ApiProperty()
   lastUpdated: Date;
@@ -63,9 +57,6 @@ export class InventoryLogResponseDto {
   note?: string;
 
   @ApiProperty()
-  marketingId?: string;
-
-  @ApiProperty()
   date: Date;
 
   @ApiProperty()
@@ -76,7 +67,6 @@ export class InventoryLogResponseDto {
     id: string;
     name: string;
     category: InventoryCategory;
-    unit: Unit;
   };
 }
 
@@ -96,18 +86,4 @@ export class InventorySummaryDto {
       lowStockItems: number;
     }
   >;
-}
-
-export class InventoryCategorySummaryDto {
-  @ApiProperty()
-  category: InventoryCategory;
-
-  @ApiProperty()
-  totalItems: number;
-
-  @ApiProperty()
-  totalQuantity: number;
-
-  @ApiProperty()
-  lowStockItems: number;
 }

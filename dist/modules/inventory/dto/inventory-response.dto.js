@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InventoryCategorySummaryDto = exports.InventorySummaryDto = exports.InventoryLogResponseDto = exports.InventoryItemResponseDto = void 0;
+exports.InventorySummaryDto = exports.InventoryLogResponseDto = exports.InventoryItemResponseDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 class InventoryItemResponseDto {
@@ -28,10 +28,6 @@ __decorate([
     __metadata("design:type", String)
 ], InventoryItemResponseDto.prototype, "category", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.Unit }),
-    __metadata("design:type", String)
-], InventoryItemResponseDto.prototype, "unit", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], InventoryItemResponseDto.prototype, "quantity", void 0);
@@ -39,10 +35,6 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], InventoryItemResponseDto.prototype, "minStockLevel", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InventoryItemResponseDto.prototype, "purchasePrice", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
@@ -96,10 +88,6 @@ __decorate([
 ], InventoryLogResponseDto.prototype, "note", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], InventoryLogResponseDto.prototype, "marketingId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
 ], InventoryLogResponseDto.prototype, "date", void 0);
 __decorate([
@@ -125,23 +113,4 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Object)
 ], InventorySummaryDto.prototype, "categories", void 0);
-class InventoryCategorySummaryDto {
-}
-exports.InventoryCategorySummaryDto = InventoryCategorySummaryDto;
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], InventoryCategorySummaryDto.prototype, "category", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InventoryCategorySummaryDto.prototype, "totalItems", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InventoryCategorySummaryDto.prototype, "totalQuantity", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InventoryCategorySummaryDto.prototype, "lowStockItems", void 0);
 //# sourceMappingURL=inventory-response.dto.js.map

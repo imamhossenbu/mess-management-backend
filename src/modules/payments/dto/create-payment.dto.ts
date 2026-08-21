@@ -1,19 +1,18 @@
 // src/modules/payments/dto/create-payment.dto.ts
 import {
-  IsUUID,
+  IsString,
   IsNumber,
   IsOptional,
   IsEnum,
   Min,
   IsDateString,
-  IsString,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { PaymentMethod } from "@prisma/client";
 
 export class CreatePaymentDto {
-  @ApiProperty({ example: "user-id-123" })
-  @IsUUID()
+  @ApiProperty({ example: "cmszp8z02000fyw4s3hct0jyr" })
+  @IsString() // ✅ @IsUUID() এর পরিবর্তে @IsString()
   userId: string;
 
   @ApiProperty({ example: 5000 })

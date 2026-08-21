@@ -8,104 +8,104 @@ export declare class PaymentsService {
     create(createPaymentDto: CreatePaymentDto): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     findAll(): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     findOne(id: string): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     findByUser(userId: string, startDate?: Date, endDate?: Date): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     findByDate(date: Date): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     findByMonth(year: number, month: number): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     getMonthlySummary(year: number, month: number): Promise<{
         month: string;
@@ -115,19 +115,19 @@ export declare class PaymentsService {
         payments: {
             userName: string;
             user: {
-                email: string;
                 id: string;
                 name: string;
+                email: string;
                 phone: string;
             };
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            paymentDate: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
+            paymentDate: Date;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         }[];
     }>;
     getUserBalance(userId: string): Promise<{
@@ -137,13 +137,13 @@ export declare class PaymentsService {
         balance: number;
         payments: {
             amount: number;
-            userId: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             paymentDate: Date;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         }[];
     }>;
     getAllUserBalances(): Promise<{
@@ -157,19 +157,19 @@ export declare class PaymentsService {
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         userName: string;
         user: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
-        userId: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        paymentDate: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
+        paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     remove(id: string): Promise<{
         message: string;

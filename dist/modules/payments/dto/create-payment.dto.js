@@ -17,8 +17,8 @@ class CreatePaymentDto {
 }
 exports.CreatePaymentDto = CreatePaymentDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: "user-id-123" }),
-    (0, class_validator_1.IsUUID)(),
+    (0, swagger_1.ApiProperty)({ example: "cmszp8z02000fyw4s3hct0jyr" }),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePaymentDto.prototype, "userId", void 0);
 __decorate([

@@ -4,4 +4,5 @@ export declare class UpdateUtilityBillDto {
     amount?: number;
     paidBy?: string;
     note?: string;
+    monthYear?: string;
 }

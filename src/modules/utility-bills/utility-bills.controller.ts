@@ -8,7 +8,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseUUIDPipe,
+  // ParseUUIDPipe সরান
   HttpCode,
   HttpStatus,
   Query,
@@ -74,15 +74,17 @@ export class UtilityBillsController {
   @Get(":id")
   @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Get utility bill by ID" })
-  async findOne(@Param("id", ParseUUIDPipe) id: string) {
+  // ✅ ParseUUIDPipe সরান
+  async findOne(@Param("id") id: string) {
     return this.utilityBillsService.findOne(id);
   }
 
   @Patch(":id")
   @Roles("ADMIN", "MANAGER")
   @ApiOperation({ summary: "Update utility bill" })
+  // ✅ ParseUUIDPipe সরান
   async update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id") id: string,
     @Body() updateUtilityBillDto: UpdateUtilityBillDto,
   ) {
     return this.utilityBillsService.update(id, updateUtilityBillDto);
@@ -92,7 +94,8 @@ export class UtilityBillsController {
   @Roles("ADMIN", "MANAGER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete utility bill" })
-  async remove(@Param("id", ParseUUIDPipe) id: string) {
+  // ✅ ParseUUIDPipe সরান
+  async remove(@Param("id") id: string) {
     return this.utilityBillsService.remove(id);
   }
 

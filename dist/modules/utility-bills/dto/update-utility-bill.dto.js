@@ -31,7 +31,7 @@ __decorate([
 ], UpdateUtilityBillDto.prototype, "amount", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateUtilityBillDto.prototype, "paidBy", void 0);
@@ -41,4 +41,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateUtilityBillDto.prototype, "note", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: false, description: "বিলের মাস" }),
+    (0, class_validator_1.IsDateString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUtilityBillDto.prototype, "monthYear", void 0);
 //# sourceMappingURL=update-utility-bill.dto.js.map

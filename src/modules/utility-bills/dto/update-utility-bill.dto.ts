@@ -4,8 +4,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
   Min,
+  IsDateString,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { BillType } from "@prisma/client";
@@ -23,7 +23,7 @@ export class UpdateUtilityBillDto {
   amount?: number;
 
   @ApiProperty({ required: false })
-  @IsUUID()
+  @IsString()
   @IsOptional()
   paidBy?: string;
 
@@ -31,4 +31,9 @@ export class UpdateUtilityBillDto {
   @IsString()
   @IsOptional()
   note?: string;
+
+  @ApiProperty({ required: false, description: "বিলের মাস" })
+  @IsDateString()
+  @IsOptional()
+  monthYear?: string; 
 }

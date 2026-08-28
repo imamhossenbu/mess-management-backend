@@ -9,7 +9,7 @@ async function bootstrap() {
 
   // Complete CORS configuration
   app.enableCors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "https://mess-management-frontend-cf7l.onrender.com"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [

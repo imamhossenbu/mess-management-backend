@@ -38,6 +38,8 @@ export class MonthlySummaryController {
     return this.monthlySummaryService.generateMonthlySummary(
       generateDto.year,
       generateDto.month,
+      generateDto.adjustmentFromPrevious,
+      generateDto.adjustmentToNext,
     );
   }
 

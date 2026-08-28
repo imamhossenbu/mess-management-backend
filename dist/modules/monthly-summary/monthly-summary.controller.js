@@ -25,7 +25,7 @@ let MonthlySummaryController = class MonthlySummaryController {
         this.monthlySummaryService = monthlySummaryService;
     }
     async generate(generateDto) {
-        return this.monthlySummaryService.generateMonthlySummary(generateDto.year, generateDto.month);
+        return this.monthlySummaryService.generateMonthlySummary(generateDto.year, generateDto.month, generateDto.adjustmentFromPrevious, generateDto.adjustmentToNext);
     }
     async findAll() {
         return this.monthlySummaryService.getAllMonthlySummaries();

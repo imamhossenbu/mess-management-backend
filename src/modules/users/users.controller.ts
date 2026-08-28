@@ -49,7 +49,8 @@ export class UsersController {
   }
 
   @Get()
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
+
   @ApiOperation({ summary: "Get all users" })
   async findAll() {
     return this.usersService.findAll();

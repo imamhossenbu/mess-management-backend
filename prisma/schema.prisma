@@ -267,6 +267,9 @@ model MonthlySummary {
   currentDue        Decimal           @default(0)
   carryToNext       Decimal           @default(0)
   
+  adjustmentFromPrevious Decimal       @default(0)
+  adjustmentToNext       Decimal       @default(0)
+  
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 

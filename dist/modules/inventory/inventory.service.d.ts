@@ -50,56 +50,56 @@ export declare class InventoryService {
         quantity: number;
         minStockLevel: number;
         id: string;
-        name: string;
-        category: import(".prisma/client").$Enums.InventoryCategory;
-        lastUpdated: Date;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
+        lastUpdated: Date;
+        category: import(".prisma/client").$Enums.InventoryCategory;
     }>;
     updateInventoryItem(itemName: string, dto: UpdateInventoryItemDto): Promise<{
         quantity: number;
         minStockLevel: number;
         id: string;
-        name: string;
-        category: import(".prisma/client").$Enums.InventoryCategory;
-        lastUpdated: Date;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
+        lastUpdated: Date;
+        category: import(".prisma/client").$Enums.InventoryCategory;
     }>;
     addInventory(dto: AddInventoryDto): Promise<{
         quantity: number;
         minStockLevel: number;
         id: string;
-        name: string;
-        category: import(".prisma/client").$Enums.InventoryCategory;
-        lastUpdated: Date;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
+        lastUpdated: Date;
+        category: import(".prisma/client").$Enums.InventoryCategory;
     }>;
     removeInventory(dto: RemoveInventoryDto): Promise<{
         quantity: number;
         minStockLevel: number;
         id: string;
-        name: string;
-        category: import(".prisma/client").$Enums.InventoryCategory;
-        lastUpdated: Date;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
+        lastUpdated: Date;
+        category: import(".prisma/client").$Enums.InventoryCategory;
     }>;
     setInventory(dto: SetInventoryDto): Promise<{
         quantity: number;
         minStockLevel: number;
         id: string;
-        name: string;
-        category: import(".prisma/client").$Enums.InventoryCategory;
-        lastUpdated: Date;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
+        lastUpdated: Date;
+        category: import(".prisma/client").$Enums.InventoryCategory;
     }>;
     getStockLogs(itemName?: string): Promise<({
         inventoryItem: {
@@ -112,12 +112,12 @@ export declare class InventoryService {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
+        note: string | null;
         inventoryItemId: string;
         change: import("@prisma/client/runtime/library").Decimal;
         previousQuantity: import("@prisma/client/runtime/library").Decimal;
         newQuantity: import("@prisma/client/runtime/library").Decimal;
         reason: string;
-        note: string | null;
     })[]>;
     checkAvailability(itemName: string, requiredQuantity: number): Promise<{
         available: boolean;

@@ -1,5 +1,7 @@
 // src/modules/monthly-summary/dto/monthly-summary-response.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
+import { IsInt, IsNotEmpty, IsOptional, IsNumber } from "class-validator";
+
 
 export class UserMonthlySummaryDto {
   @ApiProperty()
@@ -76,8 +78,24 @@ export class MonthlySummaryResponseDto {
 
 export class GenerateMonthlySummaryDto {
   @ApiProperty({ example: 2026 })
+  @IsInt()
+  @IsNotEmpty()
   year: number;
 
   @ApiProperty({ example: 8 })
+  @IsInt()
+  @IsNotEmpty()
   month: number;
+
+  @ApiProperty({ example: 500, required: false })
+  @IsOptional()
+  @IsNumber()
+  adjustmentFromPrevious?: number;
+
+  @ApiProperty({ example: 1000, required: false })
+  @IsOptional()
+  @IsNumber()
+  adjustmentToNext?: number;
 }
+
+

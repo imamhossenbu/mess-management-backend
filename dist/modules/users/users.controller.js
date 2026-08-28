@@ -68,7 +68,7 @@ __decorate([
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Get all users" }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),

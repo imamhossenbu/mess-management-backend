@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenerateMonthlySummaryDto = exports.MonthlySummaryResponseDto = exports.UserMonthlySummaryDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
 class UserMonthlySummaryDto {
 }
 exports.UserMonthlySummaryDto = UserMonthlySummaryDto;
@@ -114,10 +115,26 @@ class GenerateMonthlySummaryDto {
 exports.GenerateMonthlySummaryDto = GenerateMonthlySummaryDto;
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 2026 }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Number)
 ], GenerateMonthlySummaryDto.prototype, "year", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 8 }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Number)
 ], GenerateMonthlySummaryDto.prototype, "month", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 500, required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], GenerateMonthlySummaryDto.prototype, "adjustmentFromPrevious", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 1000, required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], GenerateMonthlySummaryDto.prototype, "adjustmentToNext", void 0);
 //# sourceMappingURL=monthly-summary-response.dto.js.map

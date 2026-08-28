@@ -28,4 +28,6 @@ export declare class MonthlySummaryResponseDto {
 export declare class GenerateMonthlySummaryDto {
     year: number;
     month: number;
+    adjustmentFromPrevious?: number;
+    adjustmentToNext?: number;
 }

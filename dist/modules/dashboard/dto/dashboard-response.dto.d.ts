@@ -21,7 +21,6 @@ export declare class DashboardStatsDto {
     totalPaymentsThisMonth: number;
     totalDue: number;
     mealRate: number;
-    mealsBreakfast?: number;
     mealsLunch?: number;
     mealsDinner?: number;
     inventory: Record<string, InventoryCategoryDto>;
@@ -47,7 +46,6 @@ export declare class MemberDashboardDto {
 export declare class DailySummaryDto {
     date: string;
     totalMeals: number;
-    totalMorning: number;
     totalLunch: number;
     totalDinner: number;
     totalMarketingCost: number;

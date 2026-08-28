@@ -21,13 +21,6 @@ __decorate([
     __metadata("design:type", String)
 ], BulkMealEntryDto.prototype, "date", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: "Breakfast (সকাল)" }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsString)({ each: true }),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Array)
-], BulkMealEntryDto.prototype, "morningUserIds", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ description: "Lunch (দুপুর)" }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsString)({ each: true }),
@@ -50,7 +43,7 @@ __decorate([
     __metadata("design:type", String)
 ], SingleMealEntryDto.prototype, "date", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: ["morning", "lunch", "dinner"] }),
+    (0, swagger_1.ApiProperty)({ enum: ["lunch", "dinner"] }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SingleMealEntryDto.prototype, "mealType", void 0);

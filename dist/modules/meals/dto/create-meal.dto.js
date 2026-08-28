@@ -31,12 +31,6 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
-], CreateMealDto.prototype, "morning", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ default: false }),
-    (0, class_validator_1.IsBoolean)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Boolean)
 ], CreateMealDto.prototype, "lunch", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ default: false }),

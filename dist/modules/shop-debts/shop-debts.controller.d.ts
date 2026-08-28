@@ -9,13 +9,13 @@ export declare class ShopDebtsController {
         };
     } & {
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        shopName: string;
+        itemDetails: string | null;
         recordedById: string | null;
     }>;
     createPayment(createShopPaymentDto: CreateShopPaymentDto, req: any): Promise<{
@@ -24,12 +24,12 @@ export declare class ShopDebtsController {
         };
     } & {
         id: string;
-        shopName: string;
+        createdAt: Date;
+        updatedAt: Date;
         date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        shopName: string;
         paidById: string | null;
     }>;
     getSummary(): Promise<{
@@ -53,12 +53,12 @@ export declare class ShopDebtsController {
                 name: string;
             };
             id: string;
-            shopName: string;
-            date: Date;
-            itemDetails: string | null;
-            note: string | null;
             createdAt: Date;
             updatedAt: Date;
+            date: Date;
+            note: string | null;
+            shopName: string;
+            itemDetails: string | null;
             recordedById: string | null;
         }[];
         payments: {
@@ -68,33 +68,33 @@ export declare class ShopDebtsController {
                 name: string;
             };
             id: string;
-            shopName: string;
-            date: Date;
-            note: string | null;
             createdAt: Date;
             updatedAt: Date;
+            date: Date;
+            note: string | null;
+            shopName: string;
             paidById: string | null;
         }[];
     }>;
     updateDebt(id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
         id: string;
-        shopName: string;
-        date: Date;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        note: string | null;
         createdAt: Date;
         updatedAt: Date;
+        date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
+        shopName: string;
+        itemDetails: string | null;
         recordedById: string | null;
     }>;
     updatePayment(id: string, updateShopPaymentDto: any): Promise<{
         id: string;
-        shopName: string;
+        createdAt: Date;
+        updatedAt: Date;
         date: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        shopName: string;
         paidById: string | null;
     }>;
     removeDebt(id: string): Promise<{

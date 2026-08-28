@@ -41,15 +41,13 @@ let MealsService = class MealsService {
         if (existing) {
             throw new common_1.ConflictException(`Meal already exists for user on ${(0, date_fns_1.format)(date, "yyyy-MM-dd")}`);
         }
-        const morning = createMealDto.morning || false;
         const lunch = createMealDto.lunch || false;
         const dinner = createMealDto.dinner || false;
-        const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+        const totalMeal = (lunch ? 1 : 0) + (dinner ? 1 : 0);
         const meal = await this.prisma.meal.create({
             data: {
                 userId: createMealDto.userId,
                 date: date,
-                morning,
                 lunch,
                 dinner,
                 totalMeal,
@@ -66,8 +64,6 @@ let MealsService = class MealsService {
         });
         await this.updateDailySummary(date);
         const mealType = [];
-        if (morning)
-            mealType.push("Morning");
         if (lunch)
             mealType.push("Lunch");
         if (dinner)
@@ -89,7 +85,6 @@ let MealsService = class MealsService {
         const start = (0, date_fns_1.startOfDay)(date);
         const end = (0, date_fns_1.endOfDay)(date);
         const allUserIds = [
-            ...(bulkMealDto.morningUserIds || []),
             ...(bulkMealDto.lunchUserIds || []),
             ...(bulkMealDto.dinnerUserIds || []),
         ];
@@ -113,19 +108,16 @@ let MealsService = class MealsService {
                 },
             },
         });
-        const morningSet = new Set(bulkMealDto.morningUserIds || []);
         const lunchSet = new Set(bulkMealDto.lunchUserIds || []);
         const dinnerSet = new Set(bulkMealDto.dinnerUserIds || []);
         const mealPromises = uniqueUserIds.map(async (userId) => {
-            const morning = morningSet.has(userId);
             const lunch = lunchSet.has(userId);
             const dinner = dinnerSet.has(userId);
-            const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+            const totalMeal = (lunch ? 1 : 0) + (dinner ? 1 : 0);
             return this.prisma.meal.create({
                 data: {
                     userId,
                     date: date,
-                    morning,
                     lunch,
                     dinner,
                     totalMeal,
@@ -152,17 +144,14 @@ let MealsService = class MealsService {
             },
         });
         for (const userId of uniqueUserIds) {
-            const morning = morningSet.has(userId);
             const lunch = lunchSet.has(userId);
             const dinner = dinnerSet.has(userId);
             const mealType = [];
-            if (morning)
-                mealType.push("Morning");
             if (lunch)
                 mealType.push("Lunch");
             if (dinner)
                 mealType.push("Dinner");
-            const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+            const totalMeal = (lunch ? 1 : 0) + (dinner ? 1 : 0);
             await this.notificationsService.create({
                 userId,
                 type: "MEAL",
@@ -187,7 +176,6 @@ let MealsService = class MealsService {
             date: (0, date_fns_1.format)(date, "yyyy-MM-dd"),
             totalUsers: mealsWithUsers.length,
             summary: {
-                totalMorning: mealsWithUsers.filter((m) => m.morning).length,
                 totalLunch: mealsWithUsers.filter((m) => m.lunch).length,
                 totalDinner: mealsWithUsers.filter((m) => m.dinner).length,
                 totalMeals: mealsWithUsers.reduce((sum, m) => sum + m.totalMeal, 0),
@@ -227,14 +215,12 @@ let MealsService = class MealsService {
         const mealPromises = singleMealDto.userIds.map(async (userId) => {
             const existing = existingMap.get(userId);
             if (existing) {
-                const morning = mealType === "morning" ? true : existing.morning;
                 const lunch = mealType === "lunch" ? true : existing.lunch;
                 const dinner = mealType === "dinner" ? true : existing.dinner;
-                const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+                const totalMeal = (lunch ? 1 : 0) + (dinner ? 1 : 0);
                 return this.prisma.meal.update({
                     where: { id: existing.id },
                     data: {
-                        morning,
                         lunch,
                         dinner,
                         totalMeal,
@@ -242,15 +228,13 @@ let MealsService = class MealsService {
                 });
             }
             else {
-                const morning = mealType === "morning";
                 const lunch = mealType === "lunch";
                 const dinner = mealType === "dinner";
-                const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+                const totalMeal = (lunch ? 1 : 0) + (dinner ? 1 : 0);
                 return this.prisma.meal.create({
                     data: {
                         userId,
                         date: date,
-                        morning,
                         lunch,
                         dinner,
                         totalMeal,
@@ -291,7 +275,6 @@ let MealsService = class MealsService {
             mealType,
             totalUsers: updatedMeals.length,
             summary: {
-                totalMorning: updatedMeals.filter((m) => m.morning).length,
                 totalLunch: updatedMeals.filter((m) => m.lunch).length,
                 totalDinner: updatedMeals.filter((m) => m.dinner).length,
                 totalMeals: updatedMeals.reduce((sum, m) => sum + m.totalMeal, 0),
@@ -426,7 +409,6 @@ let MealsService = class MealsService {
                 },
             },
         });
-        const totalMorning = meals.filter((m) => m.morning).length;
         const totalLunch = meals.filter((m) => m.lunch).length;
         const totalDinner = meals.filter((m) => m.dinner).length;
         const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
@@ -437,7 +419,6 @@ let MealsService = class MealsService {
         });
         return {
             date: (0, date_fns_1.format)(date, "yyyy-MM-dd"),
-            totalMorning,
             totalLunch,
             totalDinner,
             totalMeals,
@@ -477,7 +458,6 @@ let MealsService = class MealsService {
             const userId = meal.userId;
             const existing = userMap.get(userId);
             if (existing) {
-                existing.morning += meal.morning ? 1 : 0;
                 existing.lunch += meal.lunch ? 1 : 0;
                 existing.dinner += meal.dinner ? 1 : 0;
                 existing.totalMeals += meal.totalMeal;
@@ -486,21 +466,18 @@ let MealsService = class MealsService {
                 userMap.set(userId, {
                     userId: userId,
                     userName: meal.user.name,
-                    morning: meal.morning ? 1 : 0,
                     lunch: meal.lunch ? 1 : 0,
                     dinner: meal.dinner ? 1 : 0,
                     totalMeals: meal.totalMeal,
                 });
             }
         });
-        const totalMorning = meals.filter((m) => m.morning).length;
         const totalLunch = meals.filter((m) => m.lunch).length;
         const totalDinner = meals.filter((m) => m.dinner).length;
         const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
         return {
             month: (0, date_fns_1.format)(startDate, "MMMM"),
             year,
-            totalMorning,
             totalLunch,
             totalDinner,
             totalMeals,
@@ -541,7 +518,6 @@ let MealsService = class MealsService {
             mealsByDate.get(dateKey).push({
                 userId: meal.userId,
                 userName: meal.user.name,
-                morning: meal.morning,
                 lunch: meal.lunch,
                 dinner: meal.dinner,
                 totalMeal: meal.totalMeal,
@@ -638,18 +614,14 @@ let MealsService = class MealsService {
         if (!existing) {
             throw new common_1.NotFoundException(`Meal with ID ${id} not found`);
         }
-        const morning = updateMealDto.morning !== undefined
-            ? updateMealDto.morning
-            : existing.morning;
         const lunch = updateMealDto.lunch !== undefined ? updateMealDto.lunch : existing.lunch;
         const dinner = updateMealDto.dinner !== undefined
             ? updateMealDto.dinner
             : existing.dinner;
-        const totalMeal = (morning ? 1 : 0) + (lunch ? 1 : 0) + (dinner ? 1 : 0);
+        const totalMeal = (lunch ? 1 : 0) + (dinner ? 1 : 0);
         const meal = await this.prisma.meal.update({
             where: { id },
             data: {
-                morning,
                 lunch,
                 dinner,
                 totalMeal,
@@ -666,8 +638,6 @@ let MealsService = class MealsService {
         });
         await this.updateDailySummary(meal.date);
         const mealType = [];
-        if (morning)
-            mealType.push("Morning");
         if (lunch)
             mealType.push("Lunch");
         if (dinner)

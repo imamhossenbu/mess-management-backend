@@ -95,10 +95,6 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
     __metadata("design:type", Number)
-], DashboardStatsDto.prototype, "mealsBreakfast", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ required: false }),
-    __metadata("design:type", Number)
 ], DashboardStatsDto.prototype, "mealsLunch", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
@@ -170,10 +166,6 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], DailySummaryDto.prototype, "totalMeals", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], DailySummaryDto.prototype, "totalMorning", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)

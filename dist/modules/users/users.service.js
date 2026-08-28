@@ -128,7 +128,6 @@ let UsersService = class UsersService {
                     select: {
                         id: true,
                         date: true,
-                        morning: true,
                         lunch: true,
                         dinner: true,
                         totalMeal: true,

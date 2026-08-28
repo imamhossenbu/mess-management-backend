@@ -10,9 +10,11 @@ export declare class AuthService {
     register(dto: RegisterDto): Promise<{
         message: string;
         user: {
-            id: string;
-            name: string;
             email: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
             phone: string | null;
             role: import(".prisma/client").$Enums.Role;
             profileImage: string | null;
@@ -20,8 +22,6 @@ export declare class AuthService {
             approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
             joinedDate: Date;
             leftDate: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
     }>;
     login(dto: LoginDto): Promise<{

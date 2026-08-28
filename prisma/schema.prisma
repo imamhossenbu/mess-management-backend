@@ -129,7 +129,6 @@ model Meal {
   userId            String
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   date              DateTime
-  morning           Boolean           @default(false)
   lunch             Boolean           @default(false)
   dinner            Boolean           @default(false)
   totalMeal         Int               @default(0)

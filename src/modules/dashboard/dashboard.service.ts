@@ -282,7 +282,6 @@ export class DashboardService {
       totalPaymentsThisMonth: Number(totalPayments),
       totalDue: Number(totalDue),
       mealRate: Number(mealRate),
-      mealsBreakfast: mealBreakdown.morning,
       mealsLunch: mealBreakdown.lunch,
       mealsDinner: mealBreakdown.dinner,
       inventory: inventory,
@@ -290,7 +289,6 @@ export class DashboardService {
         meals: recentMeals.map((m) => ({
           id: m.id,
           date: m.date,
-          morning: m.morning,
           lunch: m.lunch,
           dinner: m.dinner,
           totalMeal: m.totalMeal,
@@ -390,7 +388,6 @@ export class DashboardService {
       select: {
         id: true,
         date: true,
-        morning: true,
         lunch: true,
         dinner: true,
         totalMeal: true,
@@ -461,7 +458,6 @@ export class DashboardService {
     });
 
     const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
-    const totalMorning = meals.filter((m) => m.morning).length;
     const totalLunch = meals.filter((m) => m.lunch).length;
     const totalDinner = meals.filter((m) => m.dinner).length;
 
@@ -491,7 +487,6 @@ export class DashboardService {
     return {
       date: format(queryDate, "yyyy-MM-dd"),
       totalMeals,
-      totalMorning,
       totalLunch,
       totalDinner,
       totalMarketingCost: Number(totalMarketingCost),
@@ -716,7 +711,6 @@ export class DashboardService {
       meals: meals.map((m) => ({
         id: m.id,
         date: m.date,
-        morning: m.morning,
         lunch: m.lunch,
         dinner: m.dinner,
         totalMeal: m.totalMeal,
@@ -898,7 +892,6 @@ export class DashboardService {
     });
 
     return {
-      morning: meals.filter((m) => m.morning).length,
       lunch: meals.filter((m) => m.lunch).length,
       dinner: meals.filter((m) => m.dinner).length,
     };

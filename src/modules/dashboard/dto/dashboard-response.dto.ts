@@ -61,9 +61,6 @@ export class DashboardStatsDto {
   mealRate: number;
 
   @ApiProperty({ required: false })
-  mealsBreakfast?: number;
-
-  @ApiProperty({ required: false })
   mealsLunch?: number;
 
   @ApiProperty({ required: false })
@@ -121,9 +118,6 @@ export class DailySummaryDto {
 
   @ApiProperty()
   totalMeals: number;
-
-  @ApiProperty()
-  totalMorning: number;
 
   @ApiProperty()
   totalLunch: number;

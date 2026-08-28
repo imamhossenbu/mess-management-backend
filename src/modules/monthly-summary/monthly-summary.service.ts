@@ -106,20 +106,18 @@ export class MonthlySummaryService {
     // 5. Calculate total meals per user
     const userMealMap = new Map<
       string,
-      { totalMeal: number; morning: number; lunch: number; dinner: number }
+      { totalMeal: number; lunch: number; dinner: number }
     >();
 
     meals.forEach((meal) => {
       const existing = userMealMap.get(meal.userId);
       if (existing) {
         existing.totalMeal += meal.totalMeal;
-        existing.morning += meal.morning ? 1 : 0;
         existing.lunch += meal.lunch ? 1 : 0;
         existing.dinner += meal.dinner ? 1 : 0;
       } else {
         userMealMap.set(meal.userId, {
           totalMeal: meal.totalMeal,
-          morning: meal.morning ? 1 : 0,
           lunch: meal.lunch ? 1 : 0,
           dinner: meal.dinner ? 1 : 0,
         });

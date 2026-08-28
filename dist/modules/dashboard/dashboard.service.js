@@ -204,7 +204,6 @@ let DashboardService = class DashboardService {
             totalPaymentsThisMonth: Number(totalPayments),
             totalDue: Number(totalDue),
             mealRate: Number(mealRate),
-            mealsBreakfast: mealBreakdown.morning,
             mealsLunch: mealBreakdown.lunch,
             mealsDinner: mealBreakdown.dinner,
             inventory: inventory,
@@ -212,7 +211,6 @@ let DashboardService = class DashboardService {
                 meals: recentMeals.map((m) => ({
                     id: m.id,
                     date: m.date,
-                    morning: m.morning,
                     lunch: m.lunch,
                     dinner: m.dinner,
                     totalMeal: m.totalMeal,
@@ -299,7 +297,6 @@ let DashboardService = class DashboardService {
             select: {
                 id: true,
                 date: true,
-                morning: true,
                 lunch: true,
                 dinner: true,
                 totalMeal: true,
@@ -362,7 +359,6 @@ let DashboardService = class DashboardService {
             },
         });
         const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
-        const totalMorning = meals.filter((m) => m.morning).length;
         const totalLunch = meals.filter((m) => m.lunch).length;
         const totalDinner = meals.filter((m) => m.dinner).length;
         const marketings = await this.prisma.marketing.findMany({
@@ -385,7 +381,6 @@ let DashboardService = class DashboardService {
         return {
             date: (0, date_fns_1.format)(queryDate, "yyyy-MM-dd"),
             totalMeals,
-            totalMorning,
             totalLunch,
             totalDinner,
             totalMarketingCost: Number(totalMarketingCost),
@@ -565,7 +560,6 @@ let DashboardService = class DashboardService {
             meals: meals.map((m) => ({
                 id: m.id,
                 date: m.date,
-                morning: m.morning,
                 lunch: m.lunch,
                 dinner: m.dinner,
                 totalMeal: m.totalMeal,
@@ -722,7 +716,6 @@ let DashboardService = class DashboardService {
             },
         });
         return {
-            morning: meals.filter((m) => m.morning).length,
             lunch: meals.filter((m) => m.lunch).length,
             dinner: meals.filter((m) => m.dinner).length,
         };

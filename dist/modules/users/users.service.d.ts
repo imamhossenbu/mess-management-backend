@@ -50,7 +50,6 @@ export declare class UsersService {
         meals: {
             id: string;
             date: Date;
-            morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;

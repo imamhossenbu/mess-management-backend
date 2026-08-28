@@ -12,10 +12,6 @@ export class CreateMealDto {
   @IsOptional()
   date?: string;
 
-  @ApiProperty({ default: false })
-  @IsBoolean()
-  @IsOptional()
-  morning?: boolean;
 
   @ApiProperty({ default: false })
   @IsBoolean()

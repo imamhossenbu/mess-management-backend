@@ -13,11 +13,6 @@ export class BulkMealEntryDto {
   @IsDateString()
   date: string;
 
-  @ApiProperty({ description: "Breakfast (সকাল)" })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  morningUserIds?: string[];
 
   @ApiProperty({ description: "Lunch (দুপুর)" })
   @IsArray()
@@ -37,9 +32,9 @@ export class SingleMealEntryDto {
   @IsDateString()
   date: string;
 
-  @ApiProperty({ enum: ["morning", "lunch", "dinner"] })
+  @ApiProperty({ enum: ["lunch", "dinner"] })
   @IsString()
-  mealType: "morning" | "lunch" | "dinner";
+  mealType: "lunch" | "dinner";
 
   @ApiProperty({ type: [String] })
   @IsArray()

@@ -79,14 +79,12 @@ let MonthlySummaryService = class MonthlySummaryService {
             const existing = userMealMap.get(meal.userId);
             if (existing) {
                 existing.totalMeal += meal.totalMeal;
-                existing.morning += meal.morning ? 1 : 0;
                 existing.lunch += meal.lunch ? 1 : 0;
                 existing.dinner += meal.dinner ? 1 : 0;
             }
             else {
                 userMealMap.set(meal.userId, {
                     totalMeal: meal.totalMeal,
-                    morning: meal.morning ? 1 : 0,
                     lunch: meal.lunch ? 1 : 0,
                     dinner: meal.dinner ? 1 : 0,
                 });

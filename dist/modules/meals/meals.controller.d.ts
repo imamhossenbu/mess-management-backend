@@ -12,7 +12,6 @@ export declare class MealsController {
         };
         id: string;
         date: Date;
-        morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
@@ -24,7 +23,6 @@ export declare class MealsController {
         date: string;
         totalUsers: number;
         summary: {
-            totalMorning: number;
             totalLunch: number;
             totalDinner: number;
             totalMeals: number;
@@ -38,7 +36,6 @@ export declare class MealsController {
             };
             id: string;
             date: Date;
-            morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
@@ -49,10 +46,9 @@ export declare class MealsController {
     }>;
     singleMealEntry(singleMealDto: SingleMealEntryDto): Promise<{
         date: string;
-        mealType: "morning" | "lunch" | "dinner";
+        mealType: "lunch" | "dinner";
         totalUsers: number;
         summary: {
-            totalMorning: number;
             totalLunch: number;
             totalDinner: number;
             totalMeals: number;
@@ -66,7 +62,6 @@ export declare class MealsController {
             };
             id: string;
             date: Date;
-            morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
@@ -84,7 +79,6 @@ export declare class MealsController {
         };
         id: string;
         date: Date;
-        morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
@@ -94,7 +88,6 @@ export declare class MealsController {
     }[]>;
     getDailySummary(date?: string): Promise<{
         date: string;
-        totalMorning: number;
         totalLunch: number;
         totalDinner: number;
         totalMeals: number;
@@ -111,7 +104,6 @@ export declare class MealsController {
             };
             id: string;
             date: Date;
-            morning: boolean;
             lunch: boolean;
             dinner: boolean;
             totalMeal: number;
@@ -123,7 +115,6 @@ export declare class MealsController {
     getMonthlySummary(year?: number, month?: number): Promise<{
         month: string;
         year: number;
-        totalMorning: number;
         totalLunch: number;
         totalDinner: number;
         totalMeals: number;
@@ -131,7 +122,6 @@ export declare class MealsController {
         userSummaries: {
             userId: string;
             userName: string;
-            morning: number;
             lunch: number;
             dinner: number;
             totalMeals: number;
@@ -182,7 +172,6 @@ export declare class MealsController {
         };
         id: string;
         date: Date;
-        morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
@@ -199,7 +188,6 @@ export declare class MealsController {
         };
         id: string;
         date: Date;
-        morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
@@ -216,7 +204,6 @@ export declare class MealsController {
         };
         id: string;
         date: Date;
-        morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;
@@ -233,7 +220,6 @@ export declare class MealsController {
         };
         id: string;
         date: Date;
-        morning: boolean;
         lunch: boolean;
         dinner: boolean;
         totalMeal: number;

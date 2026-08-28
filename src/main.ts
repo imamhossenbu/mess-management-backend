@@ -1,3 +1,88 @@
+// // src/main.ts
+// import { NestFactory } from "@nestjs/core";
+// import { AppModule } from "./app.module";
+// import { ValidationPipe } from "@nestjs/common";
+// import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+
+// async function bootstrap() {
+//   const app = await NestFactory.create(AppModule);
+
+//   // Complete CORS configuration
+//   app.enableCors({
+//     origin: ["http://localhost:3000", "http://localhost:3001", "https://mess-management-frontend-cf7l.onrender.com"],
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     allowedHeaders: [
+//       "Content-Type",
+//       "Authorization",
+//       "X-Mess-Id",
+//       "Cache-Control",
+//       "Accept",
+//       "Origin",
+//       "X-Requested-With",
+//     ],
+//     exposedHeaders: ["Content-Type", "Authorization"],
+//   });
+
+//   // Global validation pipe
+//   app.useGlobalPipes(
+//     new ValidationPipe({
+//       whitelist: true,
+//       transform: true,
+//       forbidNonWhitelisted: true,
+//       transformOptions: {
+//         enableImplicitConversion: true,
+//       },
+//     }),
+//   );
+
+//   const config = new DocumentBuilder()
+//     .setTitle("Mess Management System API")
+//     .setDescription("Complete API documentation for Mess Management System")
+//     .setVersion("1.0")
+//     .addBearerAuth(
+//       {
+//         type: "http",
+//         scheme: "bearer",
+//         bearerFormat: "JWT",
+//         name: "JWT",
+//         description: "Enter JWT token",
+//         in: "header",
+//       },
+//       "JWT-auth",
+//     )
+//     .addTag("auth", "Authentication endpoints")
+//     .addTag("users", "User management endpoints")
+//     .addTag("meals", "Meal management endpoints")
+//     .addTag("marketings", "Marketing/Bazar management endpoints")
+//     .addTag("inventory", "Inventory management endpoints")
+//     .addTag("utility-bills", "Utility bills management endpoints")
+//     .addTag("payments", "Payment management endpoints")
+//     .addTag("shop-debts", "Shop debt management endpoints")
+//     .addTag("monthly-summary", "Monthly summary endpoints")
+//     .addTag("dashboard", "Dashboard analytics endpoints")
+//     .addTag("notifications", "Notification management endpoints")
+//     .addTag("health", "Health check endpoints")
+//     .build();
+
+//   const document = SwaggerModule.createDocument(app, config);
+//   SwaggerModule.setup("api-docs", app, document, {
+//     swaggerOptions: {
+//       persistAuthorization: true,
+//     },
+//   });
+
+//   const port = process.env.PORT || 5001;
+//   await app.listen(port, () => {
+//     console.log(`🚀 Application is running on: http://localhost:${port}`);
+//     console.log(`📚 Swagger documentation: http://localhost:${port}/api-docs`);
+//   });
+// }
+// bootstrap();
+
+
+
+
 // src/main.ts
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
@@ -7,11 +92,28 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Complete CORS configuration
+  // =========================
+  // CORS Configuration
+  // =========================
   app.enableCors({
-    origin: ["http://localhost:3000", "http://localhost:3001", "https://mess-management-frontend-cf7l.onrender.com"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://mess-management-frontend-cf7l.onrender.com",
+    ],
+
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
+    methods: [
+      "GET",
+      "HEAD",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -21,25 +123,39 @@ async function bootstrap() {
       "Origin",
       "X-Requested-With",
     ],
-    exposedHeaders: ["Content-Type", "Authorization"],
+
+    exposedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   });
 
-  // Global validation pipe
+  // =========================
+  // Global Validation Pipe
+  // =========================
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+
       transformOptions: {
         enableImplicitConversion: true,
       },
     }),
   );
 
+  // =========================
+  // Swagger Configuration
+  // =========================
   const config = new DocumentBuilder()
     .setTitle("Mess Management System API")
-    .setDescription("Complete API documentation for Mess Management System")
+    .setDescription(
+      "Complete API documentation for Mess Management System",
+    )
     .setVersion("1.0")
+
+    // JWT Authentication
     .addBearerAuth(
       {
         type: "http",
@@ -51,6 +167,8 @@ async function bootstrap() {
       },
       "JWT-auth",
     )
+
+    // Swagger Tags
     .addTag("auth", "Authentication endpoints")
     .addTag("users", "User management endpoints")
     .addTag("meals", "Meal management endpoints")
@@ -65,17 +183,40 @@ async function bootstrap() {
     .addTag("health", "Health check endpoints")
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api-docs", app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
+  const document = SwaggerModule.createDocument(
+    app,
+    config,
+  );
 
+  SwaggerModule.setup(
+    "api-docs",
+    app,
+    document,
+    {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    },
+  );
+
+  // =========================
+  // Start Server
+  // =========================
   const port = process.env.PORT || 5001;
-  await app.listen(port, () => {
-    console.log(`🚀 Application is running on: http://localhost:${port}`);
-    console.log(`📚 Swagger documentation: http://localhost:${port}/api-docs`);
-  });
+
+  await app.listen(
+    port,
+    "0.0.0.0",
+    () => {
+      console.log(
+        `🚀 Application is running on port ${port}`,
+      );
+
+      console.log(
+        `📚 Swagger documentation available at /api-docs`,
+      );
+    },
+  );
 }
+
 bootstrap();

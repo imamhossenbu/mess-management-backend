@@ -142,17 +142,8 @@ export class MonthlySummaryService {
     });
 
     // 10. Get previous month's due
-    const previousMonth = new Date(year, month - 2, 1);
-    const previousSummaries = await this.prisma.monthlySummary.findMany({
-      where: {
-        monthYear: previousMonth,
-      },
-    });
-
+    // DISABLED as per user request: balances do not carry over to the next month's calculation automatically.
     const previousDueMap = new Map<string, number>();
-    previousSummaries.forEach((summary) => {
-      previousDueMap.set(summary.userId, Number(summary.currentDue));
-    });
 
     // 11. Generate user summaries
     const userSummaries: UserMonthlySummaryDto[] = users.map((user) => {
@@ -166,8 +157,8 @@ export class MonthlySummaryService {
       const utilityShare = perPersonUtility;
       const totalBill = mealBill + utilityShare;
       const totalPaid = userPaymentMap.get(user.id) || 0;
-      const previousDue = previousDueMap.get(user.id) || 0;
-      const currentDue = totalBill - totalPaid + previousDue;
+      const previousDue = 0;
+      const currentDue = totalBill - totalPaid;
 
       return {
         userId: user.id,

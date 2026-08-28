@@ -102,16 +102,7 @@ let MonthlySummaryService = class MonthlySummaryService {
             const existing = userPaymentMap.get(payment.userId) || 0;
             userPaymentMap.set(payment.userId, existing + Number(payment.amount));
         });
-        const previousMonth = new Date(year, month - 2, 1);
-        const previousSummaries = await this.prisma.monthlySummary.findMany({
-            where: {
-                monthYear: previousMonth,
-            },
-        });
         const previousDueMap = new Map();
-        previousSummaries.forEach((summary) => {
-            previousDueMap.set(summary.userId, Number(summary.currentDue));
-        });
         const userSummaries = users.map((user) => {
             const userMeal = userMealMap.get(user.id) || {
                 totalMeal: 0,
@@ -123,8 +114,8 @@ let MonthlySummaryService = class MonthlySummaryService {
             const utilityShare = perPersonUtility;
             const totalBill = mealBill + utilityShare;
             const totalPaid = userPaymentMap.get(user.id) || 0;
-            const previousDue = previousDueMap.get(user.id) || 0;
-            const currentDue = totalBill - totalPaid + previousDue;
+            const previousDue = 0;
+            const currentDue = totalBill - totalPaid;
             return {
                 userId: user.id,
                 userName: user.name,

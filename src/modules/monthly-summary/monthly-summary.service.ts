@@ -20,11 +20,11 @@ export class MonthlySummaryService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   // ==================== GENERATE MONTHLY SUMMARY ====================
 
-  async generateMonthlySummary(year: number, month: number) {
+  async generateMonthlySummary(year: number, month: number, adjustmentFromPrevious: number, adjustmentToNext: number) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 

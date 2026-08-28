@@ -84,7 +84,10 @@ let MonthlySummaryService = class MonthlySummaryService {
             }
         });
         const totalMeals = Array.from(userMealMap.values()).reduce((sum, u) => sum + u.totalMeal, 0);
-        const mealRate = totalMeals > 0 ? totalMarketCost / totalMeals : 0;
+        const adjPrev = Number(adjustmentFromPrevious) || 0;
+        const adjNext = Number(adjustmentToNext) || 0;
+        const netMarketCost = totalMarketCost + adjPrev - adjNext;
+        const mealRate = totalMeals > 0 ? netMarketCost / totalMeals : 0;
         const perPersonUtility = totalUtilityCost / users.length;
         const payments = await this.prisma.payment.findMany({
             where: {
@@ -142,6 +145,8 @@ let MonthlySummaryService = class MonthlySummaryService {
             mealRate,
             totalMarketCost,
             totalUtilityCost,
+            adjustmentFromPrevious: adjPrev,
+            adjustmentToNext: adjNext,
         });
         await this.sendNotifications(year, month, userSummaries);
         return {
@@ -178,6 +183,8 @@ let MonthlySummaryService = class MonthlySummaryService {
                     previousDue: summary.previousDue,
                     currentDue: summary.currentDue,
                     carryToNext: summary.carryToNext,
+                    adjustmentFromPrevious: totals.adjustmentFromPrevious,
+                    adjustmentToNext: totals.adjustmentToNext,
                 },
             });
         }
@@ -267,6 +274,8 @@ let MonthlySummaryService = class MonthlySummaryService {
                 totalBill: 0,
                 totalPaid: 0,
                 totalDue: 0,
+                adjustmentFromPrevious: 0,
+                adjustmentToNext: 0,
                 userSummaries: [],
             };
         }
@@ -301,6 +310,8 @@ let MonthlySummaryService = class MonthlySummaryService {
             totalBill,
             totalPaid,
             totalDue,
+            adjustmentFromPrevious: summaries.length > 0 ? Number(summaries[0].adjustmentFromPrevious) : 0,
+            adjustmentToNext: summaries.length > 0 ? Number(summaries[0].adjustmentToNext) : 0,
             userSummaries,
         };
     }

@@ -107,6 +107,14 @@ __decorate([
     __metadata("design:type", Number)
 ], MonthlySummaryResponseDto.prototype, "totalDue", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], MonthlySummaryResponseDto.prototype, "adjustmentFromPrevious", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], MonthlySummaryResponseDto.prototype, "adjustmentToNext", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ type: [UserMonthlySummaryDto] }),
     __metadata("design:type", Array)
 ], MonthlySummaryResponseDto.prototype, "userSummaries", void 0);

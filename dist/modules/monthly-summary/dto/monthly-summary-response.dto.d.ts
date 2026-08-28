@@ -23,6 +23,8 @@ export declare class MonthlySummaryResponseDto {
     totalBill: number;
     totalPaid: number;
     totalDue: number;
+    adjustmentFromPrevious: number;
+    adjustmentToNext: number;
     userSummaries: UserMonthlySummaryDto[];
 }
 export declare class GenerateMonthlySummaryDto {

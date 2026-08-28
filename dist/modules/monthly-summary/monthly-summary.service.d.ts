@@ -30,8 +30,8 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
-            name: string;
             id: string;
+            name: string;
             phone: string;
         };
         id: string;
@@ -53,8 +53,8 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
-            name: string;
             id: string;
+            name: string;
             phone: string;
         };
         id: string;
@@ -76,8 +76,8 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
-            name: string;
             id: string;
+            name: string;
             phone: string;
         };
         id: string;

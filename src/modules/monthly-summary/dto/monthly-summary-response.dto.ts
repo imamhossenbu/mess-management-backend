@@ -72,6 +72,12 @@ export class MonthlySummaryResponseDto {
   @ApiProperty()
   totalDue: number;
 
+  @ApiProperty()
+  adjustmentFromPrevious: number;
+
+  @ApiProperty()
+  adjustmentToNext: number;
+
   @ApiProperty({ type: [UserMonthlySummaryDto] })
   userSummaries: UserMonthlySummaryDto[];
 }

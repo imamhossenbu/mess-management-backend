@@ -117,10 +117,12 @@ export class MonthlySummaryService {
       0,
     );
 
-    // 7. Calculate meal rate
-    const mealRate = totalMeals > 0 ? totalMarketCost / totalMeals : 0;
-
-    // 8. Calculate per person utility share
+    // 7. Calculate total mess expense and meal rate
+    const adjPrev = Number(adjustmentFromPrevious) || 0;
+    const adjNext = Number(adjustmentToNext) || 0;
+    const netMarketCost = totalMarketCost + adjPrev - adjNext;
+    
+    const mealRate = totalMeals > 0 ? netMarketCost / totalMeals : 0;
     const perPersonUtility = totalUtilityCost / users.length;
 
     // 9. Get payments for this month
@@ -189,6 +191,8 @@ export class MonthlySummaryService {
       mealRate,
       totalMarketCost,
       totalUtilityCost,
+      adjustmentFromPrevious: adjPrev,
+      adjustmentToNext: adjNext,
     });
 
     // Send notifications
@@ -221,6 +225,8 @@ export class MonthlySummaryService {
       mealRate: number;
       totalMarketCost: number;
       totalUtilityCost: number;
+      adjustmentFromPrevious: number;
+      adjustmentToNext: number;
     },
   ) {
     const monthYear = new Date(year, month - 1, 1);
@@ -247,6 +253,8 @@ export class MonthlySummaryService {
           previousDue: summary.previousDue,
           currentDue: summary.currentDue,
           carryToNext: summary.carryToNext,
+          adjustmentFromPrevious: totals.adjustmentFromPrevious,
+          adjustmentToNext: totals.adjustmentToNext,
         },
       });
     }
@@ -363,6 +371,8 @@ export class MonthlySummaryService {
         totalBill: 0,
         totalPaid: 0,
         totalDue: 0,
+        adjustmentFromPrevious: 0,
+        adjustmentToNext: 0,
         userSummaries: [],
       };
     }
@@ -415,6 +425,8 @@ export class MonthlySummaryService {
       totalBill,
       totalPaid,
       totalDue,
+      adjustmentFromPrevious: summaries.length > 0 ? Number(summaries[0].adjustmentFromPrevious) : 0,
+      adjustmentToNext: summaries.length > 0 ? Number(summaries[0].adjustmentToNext) : 0,
       userSummaries,
     };
   }

@@ -3,5 +3,6 @@ export declare class UpdateUserDto {
     phone?: string;
     email?: string;
     isActive?: boolean;
+    approvalStatus?: string;
     role?: string;
 }

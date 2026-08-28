@@ -6,18 +6,16 @@ export declare class UsersController {
     create(createUserDto: CreateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
         userBalance: {
-            userId: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             balance: import("@prisma/client/runtime/library").Decimal;
             lastUpdated: Date;
+            userId: string;
         };
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -25,14 +23,14 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     findAll(): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -40,6 +38,8 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
@@ -57,18 +57,18 @@ export declare class UsersController {
                 createdAt: Date;
                 updatedAt: Date;
                 note: string | null;
-                quantity: import("@prisma/client/runtime/library").Decimal;
                 marketingId: string;
                 itemName: string;
+                quantity: import("@prisma/client/runtime/library").Decimal;
                 unit: import(".prisma/client").$Enums.Unit;
                 price: import("@prisma/client/runtime/library").Decimal;
                 totalPrice: import("@prisma/client/runtime/library").Decimal;
             }[];
         } & {
-            userId: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             date: Date;
             note: string | null;
             imageUrl: string | null;
@@ -83,11 +83,9 @@ export declare class UsersController {
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string;
         }[];
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -95,14 +93,14 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -110,14 +108,14 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -125,14 +123,14 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     uploadProfileImage(req: any, file: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -140,14 +138,14 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     removeProfileImage(req: any): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -155,14 +153,14 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     remove(id: string): Promise<{
         balance: number | import("@prisma/client/runtime/library").Decimal;
-        email: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
+        email: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         profileImage: string | null;
@@ -170,6 +168,8 @@ export declare class UsersController {
         approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
         joinedDate: Date;
         leftDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     hardDelete(id: string): Promise<{
         message: string;

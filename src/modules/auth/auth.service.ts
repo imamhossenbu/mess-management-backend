@@ -41,7 +41,7 @@ export class AuthService {
         password: hashedPassword,
         profileImage: null,
         isActive: true,
-        approvalStatus: "APPROVED",
+        approvalStatus: "PENDING",
         role: "MEMBER", // Default role
         userBalance: {
           create: {

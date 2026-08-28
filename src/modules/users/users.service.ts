@@ -186,6 +186,7 @@ export class UsersService {
         email: updateUserDto.email,
         isActive: updateUserDto.isActive,
         role: updateUserDto.role as any,
+        approvalStatus: updateUserDto.approvalStatus as any,
       },
       include: {
         userBalance: true,
@@ -463,6 +464,22 @@ export class UsersService {
 
     await this.prisma.emailLog.deleteMany({
       where: { userId: id },
+    });
+
+    // Clear foreign keys that don't cascade delete
+    await this.prisma.utilityBill.updateMany({
+      where: { paidBy: id },
+      data: { paidBy: null },
+    });
+
+    await this.prisma.shopDebt.updateMany({
+      where: { recordedById: id },
+      data: { recordedById: null },
+    });
+
+    await this.prisma.shopPayment.updateMany({
+      where: { paidById: id },
+      data: { paidById: null },
     });
 
     await this.prisma.user.delete({

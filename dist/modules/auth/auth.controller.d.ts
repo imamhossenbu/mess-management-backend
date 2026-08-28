@@ -8,11 +8,9 @@ export declare class AuthController {
     register(dto: RegisterDto): Promise<{
         message: string;
         user: {
-            email: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             name: string;
+            email: string;
             phone: string | null;
             role: import(".prisma/client").$Enums.Role;
             profileImage: string | null;
@@ -20,6 +18,8 @@ export declare class AuthController {
             approvalStatus: import(".prisma/client").$Enums.ApprovalStatus;
             joinedDate: Date;
             leftDate: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     login(dto: LoginDto): Promise<{

@@ -192,6 +192,7 @@ let UsersService = class UsersService {
                 email: updateUserDto.email,
                 isActive: updateUserDto.isActive,
                 role: updateUserDto.role,
+                approvalStatus: updateUserDto.approvalStatus,
             },
             include: {
                 userBalance: true,
@@ -412,6 +413,18 @@ let UsersService = class UsersService {
         });
         await this.prisma.emailLog.deleteMany({
             where: { userId: id },
+        });
+        await this.prisma.utilityBill.updateMany({
+            where: { paidBy: id },
+            data: { paidBy: null },
+        });
+        await this.prisma.shopDebt.updateMany({
+            where: { recordedById: id },
+            data: { recordedById: null },
+        });
+        await this.prisma.shopPayment.updateMany({
+            where: { paidById: id },
+            data: { paidById: null },
         });
         await this.prisma.user.delete({
             where: { id },

@@ -26,5 +26,10 @@ export class UpdateUserDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
+  approvalStatus?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
   role?: string;
 }

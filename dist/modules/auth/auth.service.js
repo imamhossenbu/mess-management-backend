@@ -70,7 +70,7 @@ let AuthService = class AuthService {
                 password: hashedPassword,
                 profileImage: null,
                 isActive: true,
-                approvalStatus: "APPROVED",
+                approvalStatus: "PENDING",
                 role: "MEMBER",
                 userBalance: {
                     create: {

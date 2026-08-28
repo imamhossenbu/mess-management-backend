@@ -1,16 +1,14 @@
-// src/modules/shop-debts/dto/create-shop-debt.dto.ts
+// src/modules/shop-debts/dto/create-shop-payment.dto.ts
 import {
   IsString,
   IsNumber,
   IsOptional,
-  IsEnum,
   Min,
   IsDateString,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { DebtStatus } from "@prisma/client";
 
-export class CreateShopDebtDto {
+export class CreateShopPaymentDto {
   @ApiProperty({ example: "MR Traders" })
   @IsString()
   shopName: string;
@@ -20,18 +18,12 @@ export class CreateShopDebtDto {
   @IsOptional()
   date?: string;
 
-  @ApiProperty({ example: "চাল, ডাল, তেল, মসলা", required: false })
-  @IsString()
-  @IsOptional()
-  itemDetails?: string;
-
   @ApiProperty({ example: 5000 })
   @IsNumber()
   @Min(0)
   amount: number;
 
-
-  @ApiProperty({ example: "আগস্ট মাসের বাকি", required: false })
+  @ApiProperty({ example: "Paid via bKash", required: false })
   @IsString()
   @IsOptional()
   note?: string;

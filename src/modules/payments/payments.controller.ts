@@ -42,7 +42,7 @@ export class PaymentsController {
   }
 
   @Get("balances")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Get all user balances" })
   async getAllUserBalances() {
     return this.paymentsService.getAllUserBalances();
@@ -105,7 +105,7 @@ export class PaymentsController {
   }
 
   @Patch(":id")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Update payment" })
   async update(
     @Param("id") id: string,
@@ -115,7 +115,7 @@ export class PaymentsController {
   }
 
   @Delete(":id")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete payment" })
   async remove(@Param("id") id: string) {

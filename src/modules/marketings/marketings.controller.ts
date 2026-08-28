@@ -149,7 +149,7 @@ export class MarketingsController {
   }
 
   @Delete("date/:date")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete all marketing entries for a date" })
   async removeByDate(@Param("date") date: string) {

@@ -76,8 +76,8 @@ __decorate([
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Get user monthly summaries" }),
     __param(0, (0, common_1.Param)("userId")),
-    __param(1, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(2, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)("year", new common_1.ParseIntPipe({ optional: true }))),
+    __param(2, (0, common_1.Query)("month", new common_1.ParseIntPipe({ optional: true }))),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)

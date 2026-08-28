@@ -1,25 +1,23 @@
-// src/modules/shop-debts/dto/update-shop-debt.dto.ts
+// src/modules/shop-debts/dto/update-shop-payment.dto.ts
 import {
   IsString,
   IsNumber,
   IsOptional,
-  IsEnum,
   Min,
   IsDateString,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { DebtStatus } from "@prisma/client";
 
-export class UpdateShopDebtDto {
+export class UpdateShopPaymentDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   shopName?: string;
 
   @ApiProperty({ required: false })
-  @IsString()
+  @IsDateString()
   @IsOptional()
-  itemDetails?: string;
+  date?: string;
 
   @ApiProperty({ required: false })
   @IsNumber()
@@ -27,10 +25,6 @@ export class UpdateShopDebtDto {
   @IsOptional()
   amount?: number;
 
-  @ApiProperty({ required: false })
-  @IsDateString()
-  @IsOptional()
-  date?: string;
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()

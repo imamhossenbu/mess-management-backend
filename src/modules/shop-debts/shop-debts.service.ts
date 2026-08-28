@@ -6,8 +6,8 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateShopDebtDto, UpdateShopDebtDto } from "./dto";
-import { DebtStatus } from "@prisma/client";
-import { startOfDay, endOfDay, format } from "date-fns";
+import { CreateShopPaymentDto } from "./dto/create-shop-payment.dto";
+import { format } from "date-fns";
 import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
@@ -17,31 +17,30 @@ export class ShopDebtsService {
     private notificationsService: NotificationsService,
   ) {}
 
-  // ==================== CREATE ====================
+  // ==================== CREATE DEBT ====================
 
-  async create(createShopDebtDto: CreateShopDebtDto) {
-    const { shopName, date, itemDetails, amount, status, note } =
-      createShopDebtDto;
-
+  async createDebt(createShopDebtDto: CreateShopDebtDto, userId: string) {
+    const { shopName, date, itemDetails, amount, note } = createShopDebtDto;
     const debtDate = date ? new Date(date) : new Date();
 
     const debt = await this.prisma.shopDebt.create({
       data: {
-        shopName,
+        shopName: shopName || "Local Shop",
         date: debtDate,
         itemDetails,
         amount,
-        status: status || DebtStatus.DUE,
         note,
+        recordedById: userId,
       },
+      include: {
+        recordedBy: {
+          select: { name: true }
+        }
+      }
     });
 
-    // Send notification to admins
     const admins = await this.prisma.user.findMany({
-      where: {
-        role: "ADMIN",
-        isActive: true,
-      },
+      where: { role: "ADMIN", isActive: true },
     });
 
     for (const admin of admins) {
@@ -49,67 +48,37 @@ export class ShopDebtsService {
         userId: admin.id,
         type: "SYSTEM",
         title: "New Shop Debt Added",
-        message: `${shopName}: ${amount} TK debt added for ${format(debtDate, "yyyy-MM-dd")}`,
-        link: `/shop-debts/${debt.id}`,
+        message: `${debt.shopName}: ${amount} TK debt added by ${debt.recordedBy?.name || 'Unknown'}`,
+        link: `/shop-debts`,
       });
-    }
-
-    // Check if total debt for this shop is high
-    const shopDebts = await this.prisma.shopDebt.findMany({
-      where: {
-        shopName,
-        status: DebtStatus.DUE,
-      },
-    });
-
-    const totalShopDebt = shopDebts.reduce(
-      (sum, d) => sum + Number(d.amount),
-      0,
-    );
-
-    if (totalShopDebt > 10000) {
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId: admin.id,
-          type: "SYSTEM",
-          title: "High Shop Debt Alert",
-          message: `${shopName} has total due of ${totalShopDebt} TK. Please review.`,
-          link: `/shop-debts/shop/${shopName}`,
-        });
-      }
     }
 
     return debt;
   }
 
-  // ==================== PAY ====================
+  // ==================== CREATE PAYMENT ====================
 
-  async payDebt(id: string, paidDate?: string) {
-    const debt = await this.prisma.shopDebt.findUnique({
-      where: { id },
-    });
+  async createPayment(createShopPaymentDto: CreateShopPaymentDto, userId: string) {
+    const { shopName, date, amount, note } = createShopPaymentDto;
+    const paymentDate = date ? new Date(date) : new Date();
 
-    if (!debt) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
-    }
-
-    if (debt.status === DebtStatus.PAID) {
-      throw new BadRequestException("This debt is already paid");
-    }
-
-    const updated = await this.prisma.shopDebt.update({
-      where: { id },
+    const payment = await this.prisma.shopPayment.create({
       data: {
-        status: DebtStatus.PAID,
-        paidDate: paidDate ? new Date(paidDate) : new Date(),
+        shopName: shopName || "Local Shop",
+        date: paymentDate,
+        amount,
+        note,
+        paidById: userId,
       },
+      include: {
+        paidBy: {
+          select: { name: true }
+        }
+      }
     });
 
     const admins = await this.prisma.user.findMany({
-      where: {
-        role: "ADMIN",
-        isActive: true,
-      },
+      where: { role: "ADMIN", isActive: true },
     });
 
     for (const admin of admins) {
@@ -117,118 +86,41 @@ export class ShopDebtsService {
         userId: admin.id,
         type: "SYSTEM",
         title: "Shop Debt Paid",
-        message: `${debt.shopName}: ${debt.amount} TK debt has been paid.`,
-        link: `/shop-debts/${id}`,
+        message: `${payment.shopName}: ${amount} TK paid by ${payment.paidBy?.name || 'Unknown'}`,
+        link: `/shop-debts`,
       });
     }
 
-    return updated;
+    return payment;
   }
 
-  // ==================== FIND ====================
-
-  async findAll() {
-    return this.prisma.shopDebt.findMany({
-      orderBy: {
-        date: "desc",
-      },
-    });
-  }
-
-  async findOne(id: string) {
-    const debt = await this.prisma.shopDebt.findUnique({
-      where: { id },
-    });
-
-    if (!debt) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
-    }
-
-    return debt;
-  }
-
-  async findByShop(shopName: string) {
-    return this.prisma.shopDebt.findMany({
-      where: {
-        shopName: {
-          contains: shopName,
-          mode: "insensitive",
-        },
-      },
-      orderBy: {
-        date: "desc",
-      },
-    });
-  }
-
-  async findByDate(date: Date) {
-    const start = startOfDay(date);
-    const end = endOfDay(date);
-
-    return this.prisma.shopDebt.findMany({
-      where: {
-        date: {
-          gte: start,
-          lte: end,
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  }
-
-  async findByMonth(year: number, month: number) {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-
-    return this.prisma.shopDebt.findMany({
-      where: {
-        date: {
-          gte: startOfDay(startDate),
-          lte: endOfDay(endDate),
-        },
-      },
-      orderBy: {
-        date: "desc",
-      },
-    });
-  }
+  // ==================== GET SUMMARY ====================
 
   async getSummary() {
     const allDebts = await this.prisma.shopDebt.findMany();
+    const allPayments = await this.prisma.shopPayment.findMany();
 
-    const totalDue = allDebts
-      .filter((d) => d.status === DebtStatus.DUE)
-      .reduce((sum, d) => sum + Number(d.amount), 0);
-
-    const totalPaid = allDebts
-      .filter((d) => d.status === DebtStatus.PAID)
-      .reduce((sum, d) => sum + Number(d.amount), 0);
-
-    const totalAmount = allDebts.reduce((sum, d) => sum + Number(d.amount), 0);
+    const totalDebt = allDebts.reduce((sum, d) => sum + Number(d.amount), 0);
+    const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const currentDue = totalDebt - totalPaid;
 
     const shopMap = new Map<
       string,
-      { totalDue: number; totalPaid: number; totalAmount: number }
+      { totalDebt: number; totalPaid: number; currentDue: number }
     >();
 
     allDebts.forEach((debt) => {
-      const existing = shopMap.get(debt.shopName);
-      if (existing) {
-        existing.totalAmount += Number(debt.amount);
-        if (debt.status === DebtStatus.DUE) {
-          existing.totalDue += Number(debt.amount);
-        } else {
-          existing.totalPaid += Number(debt.amount);
-        }
-      } else {
-        shopMap.set(debt.shopName, {
-          totalAmount: Number(debt.amount),
-          totalDue: debt.status === DebtStatus.DUE ? Number(debt.amount) : 0,
-          totalPaid: debt.status === DebtStatus.PAID ? Number(debt.amount) : 0,
-        });
-      }
+      const existing = shopMap.get(debt.shopName) || { totalDebt: 0, totalPaid: 0, currentDue: 0 };
+      existing.totalDebt += Number(debt.amount);
+      existing.currentDue += Number(debt.amount);
+      shopMap.set(debt.shopName, existing);
+    });
+
+    allPayments.forEach((payment) => {
+      const existing = shopMap.get(payment.shopName) || { totalDebt: 0, totalPaid: 0, currentDue: 0 };
+      existing.totalPaid += Number(payment.amount);
+      existing.currentDue -= Number(payment.amount);
+      shopMap.set(payment.shopName, existing);
     });
 
     const shopWiseSummary = Array.from(shopMap.entries()).map(
@@ -238,158 +130,115 @@ export class ShopDebtsService {
       }),
     );
 
-    if (totalDue > 20000) {
-      const admins = await this.prisma.user.findMany({
-        where: {
-          role: "ADMIN",
-          isActive: true,
-        },
-      });
-
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId: admin.id,
-          type: "SYSTEM",
-          title: "High Total Shop Debt Alert",
-          message: `Total shop debt is ${totalDue} TK across all shops. Please review.`,
-          link: "/shop-debts",
-        });
-      }
-    }
-
     return {
-      totalDue,
-      totalPaid,
-      totalAmount,
-      shopWiseSummary: shopWiseSummary.sort((a, b) => b.totalDue - a.totalDue),
-    };
-  }
-
-  async getMonthlySummary(year: number, month: number) {
-    const debts = await this.findByMonth(year, month);
-
-    const totalDebt = debts
-      .filter((d) => d.status === DebtStatus.DUE)
-      .reduce((sum, d) => sum + Number(d.amount), 0);
-
-    const totalPaid = debts
-      .filter((d) => d.status === DebtStatus.PAID)
-      .reduce((sum, d) => sum + Number(d.amount), 0);
-
-    const currentDue = debts.reduce((sum, d) => sum + Number(d.amount), 0);
-
-    return {
-      month: format(new Date(year, month - 1, 1), "MMMM"),
-      year,
       totalDebt,
       totalPaid,
       currentDue,
-      debts,
+      shopWiseSummary: shopWiseSummary.sort((a, b) => b.currentDue - a.currentDue),
     };
   }
 
-  // ==================== UPDATE ====================
+  // ==================== GET MONTHLY DATA ====================
 
-  async update(id: string, updateShopDebtDto: UpdateShopDebtDto) {
-    const existing = await this.prisma.shopDebt.findUnique({
-      where: { id },
+  async getMonthlyData(year: number, month: number) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    const debts = await this.prisma.shopDebt.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        recordedBy: {
+          select: { name: true }
+        }
+      },
+      orderBy: { date: "desc" },
     });
 
-    if (!existing) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
-    }
+    const payments = await this.prisma.shopPayment.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        paidBy: {
+          select: { name: true }
+        }
+      },
+      orderBy: { date: "desc" },
+    });
 
-    const updated = await this.prisma.shopDebt.update({
+    return {
+      month: format(startDate, "MMMM"),
+      year,
+      debts: debts.map(d => ({
+        ...d,
+        amount: Number(d.amount),
+        recordedByName: d.recordedBy?.name || "Unknown"
+      })),
+      payments: payments.map(p => ({
+        ...p,
+        amount: Number(p.amount),
+        paidByName: p.paidBy?.name || "Unknown"
+      })),
+    };
+  }
+
+  // ==================== UPDATE & DELETE (DEBTS) ====================
+
+  async updateDebt(id: string, updateShopDebtDto: UpdateShopDebtDto) {
+    const existing = await this.prisma.shopDebt.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Shop debt with ID ${id} not found`);
+
+    return this.prisma.shopDebt.update({
       where: { id },
       data: {
         shopName: updateShopDebtDto.shopName,
         itemDetails: updateShopDebtDto.itemDetails,
         amount: updateShopDebtDto.amount,
-        status: updateShopDebtDto.status,
-        paidDate: updateShopDebtDto.paidDate
-          ? new Date(updateShopDebtDto.paidDate)
-          : undefined,
         note: updateShopDebtDto.note,
+        date: updateShopDebtDto.date ? new Date(updateShopDebtDto.date) : undefined,
       },
     });
-
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: "ADMIN",
-        isActive: true,
-      },
-    });
-
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "SYSTEM",
-        title: "Shop Debt Updated",
-        message: `${existing.shopName}: Debt updated. New amount: ${updated.amount} TK`,
-        link: `/shop-debts/${id}`,
-      });
-    }
-
-    return updated;
   }
 
-  // ==================== DELETE ====================
+  async removeDebt(id: string) {
+    const existing = await this.prisma.shopDebt.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Shop debt with ID ${id} not found`);
 
-  async remove(id: string) {
-    const debt = await this.prisma.shopDebt.findUnique({
-      where: { id },
-    });
-
-    if (!debt) {
-      throw new NotFoundException(`Shop debt with ID ${id} not found`);
-    }
-
-    await this.prisma.shopDebt.delete({
-      where: { id },
-    });
-
-    const admins = await this.prisma.user.findMany({
-      where: {
-        role: "ADMIN",
-        isActive: true,
-      },
-    });
-
-    for (const admin of admins) {
-      await this.notificationsService.create({
-        userId: admin.id,
-        type: "SYSTEM",
-        title: "Shop Debt Deleted",
-        message: `${debt.shopName}: ${debt.amount} TK debt has been deleted.`,
-        link: "/shop-debts",
-      });
-    }
-
-    return { message: `Shop debt with ID ${id} deleted successfully` };
+    await this.prisma.shopDebt.delete({ where: { id } });
+    return { message: "Debt deleted successfully" };
   }
 
-  // ==================== GET MONTHLY SUMMARY REPORT ====================
+  // ==================== UPDATE & DELETE (PAYMENTS) ====================
 
-  async getMonthlySummaryReport(year: number, month: number) {
-    const debts = await this.findByMonth(year, month);
+  async updatePayment(id: string, updateShopPaymentDto: any) {
+    const existing = await this.prisma.shopPayment.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Shop payment with ID ${id} not found`);
 
-    const totalDebt = debts
-      .filter((d) => d.status === DebtStatus.DUE)
-      .reduce((sum, d) => sum + Number(d.amount), 0);
+    return this.prisma.shopPayment.update({
+      where: { id },
+      data: {
+        shopName: updateShopPaymentDto.shopName,
+        amount: updateShopPaymentDto.amount,
+        note: updateShopPaymentDto.note,
+        date: updateShopPaymentDto.date ? new Date(updateShopPaymentDto.date) : undefined,
+      },
+    });
+  }
 
-    const totalPaid = debts
-      .filter((d) => d.status === DebtStatus.PAID)
-      .reduce((sum, d) => sum + Number(d.amount), 0);
+  async removePayment(id: string) {
+    const existing = await this.prisma.shopPayment.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Shop payment with ID ${id} not found`);
 
-    const currentDue = debts.reduce((sum, d) => sum + Number(d.amount), 0);
-
-    return {
-      month: format(new Date(year, month - 1, 1), "MMMM"),
-      year,
-      totalDebt,
-      totalPaid,
-      currentDue,
-      totalEntries: debts.length,
-    };
+    await this.prisma.shopPayment.delete({ where: { id } });
+    return { message: "Payment deleted successfully" };
   }
 }

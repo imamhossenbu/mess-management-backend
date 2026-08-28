@@ -65,8 +65,8 @@ export class MonthlySummaryController {
   @ApiOperation({ summary: "Get user monthly summaries" })
   async getUserSummaries(
     @Param("userId") userId: string,
-    @Query("year", ParseIntPipe) year?: number,
-    @Query("month", ParseIntPipe) month?: number,
+    @Query("year", new ParseIntPipe({ optional: true })) year?: number,
+    @Query("month", new ParseIntPipe({ optional: true })) month?: number,
   ) {
     return this.monthlySummaryService.getUserMonthlySummaries(
       userId,

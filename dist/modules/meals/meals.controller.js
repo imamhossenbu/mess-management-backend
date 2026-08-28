@@ -74,7 +74,7 @@ let MealsController = class MealsController {
 exports.MealsController = MealsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Create a single meal entry" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -83,7 +83,7 @@ __decorate([
 ], MealsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)("bulk"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Bulk meal entry for multiple users" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -92,7 +92,7 @@ __decorate([
 ], MealsController.prototype, "bulkEntry", null);
 __decorate([
     (0, common_1.Post)("single-meal-type"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Single meal type entry (morning/lunch/dinner)" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -169,7 +169,7 @@ __decorate([
 ], MealsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Update meal entry" }),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
@@ -179,7 +179,7 @@ __decorate([
 ], MealsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete meal entry" }),
     __param(0, (0, common_1.Param)("id")),
@@ -189,7 +189,7 @@ __decorate([
 ], MealsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Delete)("date/:date"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete all meals for a date" }),
     __param(0, (0, common_1.Param)("date")),

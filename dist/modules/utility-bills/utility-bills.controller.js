@@ -57,7 +57,7 @@ let UtilityBillsController = class UtilityBillsController {
 exports.UtilityBillsController = UtilityBillsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Create a new utility bill" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -111,7 +111,7 @@ __decorate([
 ], UtilityBillsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Update utility bill" }),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
@@ -121,7 +121,7 @@ __decorate([
 ], UtilityBillsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete utility bill" }),
     __param(0, (0, common_1.Param)("id")),
@@ -131,7 +131,7 @@ __decorate([
 ], UtilityBillsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Delete)("month/:year/:month"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete all utility bills for a month" }),
     __param(0, (0, common_1.Param)("year", common_1.ParseIntPipe)),

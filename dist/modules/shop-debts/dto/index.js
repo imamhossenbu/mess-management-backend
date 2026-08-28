@@ -15,6 +15,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./create-shop-debt.dto"), exports);
+__exportStar(require("./create-shop-payment.dto"), exports);
 __exportStar(require("./update-shop-debt.dto"), exports);
+__exportStar(require("./update-shop-payment.dto"), exports);
 __exportStar(require("./shop-debt-response.dto"), exports);
 //# sourceMappingURL=index.js.map

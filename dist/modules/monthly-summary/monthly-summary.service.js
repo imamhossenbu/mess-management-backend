@@ -65,6 +65,15 @@ let MonthlySummaryService = class MonthlySummaryService {
             },
         });
         const totalUtilityCost = utilityBills.reduce((sum, b) => sum + Number(b.amount), 0);
+        const shopDebts = await this.prisma.shopDebt.findMany({
+            where: {
+                date: {
+                    gte: (0, date_fns_1.startOfDay)(startDate),
+                    lte: (0, date_fns_1.endOfDay)(endDate),
+                },
+            },
+        });
+        const totalShopDebtCost = shopDebts.reduce((sum, d) => sum + Number(d.amount), 0);
         const userMealMap = new Map();
         meals.forEach((meal) => {
             const existing = userMealMap.get(meal.userId);
@@ -86,7 +95,7 @@ let MonthlySummaryService = class MonthlySummaryService {
         const totalMeals = Array.from(userMealMap.values()).reduce((sum, u) => sum + u.totalMeal, 0);
         const adjPrev = Number(adjustmentFromPrevious) || 0;
         const adjNext = Number(adjustmentToNext) || 0;
-        const netMarketCost = totalMarketCost + adjPrev - adjNext;
+        const netMarketCost = totalMarketCost + totalShopDebtCost + adjPrev - adjNext;
         const mealRate = totalMeals > 0 ? netMarketCost / totalMeals : 0;
         const perPersonUtility = totalUtilityCost / users.length;
         const payments = await this.prisma.payment.findMany({
@@ -134,7 +143,7 @@ let MonthlySummaryService = class MonthlySummaryService {
         await this.saveMonthlySummary(year, month, userSummaries, {
             totalMeals,
             mealRate,
-            totalMarketCost,
+            totalMarketCost: netMarketCost,
             totalUtilityCost,
             adjustmentFromPrevious: adjPrev,
             adjustmentToNext: adjNext,

@@ -104,6 +104,8 @@ model User {
   notifications     Notification[]
   emailLogs         EmailLog[]
   utilityBills      UtilityBill[]      @relation("Payer")
+  shopDebts         ShopDebt[]         @relation("DebtRecorder")
+  shopPayments      ShopPayment[]      @relation("DebtPayer")
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -225,13 +227,29 @@ model UtilityBill {
 // ==================== SHOP DEBT ====================
 model ShopDebt {
   id                String            @id @default(cuid())
-  shopName          String
+  shopName          String            @default("Local Shop")
   date              DateTime          @default(now())
   itemDetails       String?
   amount            Decimal
-  status            DebtStatus        @default(DUE)
-  paidDate          DateTime?
   note              String?
+  
+  recordedById      String?
+  recordedBy        User?             @relation("DebtRecorder", fields: [recordedById], references: [id])
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// ==================== SHOP PAYMENT ====================
+model ShopPayment {
+  id                String            @id @default(cuid())
+  shopName          String            @default("Local Shop")
+  date              DateTime          @default(now())
+  amount            Decimal
+  note              String?
+  
+  paidById          String?
+  paidBy            User?             @relation("DebtPayer", fields: [paidById], references: [id])
   
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

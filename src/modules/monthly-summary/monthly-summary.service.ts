@@ -88,6 +88,21 @@ export class MonthlySummaryService {
       0,
     );
 
+    // 4.5. Get Shop Debts (Credit Purchases) for this month
+    const shopDebts = await this.prisma.shopDebt.findMany({
+      where: {
+        date: {
+          gte: startOfDay(startDate),
+          lte: endOfDay(endDate),
+        },
+      },
+    });
+
+    const totalShopDebtCost = shopDebts.reduce(
+      (sum, d) => sum + Number(d.amount),
+      0,
+    );
+
     // 5. Calculate total meals per user
     const userMealMap = new Map<
       string,
@@ -120,7 +135,7 @@ export class MonthlySummaryService {
     // 7. Calculate total mess expense and meal rate
     const adjPrev = Number(adjustmentFromPrevious) || 0;
     const adjNext = Number(adjustmentToNext) || 0;
-    const netMarketCost = totalMarketCost + adjPrev - adjNext;
+    const netMarketCost = totalMarketCost + totalShopDebtCost + adjPrev - adjNext;
     
     const mealRate = totalMeals > 0 ? netMarketCost / totalMeals : 0;
     const perPersonUtility = totalUtilityCost / users.length;
@@ -180,7 +195,7 @@ export class MonthlySummaryService {
     await this.saveMonthlySummary(year, month, userSummaries, {
       totalMeals,
       mealRate,
-      totalMarketCost,
+      totalMarketCost: netMarketCost,
       totalUtilityCost,
       adjustmentFromPrevious: adjPrev,
       adjustmentToNext: adjNext,

@@ -176,7 +176,7 @@ __decorate([
 ], MarketingsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Delete)("date/:date"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete all marketing entries for a date" }),
     __param(0, (0, common_1.Param)("date")),

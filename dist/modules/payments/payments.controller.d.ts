@@ -6,36 +6,36 @@ export declare class PaymentsController {
     create(createPaymentDto: CreatePaymentDto): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     findAll(): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     getAllUserBalances(): Promise<{
         userId: string;
@@ -53,37 +53,37 @@ export declare class PaymentsController {
         payments: {
             userName: string;
             user: {
-                name: string;
                 id: string;
+                name: string;
                 email: string;
                 phone: string;
             };
             id: string;
-            userId: string;
-            note: string | null;
-            createdAt: Date;
-            updatedAt: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
             paymentDate: Date;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+            note: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
         }[];
     }>;
     findByUser(userId: string, startDate?: string, endDate?: string): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     getUserBalance(userId: string): Promise<{
         userId: string;
@@ -93,81 +93,81 @@ export declare class PaymentsController {
         payments: {
             amount: number;
             id: string;
-            userId: string;
+            paymentDate: Date;
+            paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             note: string | null;
             createdAt: Date;
             updatedAt: Date;
-            paymentDate: Date;
-            paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+            userId: string;
         }[];
     }>;
     findByDate(date: string): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     findByMonth(year: number, month: number): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     findOne(id: string): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         userName: string;
         user: {
-            name: string;
             id: string;
+            name: string;
             email: string;
             phone: string;
         };
         id: string;
-        userId: string;
-        note: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         paymentDate: Date;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        note: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     remove(id: string): Promise<{
         message: string;

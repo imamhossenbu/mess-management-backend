@@ -82,7 +82,7 @@ __decorate([
 ], PaymentsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)("balances"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Get all user balances" }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -148,7 +148,7 @@ __decorate([
 ], PaymentsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, swagger_1.ApiOperation)({ summary: "Update payment" }),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
@@ -158,7 +158,7 @@ __decorate([
 ], PaymentsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(":id"),
-    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Delete payment" }),
     __param(0, (0, common_1.Param)("id")),

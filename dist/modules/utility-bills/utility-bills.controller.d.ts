@@ -6,36 +6,36 @@ export declare class UtilityBillsController {
     create(createUtilityBillDto: CreateUtilityBillDto): Promise<{
         paidByName: string;
         payer: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
-        monthYear: Date;
     }>;
     findAll(): Promise<{
         paidByName: string;
         payer: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
-        monthYear: Date;
     }[]>;
     getSummary(): Promise<{
         totalCurrent: number;
@@ -61,71 +61,71 @@ export declare class UtilityBillsController {
         bills: {
             paidByName: string;
             payer: {
-                email: string;
                 id: string;
                 name: string;
+                email: string;
                 phone: string;
             };
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
+            billType: import(".prisma/client").$Enums.BillType;
+            monthYear: Date;
             amount: import("@prisma/client/runtime/library").Decimal;
             note: string | null;
-            billType: import(".prisma/client").$Enums.BillType;
+            createdAt: Date;
+            updatedAt: Date;
             paidBy: string | null;
-            monthYear: Date;
         }[];
     }>;
     findByMonth(year: number, month: number): Promise<{
         paidByName: string;
         payer: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
-        monthYear: Date;
     }[]>;
     findOne(id: string): Promise<{
         paidByName: string;
         payer: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
-        monthYear: Date;
     }>;
     update(id: string, updateUtilityBillDto: UpdateUtilityBillDto): Promise<{
         paidByName: string;
         payer: {
-            email: string;
             id: string;
             name: string;
+            email: string;
             phone: string;
         };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        billType: import(".prisma/client").$Enums.BillType;
+        monthYear: Date;
         amount: import("@prisma/client/runtime/library").Decimal;
         note: string | null;
-        billType: import(".prisma/client").$Enums.BillType;
+        createdAt: Date;
+        updatedAt: Date;
         paidBy: string | null;
-        monthYear: Date;
     }>;
     remove(id: string): Promise<{
         message: string;

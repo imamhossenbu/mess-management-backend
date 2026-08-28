@@ -44,21 +44,21 @@ export class MealsController {
   constructor(private readonly mealsService: MealsService) {}
 
   @Post()
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Create a single meal entry" })
   async create(@Body() createMealDto: CreateMealDto) {
     return this.mealsService.create(createMealDto);
   }
 
   @Post("bulk")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Bulk meal entry for multiple users" })
   async bulkEntry(@Body() bulkMealDto: BulkMealEntryDto) {
     return this.mealsService.bulkEntry(bulkMealDto);
   }
 
   @Post("single-meal-type")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Single meal type entry (morning/lunch/dinner)" })
   async singleMealEntry(@Body() singleMealDto: SingleMealEntryDto) {
     return this.mealsService.singleMealEntry(singleMealDto);
@@ -134,14 +134,14 @@ export class MealsController {
   }
 
   @Patch(":id")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Update meal entry" })
   async update(@Param("id") id: string, @Body() updateMealDto: UpdateMealDto) {
     return this.mealsService.update(id, updateMealDto);
   }
 
   @Delete(":id")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete meal entry" })
   async remove(@Param("id") id: string) {
@@ -149,7 +149,7 @@ export class MealsController {
   }
 
   @Delete("date/:date")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete all meals for a date" })
   async removeByDate(@Param("date") date: string) {

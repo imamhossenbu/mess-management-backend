@@ -29,7 +29,7 @@ export class UtilityBillsController {
   constructor(private readonly utilityBillsService: UtilityBillsService) {}
 
   @Post()
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Create a new utility bill" })
   async create(@Body() createUtilityBillDto: CreateUtilityBillDto) {
     return this.utilityBillsService.create(createUtilityBillDto);
@@ -80,7 +80,7 @@ export class UtilityBillsController {
   }
 
   @Patch(":id")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @ApiOperation({ summary: "Update utility bill" })
   // ✅ ParseUUIDPipe সরান
   async update(
@@ -91,7 +91,7 @@ export class UtilityBillsController {
   }
 
   @Delete(":id")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete utility bill" })
   // ✅ ParseUUIDPipe সরান
@@ -100,7 +100,7 @@ export class UtilityBillsController {
   }
 
   @Delete("month/:year/:month")
-  @Roles("ADMIN", "MANAGER")
+  @Roles("ADMIN", "MANAGER", "MEMBER")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Delete all utility bills for a month" })
   async removeByMonth(

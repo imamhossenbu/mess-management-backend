@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateShopDebtDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
-const client_1 = require("@prisma/client");
 class UpdateShopDebtDto {
 }
 exports.UpdateShopDebtDto = UpdateShopDebtDto;
@@ -36,17 +35,11 @@ __decorate([
     __metadata("design:type", Number)
 ], UpdateShopDebtDto.prototype, "amount", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.DebtStatus, required: false }),
-    (0, class_validator_1.IsEnum)(client_1.DebtStatus),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateShopDebtDto.prototype, "status", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
     (0, class_validator_1.IsDateString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateShopDebtDto.prototype, "paidDate", void 0);
+], UpdateShopDebtDto.prototype, "date", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ required: false }),
     (0, class_validator_1.IsString)(),

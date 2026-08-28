@@ -5,7 +5,7 @@ export declare class MonthlySummaryService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    generateMonthlySummary(year: number, month: number): Promise<{
+    generateMonthlySummary(year: number, month: number, adjustmentFromPrevious: number, adjustmentToNext: number): Promise<{
         month: string;
         year: number;
         totalMeals: number;
@@ -30,18 +30,18 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
-            phone: string;
-            id: string;
             name: string;
+            id: string;
+            phone: string;
         };
-        userId: string;
-        totalMeal: number;
-        adjustmentFromPrevious: import("@prisma/client/runtime/library").Decimal;
-        adjustmentToNext: import("@prisma/client/runtime/library").Decimal;
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
         monthYear: Date;
+        totalMeal: number;
+        adjustmentFromPrevious: import("@prisma/client/runtime/library").Decimal;
+        adjustmentToNext: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     getAllMonthlySummaries(): Promise<{
         mealRate: number;
@@ -53,18 +53,18 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
-            phone: string;
-            id: string;
             name: string;
+            id: string;
+            phone: string;
         };
-        userId: string;
-        totalMeal: number;
-        adjustmentFromPrevious: import("@prisma/client/runtime/library").Decimal;
-        adjustmentToNext: import("@prisma/client/runtime/library").Decimal;
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
         monthYear: Date;
+        totalMeal: number;
+        adjustmentFromPrevious: import("@prisma/client/runtime/library").Decimal;
+        adjustmentToNext: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     updateMonthlySummary(id: string, updateDto: any): Promise<{
         mealRate: number;
@@ -76,18 +76,18 @@ export declare class MonthlySummaryService {
         currentDue: number;
         carryToNext: number;
         user: {
-            phone: string;
-            id: string;
             name: string;
+            id: string;
+            phone: string;
         };
-        userId: string;
-        totalMeal: number;
-        adjustmentFromPrevious: import("@prisma/client/runtime/library").Decimal;
-        adjustmentToNext: import("@prisma/client/runtime/library").Decimal;
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
         monthYear: Date;
+        totalMeal: number;
+        adjustmentFromPrevious: import("@prisma/client/runtime/library").Decimal;
+        adjustmentToNext: import("@prisma/client/runtime/library").Decimal;
     }>;
     deleteMonthlySummary(year: number, month: number): Promise<{
         message: string;

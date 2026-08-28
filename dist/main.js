@@ -7,9 +7,21 @@ const swagger_1 = require("@nestjs/swagger");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: ["http://localhost:3000", "http://localhost:3001"],
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://mess-management-frontend-cf7l.onrender.com",
+        ],
         credentials: true,
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        methods: [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS",
+        ],
         allowedHeaders: [
             "Content-Type",
             "Authorization",
@@ -19,7 +31,10 @@ async function bootstrap() {
             "Origin",
             "X-Requested-With",
         ],
-        exposedHeaders: ["Content-Type", "Authorization"],
+        exposedHeaders: [
+            "Content-Type",
+            "Authorization",
+        ],
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
@@ -61,9 +76,9 @@ async function bootstrap() {
         },
     });
     const port = process.env.PORT || 5001;
-    await app.listen(port, () => {
-        console.log(`🚀 Application is running on: http://localhost:${port}`);
-        console.log(`📚 Swagger documentation: http://localhost:${port}/api-docs`);
+    await app.listen(port, "0.0.0.0", () => {
+        console.log(`🚀 Application is running on port ${port}`);
+        console.log(`📚 Swagger documentation available at /api-docs`);
     });
 }
 bootstrap();

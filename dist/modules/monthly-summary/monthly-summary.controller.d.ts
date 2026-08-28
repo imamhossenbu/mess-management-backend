@@ -25,8 +25,8 @@ export declare class MonthlySummaryController {
         currentDue: number;
         carryToNext: number;
         user: {
-            id: string;
             name: string;
+            id: string;
             phone: string;
         };
         id: string;
@@ -49,8 +49,8 @@ export declare class MonthlySummaryController {
         currentDue: number;
         carryToNext: number;
         user: {
-            id: string;
             name: string;
+            id: string;
             phone: string;
         };
         id: string;
@@ -72,8 +72,8 @@ export declare class MonthlySummaryController {
         currentDue: number;
         carryToNext: number;
         user: {
-            id: string;
             name: string;
+            id: string;
             phone: string;
         };
         id: string;

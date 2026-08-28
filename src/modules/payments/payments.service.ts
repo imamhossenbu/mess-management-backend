@@ -524,12 +524,20 @@ export class PaymentsService {
   // ==================== PRIVATE METHODS ====================
 
   private async updateUserBalance(userId: string) {
-    // Get all payments for this user
+    // 1. Get all payments for this user (Total Paid)
     const payments = await this.prisma.payment.findMany({
       where: { userId },
     });
-
     const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+    // 2. Get all monthly summaries for this user (Total Billed)
+    const summaries = await this.prisma.monthlySummary.findMany({
+      where: { userId },
+    });
+    const totalBilled = summaries.reduce((sum, s) => sum + Number(s.totalBill), 0);
+
+    // 3. Balance = Total Paid - Total Billed
+    const newBalance = totalPaid - totalBilled;
 
     const userBalance = await this.prisma.userBalance.findUnique({
       where: { userId },
@@ -539,7 +547,7 @@ export class PaymentsService {
       await this.prisma.userBalance.update({
         where: { userId },
         data: {
-          balance: totalPaid,
+          balance: newBalance,
           lastUpdated: new Date(),
         },
       });
@@ -547,7 +555,7 @@ export class PaymentsService {
       await this.prisma.userBalance.create({
         data: {
           userId,
-          balance: totalPaid,
+          balance: newBalance,
         },
       });
     }

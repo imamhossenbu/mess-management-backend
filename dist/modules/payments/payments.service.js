@@ -438,6 +438,11 @@ let PaymentsService = class PaymentsService {
             where: { userId },
         });
         const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+        const summaries = await this.prisma.monthlySummary.findMany({
+            where: { userId },
+        });
+        const totalBilled = summaries.reduce((sum, s) => sum + Number(s.totalBill), 0);
+        const newBalance = totalPaid - totalBilled;
         const userBalance = await this.prisma.userBalance.findUnique({
             where: { userId },
         });
@@ -445,7 +450,7 @@ let PaymentsService = class PaymentsService {
             await this.prisma.userBalance.update({
                 where: { userId },
                 data: {
-                    balance: totalPaid,
+                    balance: newBalance,
                     lastUpdated: new Date(),
                 },
             });
@@ -454,7 +459,7 @@ let PaymentsService = class PaymentsService {
             await this.prisma.userBalance.create({
                 data: {
                     userId,
-                    balance: totalPaid,
+                    balance: newBalance,
                 },
             });
         }

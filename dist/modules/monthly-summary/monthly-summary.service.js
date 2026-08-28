@@ -19,7 +19,7 @@ let MonthlySummaryService = class MonthlySummaryService {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
     }
-    async generateMonthlySummary(year, month) {
+    async generateMonthlySummary(year, month, adjustmentFromPrevious, adjustmentToNext) {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
         const users = await this.prisma.user.findMany({
@@ -182,6 +182,15 @@ let MonthlySummaryService = class MonthlySummaryService {
             });
         }
         for (const summary of userSummaries) {
+            const payments = await this.prisma.payment.findMany({
+                where: { userId: summary.userId },
+            });
+            const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+            const summaries = await this.prisma.monthlySummary.findMany({
+                where: { userId: summary.userId },
+            });
+            const totalBilled = summaries.reduce((sum, s) => sum + Number(s.totalBill), 0);
+            const newBalance = totalPaid - totalBilled;
             const userBalance = await this.prisma.userBalance.findUnique({
                 where: { userId: summary.userId },
             });
@@ -189,7 +198,7 @@ let MonthlySummaryService = class MonthlySummaryService {
                 await this.prisma.userBalance.update({
                     where: { userId: summary.userId },
                     data: {
-                        balance: summary.currentDue,
+                        balance: newBalance,
                         lastUpdated: new Date(),
                     },
                 });
@@ -402,10 +411,19 @@ let MonthlySummaryService = class MonthlySummaryService {
             link: `/monthly-summary?year=${existing.monthYear.getFullYear()}&month=${existing.monthYear.getMonth() + 1}`,
         });
         if (updateDto.currentDue !== undefined) {
+            const payments = await this.prisma.payment.findMany({
+                where: { userId: existing.userId },
+            });
+            const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+            const summaries = await this.prisma.monthlySummary.findMany({
+                where: { userId: existing.userId },
+            });
+            const totalBilled = summaries.reduce((sum, s) => sum + Number(s.totalBill), 0);
+            const newBalance = totalPaid - totalBilled;
             await this.prisma.userBalance.update({
                 where: { userId: existing.userId },
                 data: {
-                    balance: updateDto.currentDue,
+                    balance: newBalance,
                     lastUpdated: new Date(),
                 },
             });

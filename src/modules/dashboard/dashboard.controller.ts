@@ -22,8 +22,8 @@ export class DashboardController {
 
   @Get("admin")
   @Roles("ADMIN", "MANAGER")
-  async getAdminDashboard() {
-    return this.dashboardService.getAdminDashboard();
+  async getAdminDashboard(@Request() req) {
+    return this.dashboardService.getAdminDashboard(req.user.id);
   }
 
   @Get("member")

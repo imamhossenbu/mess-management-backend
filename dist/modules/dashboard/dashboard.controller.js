@@ -23,8 +23,8 @@ let DashboardController = class DashboardController {
     constructor(dashboardService) {
         this.dashboardService = dashboardService;
     }
-    async getAdminDashboard() {
-        return this.dashboardService.getAdminDashboard();
+    async getAdminDashboard(req) {
+        return this.dashboardService.getAdminDashboard(req.user.id);
     }
     async getMemberDashboard(req) {
         return this.dashboardService.getMemberDashboard(req.user.id);
@@ -72,8 +72,9 @@ exports.DashboardController = DashboardController;
 __decorate([
     (0, common_1.Get)("admin"),
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getAdminDashboard", null);
 __decorate([

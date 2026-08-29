@@ -2,11 +2,13 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { CreateMarketingDto, UpdateMarketingDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
+import { PaymentsService } from "../payments/payments.service";
 export declare class MarketingsService {
     private prisma;
     private notificationsService;
     private cloudinaryService;
-    constructor(prisma: PrismaService, notificationsService: NotificationsService, cloudinaryService: CloudinaryService);
+    private paymentsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService, cloudinaryService: CloudinaryService, paymentsService: PaymentsService);
     create(userId: string, createMarketingDto: CreateMarketingDto, file?: any): Promise<{
         id: string;
         userId: string;

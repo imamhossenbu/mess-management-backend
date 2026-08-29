@@ -16,11 +16,13 @@ const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
 const notifications_service_1 = require("../notifications/notifications.service");
 const cloudinary_service_1 = require("../cloudinary/cloudinary.service");
+const payments_service_1 = require("../payments/payments.service");
 let MarketingsService = class MarketingsService {
-    constructor(prisma, notificationsService, cloudinaryService) {
+    constructor(prisma, notificationsService, cloudinaryService, paymentsService) {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
         this.cloudinaryService = cloudinaryService;
+        this.paymentsService = paymentsService;
     }
     async create(userId, createMarketingDto, file) {
         const user = await this.prisma.user.findUnique({
@@ -54,9 +56,9 @@ let MarketingsService = class MarketingsService {
                 items: {
                     create: createMarketingDto.items.map((item) => ({
                         itemName: item.itemName,
-                        quantity: item.quantity,
-                        unit: item.unit,
-                        price: item.price,
+                        quantity: item.quantity !== undefined ? item.quantity : 1,
+                        unit: item.unit || "PIECE",
+                        price: item.price !== undefined ? item.price : item.totalPrice,
                         totalPrice: item.totalPrice,
                         note: item.note,
                     })),
@@ -75,6 +77,15 @@ let MarketingsService = class MarketingsService {
         });
         await this.updateDailySummary(date);
         await this.sendNotifications(marketing, user);
+        if (createMarketingDto.paymentType === client_1.PaymentType.SELF) {
+            await this.paymentsService.create({
+                userId,
+                amount: totalAmount,
+                paymentDate: date.toISOString(),
+                paymentMethod: "CASH",
+                note: `Auto-deposit for SELF payment Bazar (Shop: ${createMarketingDto.shopName || "N/A"})`,
+            });
+        }
         return {
             id: marketing.id,
             userId: marketing.userId,
@@ -491,9 +502,9 @@ let MarketingsService = class MarketingsService {
                 data: updateMarketingDto.items.map((item) => ({
                     marketingId: id,
                     itemName: item.itemName,
-                    quantity: item.quantity,
-                    unit: item.unit,
-                    price: item.price,
+                    quantity: item.quantity !== undefined ? item.quantity : 1,
+                    unit: item.unit || "PIECE",
+                    price: item.price !== undefined ? item.price : item.totalPrice,
                     totalPrice: item.totalPrice,
                     note: item.note,
                 })),
@@ -703,6 +714,7 @@ exports.MarketingsService = MarketingsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         notifications_service_1.NotificationsService,
-        cloudinary_service_1.CloudinaryService])
+        cloudinary_service_1.CloudinaryService,
+        payments_service_1.PaymentsService])
 ], MarketingsService);
 //# sourceMappingURL=marketings.service.js.map

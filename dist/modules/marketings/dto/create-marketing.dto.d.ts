@@ -1,9 +1,9 @@
 import { PaymentType, Unit } from "@prisma/client";
 export declare class MarketingItemDto {
     itemName: string;
-    quantity: number;
-    unit: Unit;
-    price: number;
+    quantity?: number;
+    unit?: Unit;
+    price?: number;
     totalPrice: number;
     note?: string;
 }

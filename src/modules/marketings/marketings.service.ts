@@ -10,6 +10,7 @@ import { PaymentType } from "@prisma/client";
 import { startOfDay, endOfDay, format } from "date-fns";
 import { NotificationsService } from "../notifications/notifications.service";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
+import { PaymentsService } from "../payments/payments.service";
 
 @Injectable()
 export class MarketingsService {
@@ -17,6 +18,7 @@ export class MarketingsService {
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
     private cloudinaryService: CloudinaryService,
+    private paymentsService: PaymentsService,
   ) {}
 
   // ==================== CREATE ====================
@@ -90,6 +92,17 @@ export class MarketingsService {
 
     await this.updateDailySummary(date);
     await this.sendNotifications(marketing, user);
+
+    // Auto-deposit if PaymentType is SELF
+    if (createMarketingDto.paymentType === PaymentType.SELF) {
+      await this.paymentsService.create({
+        userId,
+        amount: totalAmount,
+        paymentDate: date.toISOString(),
+        paymentMethod: "CASH" as any, // PaymentMethod.CASH
+        note: `Auto-deposit for SELF payment Bazar (Shop: ${createMarketingDto.shopName || "N/A"})`,
+      });
+    }
 
     return {
       id: marketing.id,
@@ -574,9 +587,9 @@ export class MarketingsService {
         data: updateMarketingDto.items.map((item) => ({
           marketingId: id,
           itemName: item.itemName,
-          quantity: item.quantity,
-          unit: item.unit,
-          price: item.price,
+          quantity: item.quantity !== undefined ? item.quantity : 1,
+          unit: item.unit || "PIECE",
+          price: item.price !== undefined ? item.price : item.totalPrice,
           totalPrice: item.totalPrice,
           note: item.note,
         })),

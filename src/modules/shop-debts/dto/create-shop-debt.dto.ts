@@ -36,3 +36,8 @@ export class CreateShopDebtDto {
   @IsOptional()
   note?: string;
 }
+
+export class CreateBulkShopDebtDto {
+  @ApiProperty({ type: [CreateShopDebtDto] })
+  items: CreateShopDebtDto[];
+}

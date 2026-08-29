@@ -51,6 +51,13 @@ let ShopDebtsService = class ShopDebtsService {
         }
         return debt;
     }
+    async createBulkDebt(createBulkShopDebtDto, userId) {
+        const createdDebts = [];
+        for (const item of createBulkShopDebtDto.items) {
+            createdDebts.push(await this.createDebt(item, userId));
+        }
+        return createdDebts;
+    }
     async createPayment(createShopPaymentDto, userId) {
         const { shopName, date, amount, note } = createShopPaymentDto;
         const paymentDate = date ? new Date(date) : new Date();

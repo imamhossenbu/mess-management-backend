@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateShopDebtDto = void 0;
+exports.CreateBulkShopDebtDto = exports.CreateShopDebtDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 class CreateShopDebtDto {
@@ -44,4 +44,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateShopDebtDto.prototype, "note", void 0);
+class CreateBulkShopDebtDto {
+}
+exports.CreateBulkShopDebtDto = CreateBulkShopDebtDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [CreateShopDebtDto] }),
+    __metadata("design:type", Array)
+], CreateBulkShopDebtDto.prototype, "items", void 0);
 //# sourceMappingURL=create-shop-debt.dto.js.map

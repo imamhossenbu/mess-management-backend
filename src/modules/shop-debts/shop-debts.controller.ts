@@ -17,7 +17,7 @@ import {
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { ShopDebtsService } from "./shop-debts.service";
-import { CreateShopDebtDto, UpdateShopDebtDto, CreateShopPaymentDto } from "./dto";
+import { CreateShopDebtDto, UpdateShopDebtDto, CreateShopPaymentDto, CreateBulkShopDebtDto } from "./dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @ApiTags("shop-debts")
@@ -31,6 +31,12 @@ export class ShopDebtsController {
   @ApiOperation({ summary: "Create a new shop debt" })
   async createDebt(@Body() createShopDebtDto: CreateShopDebtDto, @Request() req) {
     return this.shopDebtsService.createDebt(createShopDebtDto, req.user.id);
+  }
+
+  @Post("debt/bulk")
+  @ApiOperation({ summary: "Create multiple shop debts at once" })
+  async createBulkDebt(@Body() createBulkShopDebtDto: CreateBulkShopDebtDto, @Request() req) {
+    return this.shopDebtsService.createBulkDebt(createBulkShopDebtDto, req.user.id);
   }
 
   @Post("payment")

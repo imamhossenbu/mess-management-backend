@@ -23,20 +23,23 @@ __decorate([
     __metadata("design:type", String)
 ], MarketingItemDto.prototype, "itemName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 1 }),
+    (0, swagger_1.ApiProperty)({ example: 1, required: false }),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0.01),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], MarketingItemDto.prototype, "quantity", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG" }),
+    (0, swagger_1.ApiProperty)({ enum: client_1.Unit, example: "KG", required: false }),
     (0, class_validator_1.IsEnum)(client_1.Unit),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], MarketingItemDto.prototype, "unit", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 350 }),
+    (0, swagger_1.ApiProperty)({ example: 350, required: false }),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], MarketingItemDto.prototype, "price", void 0);
 __decorate([

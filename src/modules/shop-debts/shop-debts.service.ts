@@ -56,6 +56,16 @@ export class ShopDebtsService {
     return debt;
   }
 
+  // ==================== CREATE BULK DEBT ====================
+
+  async createBulkDebt(createBulkShopDebtDto: { items: CreateShopDebtDto[] }, userId: string) {
+    const createdDebts = [];
+    for (const item of createBulkShopDebtDto.items) {
+      createdDebts.push(await this.createDebt(item, userId));
+    }
+    return createdDebts;
+  }
+
   // ==================== CREATE PAYMENT ====================
 
   async createPayment(createShopPaymentDto: CreateShopPaymentDto, userId: string) {

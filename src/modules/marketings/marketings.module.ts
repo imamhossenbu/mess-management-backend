@@ -3,12 +3,14 @@ import { Module } from "@nestjs/common";
 import { MarketingsService } from "./marketings.service";
 import { MarketingsController } from "./marketings.controller";
 import { NotificationsModule } from "../notifications/notifications.module";
-import { CloudinaryModule } from "../cloudinary/cloudinary.module"; // ✅ Add this
+import { CloudinaryModule } from "../cloudinary/cloudinary.module";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
   imports: [
     NotificationsModule,
-    CloudinaryModule, // ✅ Import CloudinaryModule
+    CloudinaryModule,
+    PaymentsModule,
   ],
   controllers: [MarketingsController],
   providers: [MarketingsService],

@@ -25,6 +25,9 @@ let ShopDebtsController = class ShopDebtsController {
     async createDebt(createShopDebtDto, req) {
         return this.shopDebtsService.createDebt(createShopDebtDto, req.user.id);
     }
+    async createBulkDebt(createBulkShopDebtDto, req) {
+        return this.shopDebtsService.createBulkDebt(createBulkShopDebtDto, req.user.id);
+    }
     async createPayment(createShopPaymentDto, req) {
         return this.shopDebtsService.createPayment(createShopPaymentDto, req.user.id);
     }
@@ -59,6 +62,15 @@ __decorate([
     __metadata("design:paramtypes", [dto_1.CreateShopDebtDto, Object]),
     __metadata("design:returntype", Promise)
 ], ShopDebtsController.prototype, "createDebt", null);
+__decorate([
+    (0, common_1.Post)("debt/bulk"),
+    (0, swagger_1.ApiOperation)({ summary: "Create multiple shop debts at once" }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dto_1.CreateBulkShopDebtDto, Object]),
+    __metadata("design:returntype", Promise)
+], ShopDebtsController.prototype, "createBulkDebt", null);
 __decorate([
     (0, common_1.Post)("payment"),
     (0, swagger_1.ApiOperation)({ summary: "Log a shop payment" }),

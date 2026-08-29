@@ -5,3 +5,6 @@ export declare class CreateShopDebtDto {
     amount: number;
     note?: string;
 }
+export declare class CreateBulkShopDebtDto {
+    items: CreateShopDebtDto[];
+}

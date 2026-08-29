@@ -166,7 +166,7 @@ export class DashboardService {
     const totalShopDebtCost = monthShopDebts.reduce((sum, d) => sum + Number(d.amount), 0);
     
     const netMarketCost = totalMarketingCost + totalShopDebtCost + adjPrev - adjNext;
-    const mealRate = totalMealsThisMonth > 0 ? Number((netMarketCost / totalMealsThisMonth).toFixed(2)) : 0;
+    const mealRate = currSummary ? Number(currSummary.mealRate) : 0;
 
     // 9. Inventory - Get all inventory items grouped by category
     const inventoryItems = await this.prisma.inventoryItem.findMany({
@@ -452,7 +452,7 @@ export class DashboardService {
     const totalMealsThisMonth = allMealsThisMonth.reduce((sum, m) => sum + m.totalMeal, 0);
 
     const netMarketCost = totalMarketingCost + totalShopDebtCost + adjPrev - adjNext;
-    const currentMealRate = totalMealsThisMonth > 0 ? Number((netMarketCost / totalMealsThisMonth).toFixed(2)) : 0;
+    const currentMealRate = currSummary ? Number(currSummary.mealRate) : 0;
 
     const balance = userBalance ? Number(userBalance.balance) : 0;
 

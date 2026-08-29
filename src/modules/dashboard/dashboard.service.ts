@@ -461,7 +461,7 @@ export class DashboardService {
     const netMarketCost = totalMarketingCost + totalShopDebtCost + adjPrev - adjNext;
     const currentMealRate = currSummary ? Number(currSummary.mealRate) : 0;
 
-    const balance = userBalance ? Number(userBalance.balance) : 0;
+    const balance = monthlySummary ? -Number(monthlySummary.currentDue) : 0;
 
     if (balance < 0) {
       try {

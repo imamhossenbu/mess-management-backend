@@ -234,11 +234,15 @@ export class MonthlySummaryService {
     },
   ) {
     const monthYear = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
     // Delete existing summary for this month
     await this.prisma.monthlySummary.deleteMany({
       where: {
-        monthYear: monthYear,
+        monthYear: {
+          gte: startOfDay(monthYear),
+          lte: endOfDay(endDate),
+        },
       },
     });
 

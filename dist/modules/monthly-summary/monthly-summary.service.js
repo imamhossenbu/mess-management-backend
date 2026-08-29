@@ -162,9 +162,13 @@ let MonthlySummaryService = class MonthlySummaryService {
     }
     async saveMonthlySummary(year, month, userSummaries, totals) {
         const monthYear = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
         await this.prisma.monthlySummary.deleteMany({
             where: {
-                monthYear: monthYear,
+                monthYear: {
+                    gte: (0, date_fns_1.startOfDay)(monthYear),
+                    lte: (0, date_fns_1.endOfDay)(endDate),
+                },
             },
         });
         for (const summary of userSummaries) {

@@ -830,17 +830,61 @@ export class DashboardService {
   }
 
   async getMemberBalances(year?: number, month?: number): Promise<MemberBalanceDto[]> {
-    const summary = await this.getMonthlySummaryForDashboard(year, month);
-    
-    const balances = summary.userSummaries.map((u) => ({
-      userId: u.userId,
-      userName: u.userName,
-      userEmail: u.userEmail,
-      userPhone: u.userPhone,
-      totalPaid: u.totalPaid,
-      balance: -u.currentDue, // negate currentDue because positive due = negative balance
-      lastUpdated: new Date(),
-    }));
+    const currentDate = new Date();
+    const queryYear = year || currentDate.getFullYear();
+    const queryMonth = month || currentDate.getMonth() + 1;
+
+    const startDate = new Date(queryYear, queryMonth - 1, 1);
+    const endDate = new Date(queryYear, queryMonth, 0, 23, 59, 59, 999);
+
+    const [users, meals, marketings, utilityBills, payments] = await Promise.all([
+      this.prisma.user.findMany({ where: { isActive: true } }),
+      this.prisma.meal.findMany({
+        where: { date: { gte: startDate, lte: endDate } },
+      }),
+      this.prisma.marketing.findMany({
+        where: { date: { gte: startDate, lte: endDate } },
+      }),
+      this.prisma.utilityBill.findMany({
+        where: { monthYear: { gte: startDate, lte: endDate } },
+      }),
+      this.prisma.payment.findMany({
+        where: { paymentDate: { gte: startDate, lte: endDate } },
+      }),
+    ]);
+
+    const totalMeals = meals.reduce((sum, m) => sum + m.totalMeal, 0);
+    const totalMarketingCost = marketings.reduce((sum, m) => sum + Number(m.totalAmount), 0);
+    const totalUtilityCost = utilityBills.reduce((sum, b) => sum + Number(b.amount), 0);
+    const mealRate = totalMeals > 0 ? totalMarketingCost / totalMeals : 0;
+    const perPersonUtility = users.length > 0 ? totalUtilityCost / users.length : 0;
+
+    const userPaymentMap = new Map<string, number>();
+    payments.forEach((payment) => {
+      userPaymentMap.set(payment.userId, (userPaymentMap.get(payment.userId) || 0) + Number(payment.amount));
+    });
+
+    const userMealMap = new Map<string, number>();
+    meals.forEach((meal) => {
+      userMealMap.set(meal.userId, (userMealMap.get(meal.userId) || 0) + meal.totalMeal);
+    });
+
+    const balances = users.map((u) => {
+      const userTotalMeal = userMealMap.get(u.id) || 0;
+      const totalBill = (userTotalMeal * mealRate) + perPersonUtility;
+      const totalPaid = userPaymentMap.get(u.id) || 0;
+      const currentDue = totalBill - totalPaid;
+
+      return {
+        userId: u.id,
+        userName: u.name,
+        userEmail: u.email || undefined,
+        userPhone: u.phone || undefined,
+        totalPaid: totalPaid,
+        balance: -currentDue, // negative due = positive balance
+        lastUpdated: new Date(),
+      };
+    });
 
     return balances.sort((a, b) => b.balance - a.balance);
   }

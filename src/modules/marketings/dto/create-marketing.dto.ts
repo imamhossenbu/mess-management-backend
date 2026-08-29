@@ -18,19 +18,22 @@ export class MarketingItemDto {
   @IsString()
   itemName: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, required: false })
   @IsNumber()
   @Min(0.01)
-  quantity: number;
+  @IsOptional()
+  quantity?: number;
 
-  @ApiProperty({ enum: Unit, example: "KG" })
+  @ApiProperty({ enum: Unit, example: "KG", required: false })
   @IsEnum(Unit)
-  unit: Unit;
+  @IsOptional()
+  unit?: Unit;
 
-  @ApiProperty({ example: 350 })
+  @ApiProperty({ example: 350, required: false })
   @IsNumber()
   @Min(0)
-  price: number;
+  @IsOptional()
+  price?: number;
 
   @ApiProperty({ example: 350 })
   @IsNumber()

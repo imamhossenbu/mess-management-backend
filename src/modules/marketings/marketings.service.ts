@@ -68,9 +68,9 @@ export class MarketingsService {
         items: {
           create: createMarketingDto.items.map((item) => ({
             itemName: item.itemName,
-            quantity: item.quantity,
-            unit: item.unit,
-            price: item.price,
+            quantity: item.quantity !== undefined ? item.quantity : 1,
+            unit: item.unit || "PIECE",
+            price: item.price !== undefined ? item.price : item.totalPrice,
             totalPrice: item.totalPrice,
             note: item.note,
           })),

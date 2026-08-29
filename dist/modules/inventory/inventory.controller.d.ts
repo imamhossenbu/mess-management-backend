@@ -83,8 +83,8 @@ export declare class InventoryController {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     updateInventoryItem(name: string, dto: UpdateInventoryItemDto): Promise<{
         quantity: number;
@@ -94,8 +94,8 @@ export declare class InventoryController {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     addInventory(dto: AddInventoryDto): Promise<{
         quantity: number;
@@ -105,8 +105,8 @@ export declare class InventoryController {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     removeInventory(dto: RemoveInventoryDto): Promise<{
         quantity: number;
@@ -116,8 +116,8 @@ export declare class InventoryController {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     setInventory(dto: SetInventoryDto): Promise<{
         quantity: number;
@@ -127,8 +127,8 @@ export declare class InventoryController {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     deleteInventoryItem(name: string): Promise<{
         message: string;

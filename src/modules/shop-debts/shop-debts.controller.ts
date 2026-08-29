@@ -52,14 +52,16 @@ export class ShopDebtsController {
   }
 
   @Get("monthly")
-  @ApiOperation({ summary: "Get monthly shop debt data" })
+  @ApiOperation({ summary: "Get monthly or custom range shop debt data" })
   async getMonthlyData(
-    @Query("year", ParseIntPipe) year?: number,
-    @Query("month", ParseIntPipe) month?: number,
+    @Query("year") year?: string,
+    @Query("month") month?: string,
+    @Query("startDate") startDate?: string,
+    @Query("endDate") endDate?: string,
   ) {
-    const queryYear = year || new Date().getFullYear();
-    const queryMonth = month || new Date().getMonth() + 1;
-    return this.shopDebtsService.getMonthlyData(queryYear, queryMonth);
+    const queryYear = year ? parseInt(year) : new Date().getFullYear();
+    const queryMonth = month ? parseInt(month) : new Date().getMonth() + 1;
+    return this.shopDebtsService.getMonthlyData(queryYear, queryMonth, startDate, endDate);
   }
 
   @Patch("debt/:id")

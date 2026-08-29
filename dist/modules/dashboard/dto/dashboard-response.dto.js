@@ -108,6 +108,10 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Object)
 ], DashboardStatsDto.prototype, "recentActivities", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: () => MemberDashboardDto, required: false }),
+    __metadata("design:type", MemberDashboardDto)
+], DashboardStatsDto.prototype, "myStats", void 0);
 class MemberDashboardDto {
 }
 exports.MemberDashboardDto = MemberDashboardDto;

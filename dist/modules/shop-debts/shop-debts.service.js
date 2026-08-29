@@ -119,10 +119,19 @@ let ShopDebtsService = class ShopDebtsService {
             shopWiseSummary: shopWiseSummary.sort((a, b) => b.currentDue - a.currentDue),
         };
     }
-    async getMonthlyData(year, month) {
-        const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
-        endDate.setHours(23, 59, 59, 999);
+    async getMonthlyData(year, month, customStartDate, customEndDate) {
+        let startDate = new Date(year, month - 1, 1);
+        let endDate = new Date(year, month, 0);
+        if (customStartDate) {
+            startDate = new Date(customStartDate);
+        }
+        if (customEndDate) {
+            endDate = new Date(customEndDate);
+            endDate.setHours(23, 59, 59, 999);
+        }
+        else {
+            endDate.setHours(23, 59, 59, 999);
+        }
         const debts = await this.prisma.shopDebt.findMany({
             where: {
                 date: {
@@ -152,8 +161,8 @@ let ShopDebtsService = class ShopDebtsService {
             orderBy: { date: "desc" },
         });
         return {
-            month: (0, date_fns_1.format)(startDate, "MMMM"),
-            year,
+            month: customStartDate && customEndDate ? "Custom Range" : (0, date_fns_1.format)(startDate, "MMMM"),
+            year: customStartDate && customEndDate ? 0 : year,
             debts: debts.map(d => ({
                 ...d,
                 amount: Number(d.amount),

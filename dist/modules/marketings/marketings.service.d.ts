@@ -9,7 +9,7 @@ export declare class MarketingsService {
     private cloudinaryService;
     private paymentsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService, cloudinaryService: CloudinaryService, paymentsService: PaymentsService);
-    create(userId: string, createMarketingDto: CreateMarketingDto, file?: any): Promise<{
+    create(requestUserId: string, createMarketingDto: CreateMarketingDto, file?: any): Promise<{
         id: string;
         userId: string;
         date: Date;

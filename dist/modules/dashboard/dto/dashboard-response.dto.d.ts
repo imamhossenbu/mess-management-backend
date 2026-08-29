@@ -29,6 +29,7 @@ export declare class DashboardStatsDto {
         marketings: any[];
         payments: any[];
     };
+    myStats?: MemberDashboardDto;
 }
 export declare class MemberDashboardDto {
     userId: string;

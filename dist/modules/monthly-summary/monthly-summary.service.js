@@ -208,6 +208,14 @@ let MonthlySummaryService = class MonthlySummaryService {
                     },
                 });
             }
+            else {
+                await this.prisma.userBalance.create({
+                    data: {
+                        userId: summary.userId,
+                        balance: newBalance,
+                    },
+                });
+            }
         }
     }
     async sendNotifications(year, month, userSummaries) {

@@ -289,6 +289,13 @@ export class MonthlySummaryService {
             lastUpdated: new Date(),
           },
         });
+      } else {
+        await this.prisma.userBalance.create({
+          data: {
+            userId: summary.userId,
+            balance: newBalance,
+          },
+        });
       }
     }
   }

@@ -24,9 +24,10 @@ let MarketingsService = class MarketingsService {
         this.cloudinaryService = cloudinaryService;
         this.paymentsService = paymentsService;
     }
-    async create(userId, createMarketingDto, file) {
+    async create(requestUserId, createMarketingDto, file) {
+        const targetUserId = createMarketingDto.memberId || requestUserId;
         const user = await this.prisma.user.findUnique({
-            where: { id: userId, isActive: true },
+            where: { id: targetUserId, isActive: true },
         });
         if (!user) {
             throw new common_1.NotFoundException(`User not found or inactive`);
@@ -34,7 +35,7 @@ let MarketingsService = class MarketingsService {
         let imageUrl = null;
         if (file) {
             try {
-                imageUrl = await this.cloudinaryService.uploadFile(file, `marketings/${userId}`);
+                imageUrl = await this.cloudinaryService.uploadFile(file, `marketings/${targetUserId}`);
             }
             catch (error) {
                 throw new common_1.BadRequestException("Failed to upload image");
@@ -46,7 +47,7 @@ let MarketingsService = class MarketingsService {
         const totalAmount = createMarketingDto.items.reduce((sum, item) => sum + item.totalPrice, 0);
         const marketing = await this.prisma.marketing.create({
             data: {
-                userId,
+                userId: targetUserId,
                 date: date,
                 shopName: createMarketingDto.shopName,
                 totalAmount: totalAmount,
@@ -79,7 +80,7 @@ let MarketingsService = class MarketingsService {
         await this.sendNotifications(marketing, user);
         if (createMarketingDto.paymentType === client_1.PaymentType.SELF) {
             await this.paymentsService.create({
-                userId,
+                userId: targetUserId,
                 amount: totalAmount,
                 paymentDate: date.toISOString(),
                 paymentMethod: "CASH",

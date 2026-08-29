@@ -62,6 +62,11 @@ export class CreateMarketingDto {
   @IsOptional()
   paymentType?: PaymentType;
 
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  memberId?: string;
+
   @ApiProperty({ type: [MarketingItemDto] })
   @Transform(({ value }) => {
     let parsed = value;

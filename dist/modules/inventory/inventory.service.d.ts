@@ -54,8 +54,8 @@ export declare class InventoryService {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     updateInventoryItem(itemName: string, dto: UpdateInventoryItemDto): Promise<{
         quantity: number;
@@ -65,8 +65,8 @@ export declare class InventoryService {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     addInventory(dto: AddInventoryDto): Promise<{
         quantity: number;
@@ -76,8 +76,8 @@ export declare class InventoryService {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     removeInventory(dto: RemoveInventoryDto): Promise<{
         quantity: number;
@@ -87,8 +87,8 @@ export declare class InventoryService {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     setInventory(dto: SetInventoryDto): Promise<{
         quantity: number;
@@ -98,8 +98,8 @@ export declare class InventoryService {
         updatedAt: Date;
         name: string;
         isActive: boolean;
-        lastUpdated: Date;
         category: import(".prisma/client").$Enums.InventoryCategory;
+        lastUpdated: Date;
     }>;
     getStockLogs(itemName?: string): Promise<({
         inventoryItem: {

@@ -5,7 +5,7 @@ export declare class DashboardService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    getAdminDashboard(): Promise<DashboardStatsDto>;
+    getAdminDashboard(userId: string): Promise<DashboardStatsDto>;
     getMemberDashboard(userId: string): Promise<MemberDashboardDto>;
     getDailySummary(date?: string): Promise<DailySummaryDto>;
     getMonthlySummaryForDashboard(year?: number, month?: number): Promise<MonthlySummaryDto>;

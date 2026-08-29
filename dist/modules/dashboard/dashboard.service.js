@@ -19,7 +19,7 @@ let DashboardService = class DashboardService {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
     }
-    async getAdminDashboard() {
+    async getAdminDashboard(userId) {
         const today = new Date();
         const startToday = (0, date_fns_1.startOfDay)(today);
         const endToday = (0, date_fns_1.endOfDay)(today);
@@ -89,18 +89,27 @@ let DashboardService = class DashboardService {
         const totalPayments = monthPayments.reduce((sum, p) => sum + Number(p.amount), 0);
         const allBalances = await this.prisma.userBalance.findMany({});
         const totalDue = allBalances.reduce((sum, b) => sum + Number(b.balance), 0);
-        const dailySummary = await this.prisma.dailySummary.findFirst({
+        const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const prevSummary = await this.prisma.monthlySummary.findFirst({
+            where: { monthYear: prevMonthDate }
+        });
+        const adjPrev = prevSummary ? Number(prevSummary.adjustmentToNext) : 0;
+        const currMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const currSummary = await this.prisma.monthlySummary.findFirst({
+            where: { monthYear: currMonthDate }
+        });
+        const adjNext = currSummary ? Number(currSummary.adjustmentToNext) : 0;
+        const monthShopDebts = await this.prisma.shopDebt.findMany({
             where: {
                 date: {
-                    gte: startToday,
-                    lte: endToday,
+                    gte: startMonth,
+                    lte: endMonth,
                 },
             },
-            orderBy: {
-                date: "desc",
-            },
         });
-        const mealRate = dailySummary?.mealRate || 0;
+        const totalShopDebtCost = monthShopDebts.reduce((sum, d) => sum + Number(d.amount), 0);
+        const netMarketCost = totalMarketingCost + totalShopDebtCost + adjPrev - adjNext;
+        const mealRate = totalMealsThisMonth > 0 ? Number((netMarketCost / totalMealsThisMonth).toFixed(2)) : 0;
         const inventoryItems = await this.prisma.inventoryItem.findMany({
             where: { isActive: true },
             orderBy: [{ category: "asc" }, { name: "asc" }],
@@ -193,6 +202,7 @@ let DashboardService = class DashboardService {
             }
         }
         const mealBreakdown = await this.getMealBreakdown(today);
+        const myStats = await this.getMemberDashboard(userId);
         return {
             totalMembers,
             activeMembers,
@@ -238,6 +248,7 @@ let DashboardService = class DashboardService {
                     userId: p.userId || "",
                 })),
             },
+            myStats,
         };
     }
     async getMemberDashboard(userId) {
@@ -302,10 +313,45 @@ let DashboardService = class DashboardService {
                 totalMeal: true,
             },
         });
-        const dailySummary = await this.prisma.dailySummary.findFirst({
-            orderBy: { date: "desc" },
-            select: { mealRate: true },
+        const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const prevSummary = await this.prisma.monthlySummary.findFirst({
+            where: { monthYear: prevMonthDate }
         });
+        const adjPrev = prevSummary ? Number(prevSummary.adjustmentToNext) : 0;
+        const currMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const currSummary = await this.prisma.monthlySummary.findFirst({
+            where: { monthYear: currMonthDate }
+        });
+        const adjNext = currSummary ? Number(currSummary.adjustmentToNext) : 0;
+        const monthMarketings = await this.prisma.marketing.findMany({
+            where: {
+                date: {
+                    gte: startMonth,
+                    lte: endMonth,
+                },
+            },
+        });
+        const totalMarketingCost = monthMarketings.reduce((sum, m) => sum + Number(m.totalAmount), 0);
+        const monthShopDebts = await this.prisma.shopDebt.findMany({
+            where: {
+                date: {
+                    gte: startMonth,
+                    lte: endMonth,
+                },
+            },
+        });
+        const totalShopDebtCost = monthShopDebts.reduce((sum, d) => sum + Number(d.amount), 0);
+        const allMealsThisMonth = await this.prisma.meal.findMany({
+            where: {
+                date: {
+                    gte: startMonth,
+                    lte: endMonth,
+                },
+            },
+        });
+        const totalMealsThisMonth = allMealsThisMonth.reduce((sum, m) => sum + m.totalMeal, 0);
+        const netMarketCost = totalMarketingCost + totalShopDebtCost + adjPrev - adjNext;
+        const currentMealRate = totalMealsThisMonth > 0 ? Number((netMarketCost / totalMealsThisMonth).toFixed(2)) : 0;
         const balance = userBalance ? Number(userBalance.balance) : 0;
         if (balance < 0) {
             try {
@@ -332,7 +378,7 @@ let DashboardService = class DashboardService {
             totalBillThisMonth: monthlySummary ? Number(monthlySummary.totalBill) : 0,
             totalPaidThisMonth: monthlySummary ? Number(monthlySummary.totalPaid) : 0,
             currentBalance: balance,
-            mealRate: dailySummary ? Number(dailySummary.mealRate) : 0,
+            mealRate: currentMealRate,
             recentPayments,
             recentMeals,
         };

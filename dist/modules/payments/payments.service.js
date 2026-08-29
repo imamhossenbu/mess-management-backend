@@ -49,7 +49,7 @@ let PaymentsService = class PaymentsService {
             },
         });
         await this.updateUserBalance(userId);
-        await this.notificationsService.sendPaymentConfirmation(userId, amount);
+        await this.notificationsService.sendPaymentConfirmation(userId, amount, date);
         const admins = await this.prisma.user.findMany({
             where: {
                 role: "ADMIN",
@@ -61,7 +61,7 @@ let PaymentsService = class PaymentsService {
                 userId: admin.id,
                 type: "PAYMENT",
                 title: "New Payment Received",
-                message: `${user.name} made a payment of ${amount} TK. Method: ${paymentMethod || "CASH"}`,
+                message: `${user.name} made a payment of ${amount} TK for ${date.toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Method: ${paymentMethod || "CASH"}`,
                 link: `/payments/${payment.id}`,
             });
         }

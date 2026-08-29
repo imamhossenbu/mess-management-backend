@@ -150,10 +150,20 @@ export class ShopDebtsService {
 
   // ==================== GET MONTHLY DATA ====================
 
-  async getMonthlyData(year: number, month: number) {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-    endDate.setHours(23, 59, 59, 999);
+  async getMonthlyData(year: number, month: number, customStartDate?: string, customEndDate?: string) {
+    let startDate = new Date(year, month - 1, 1);
+    let endDate = new Date(year, month, 0);
+    
+    if (customStartDate) {
+      startDate = new Date(customStartDate);
+    }
+    
+    if (customEndDate) {
+      endDate = new Date(customEndDate);
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      endDate.setHours(23, 59, 59, 999);
+    }
 
     const debts = await this.prisma.shopDebt.findMany({
       where: {
@@ -186,8 +196,8 @@ export class ShopDebtsService {
     });
 
     return {
-      month: format(startDate, "MMMM"),
-      year,
+      month: customStartDate && customEndDate ? "Custom Range" : format(startDate, "MMMM"),
+      year: customStartDate && customEndDate ? 0 : year,
       debts: debts.map(d => ({
         ...d,
         amount: Number(d.amount),

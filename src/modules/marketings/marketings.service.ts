@@ -24,12 +24,14 @@ export class MarketingsService {
   // ==================== CREATE ====================
 
   async create(
-    userId: string,
+    requestUserId: string,
     createMarketingDto: CreateMarketingDto,
     file?: any,
   ) {
+    const targetUserId = createMarketingDto.memberId || requestUserId;
+    
     const user = await this.prisma.user.findUnique({
-      where: { id: userId, isActive: true },
+      where: { id: targetUserId, isActive: true },
     });
 
     if (!user) {
@@ -42,7 +44,7 @@ export class MarketingsService {
       try {
         imageUrl = await this.cloudinaryService.uploadFile(
           file,
-          `marketings/${userId}`,
+          `marketings/${targetUserId}`,
         );
       } catch (error) {
         throw new BadRequestException("Failed to upload image");
@@ -60,7 +62,7 @@ export class MarketingsService {
 
     const marketing = await this.prisma.marketing.create({
       data: {
-        userId,
+        userId: targetUserId,
         date: date,
         shopName: createMarketingDto.shopName,
         totalAmount: totalAmount,
@@ -96,7 +98,7 @@ export class MarketingsService {
     // Auto-deposit if PaymentType is SELF
     if (createMarketingDto.paymentType === PaymentType.SELF) {
       await this.paymentsService.create({
-        userId,
+        userId: targetUserId,
         amount: totalAmount,
         paymentDate: date.toISOString(),
         paymentMethod: "CASH" as any, // PaymentMethod.CASH

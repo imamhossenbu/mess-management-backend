@@ -11,6 +11,7 @@ export declare class CreateMarketingDto {
     date?: string;
     shopName?: string;
     paymentType?: PaymentType;
+    memberId?: string;
     items: MarketingItemDto[];
     note?: string;
     image?: any;

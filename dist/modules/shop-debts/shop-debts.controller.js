@@ -34,10 +34,10 @@ let ShopDebtsController = class ShopDebtsController {
     async getSummary() {
         return this.shopDebtsService.getSummary();
     }
-    async getMonthlyData(year, month) {
-        const queryYear = year || new Date().getFullYear();
-        const queryMonth = month || new Date().getMonth() + 1;
-        return this.shopDebtsService.getMonthlyData(queryYear, queryMonth);
+    async getMonthlyData(year, month, startDate, endDate) {
+        const queryYear = year ? parseInt(year) : new Date().getFullYear();
+        const queryMonth = month ? parseInt(month) : new Date().getMonth() + 1;
+        return this.shopDebtsService.getMonthlyData(queryYear, queryMonth, startDate, endDate);
     }
     async updateDebt(id, updateShopDebtDto) {
         return this.shopDebtsService.updateDebt(id, updateShopDebtDto);
@@ -89,11 +89,13 @@ __decorate([
 ], ShopDebtsController.prototype, "getSummary", null);
 __decorate([
     (0, common_1.Get)("monthly"),
-    (0, swagger_1.ApiOperation)({ summary: "Get monthly shop debt data" }),
-    __param(0, (0, common_1.Query)("year", common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Query)("month", common_1.ParseIntPipe)),
+    (0, swagger_1.ApiOperation)({ summary: "Get monthly or custom range shop debt data" }),
+    __param(0, (0, common_1.Query)("year")),
+    __param(1, (0, common_1.Query)("month")),
+    __param(2, (0, common_1.Query)("startDate")),
+    __param(3, (0, common_1.Query)("endDate")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], ShopDebtsController.prototype, "getMonthlyData", null);
 __decorate([

@@ -76,6 +76,12 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMarketingDto.prototype, "paymentType", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateMarketingDto.prototype, "memberId", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ type: [MarketingItemDto] }),
     (0, class_transformer_1.Transform)(({ value }) => {
         let parsed = value;

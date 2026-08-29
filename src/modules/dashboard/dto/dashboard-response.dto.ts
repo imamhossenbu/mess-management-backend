@@ -75,6 +75,9 @@ export class DashboardStatsDto {
     marketings: any[];
     payments: any[];
   };
+
+  @ApiProperty({ type: () => MemberDashboardDto, required: false })
+  myStats?: MemberDashboardDto;
 }
 
 export class MemberDashboardDto {

@@ -428,9 +428,10 @@ export class NotificationsService {
     return notification;
   }
 
-  async sendPaymentConfirmation(userId: string, amount: number) {
+  async sendPaymentConfirmation(userId: string, amount: number, paymentDate: Date = new Date()) {
+    const monthYear = paymentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
     const title = "Payment Confirmation";
-    const message = `Your payment of ${amount} TK has been received.`;
+    const message = `Your payment of ${amount} TK for ${monthYear} has been received.`;
 
     const notification = await this.create({
       userId,
@@ -449,8 +450,8 @@ export class NotificationsService {
       });
 
       if (user?.email) {
-        const subject = "Payment Confirmation";
-        const text = `Hello ${user.name},\n\nYour payment of ${amount} TK has been received successfully.\n\nThank you for your payment.`;
+        const subject = `Payment Confirmation - ${monthYear}`;
+        const text = `Hello ${user.name},\n\nYour payment of ${amount} TK for ${monthYear} has been received successfully.\n\nThank you for your payment.`;
         const html = `
           <!DOCTYPE html>
           <html>
@@ -470,7 +471,7 @@ export class NotificationsService {
                 <h1>✅ Payment Confirmed</h1>
               </div>
               <p>Hello <strong>${user.name}</strong>,</p>
-              <p>Your payment has been received successfully.</p>
+              <p>Your payment for <strong>${monthYear}</strong> has been received successfully.</p>
               <div class="amount">${amount} TK</div>
               <p style="text-align: center;">Thank you for your payment!</p>
               <div class="footer">

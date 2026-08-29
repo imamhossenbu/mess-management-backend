@@ -224,6 +224,9 @@ export class MemberBalanceDto {
   balance: number;
 
   @ApiProperty()
+  totalPaid?: number;
+
+  @ApiProperty()
   lastUpdated: Date;
 }
 

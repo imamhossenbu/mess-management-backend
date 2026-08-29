@@ -5,13 +5,13 @@ export declare class DashboardService {
     private prisma;
     private notificationsService;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
-    getAdminDashboard(userId: string): Promise<DashboardStatsDto>;
-    getMemberDashboard(userId: string): Promise<MemberDashboardDto>;
+    getAdminDashboard(userId: string, year?: number, month?: number): Promise<DashboardStatsDto>;
+    getMemberDashboard(userId: string, year?: number, month?: number): Promise<MemberDashboardDto>;
     getDailySummary(date?: string): Promise<DailySummaryDto>;
     getMonthlySummaryForDashboard(year?: number, month?: number): Promise<MonthlySummaryDto>;
     getActivities(limit?: number, offset?: number): Promise<ActivityDto>;
     getMealRateHistory(days?: number): Promise<MealRateHistoryDto[]>;
-    getMemberBalances(): Promise<MemberBalanceDto[]>;
+    getMemberBalances(year?: number, month?: number): Promise<MemberBalanceDto[]>;
     getMessStats(): Promise<MessStatsDto>;
     getWeeklySummary(): Promise<WeeklySummaryDto[]>;
     private getMealBreakdown;

@@ -94,6 +94,7 @@ export declare class MemberBalanceDto {
     userEmail?: string;
     userPhone?: string;
     balance: number;
+    totalPaid?: number;
     lastUpdated: Date;
 }
 export declare class MessStatsDto {

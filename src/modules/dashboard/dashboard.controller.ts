@@ -22,14 +22,26 @@ export class DashboardController {
 
   @Get("admin")
   @Roles("ADMIN", "MANAGER")
-  async getAdminDashboard(@Request() req) {
-    return this.dashboardService.getAdminDashboard(req.user.id);
+  async getAdminDashboard(
+    @Request() req,
+    @Query("year") year?: string,
+    @Query("month") month?: string
+  ) {
+    const yearNum = year ? parseInt(year) : undefined;
+    const monthNum = month ? parseInt(month) : undefined;
+    return this.dashboardService.getAdminDashboard(req.user.id, yearNum, monthNum);
   }
 
   @Get("member")
   @Roles("ADMIN", "MANAGER", "MEMBER")
-  async getMemberDashboard(@Request() req) {
-    return this.dashboardService.getMemberDashboard(req.user.id);
+  async getMemberDashboard(
+    @Request() req,
+    @Query("year") year?: string,
+    @Query("month") month?: string
+  ) {
+    const yearNum = year ? parseInt(year) : undefined;
+    const monthNum = month ? parseInt(month) : undefined;
+    return this.dashboardService.getMemberDashboard(req.user.id, yearNum, monthNum);
   }
 
   @Get("daily")
@@ -91,8 +103,13 @@ export class DashboardController {
 
   @Get("member-balances")
   @Roles("ADMIN", "MANAGER")
-  async getMemberBalances() {
-    return this.dashboardService.getMemberBalances();
+  async getMemberBalances(
+    @Query("year") year?: string,
+    @Query("month") month?: string
+  ) {
+    const yearNum = year ? parseInt(year) : undefined;
+    const monthNum = month ? parseInt(month) : undefined;
+    return this.dashboardService.getMemberBalances(yearNum, monthNum);
   }
 
   @Get("mess-stats")

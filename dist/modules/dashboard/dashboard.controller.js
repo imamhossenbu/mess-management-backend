@@ -23,11 +23,15 @@ let DashboardController = class DashboardController {
     constructor(dashboardService) {
         this.dashboardService = dashboardService;
     }
-    async getAdminDashboard(req) {
-        return this.dashboardService.getAdminDashboard(req.user.id);
+    async getAdminDashboard(req, year, month) {
+        const yearNum = year ? parseInt(year) : undefined;
+        const monthNum = month ? parseInt(month) : undefined;
+        return this.dashboardService.getAdminDashboard(req.user.id, yearNum, monthNum);
     }
-    async getMemberDashboard(req) {
-        return this.dashboardService.getMemberDashboard(req.user.id);
+    async getMemberDashboard(req, year, month) {
+        const yearNum = year ? parseInt(year) : undefined;
+        const monthNum = month ? parseInt(month) : undefined;
+        return this.dashboardService.getMemberDashboard(req.user.id, yearNum, monthNum);
     }
     async getDailySummary(date) {
         return this.dashboardService.getDailySummary(date);
@@ -58,8 +62,10 @@ let DashboardController = class DashboardController {
         const daysNum = days ? parseInt(days) : 30;
         return this.dashboardService.getMealRateHistory(daysNum);
     }
-    async getMemberBalances() {
-        return this.dashboardService.getMemberBalances();
+    async getMemberBalances(year, month) {
+        const yearNum = year ? parseInt(year) : undefined;
+        const monthNum = month ? parseInt(month) : undefined;
+        return this.dashboardService.getMemberBalances(yearNum, monthNum);
     }
     async getMessStats() {
         return this.dashboardService.getMessStats();
@@ -73,16 +79,20 @@ __decorate([
     (0, common_1.Get)("admin"),
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)("year")),
+    __param(2, (0, common_1.Query)("month")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getAdminDashboard", null);
 __decorate([
     (0, common_1.Get)("member"),
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER", "MEMBER"),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)("year")),
+    __param(2, (0, common_1.Query)("month")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getMemberDashboard", null);
 __decorate([
@@ -122,8 +132,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)("member-balances"),
     (0, roles_decorator_1.Roles)("ADMIN", "MANAGER"),
+    __param(0, (0, common_1.Query)("year")),
+    __param(1, (0, common_1.Query)("month")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getMemberBalances", null);
 __decorate([

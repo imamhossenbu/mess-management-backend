@@ -39,12 +39,16 @@ export class DashboardService {
 
   // ==================== ADMIN DASHBOARD ====================
 
-  async getAdminDashboard(userId: string): Promise<DashboardStatsDto> {
+  async getAdminDashboard(userId: string, year?: number, month?: number): Promise<DashboardStatsDto> {
     const today = new Date();
+    const queryYear = year || today.getFullYear();
+    const queryMonth = month || today.getMonth() + 1;
+    
     const startToday = startOfDay(today);
     const endToday = endOfDay(today);
-    const startMonth = startOfMonth(today);
-    const endMonth = endOfMonth(today);
+    
+    const startMonth = new Date(queryYear, queryMonth - 1, 1);
+    const endMonth = new Date(queryYear, queryMonth, 0, 23, 59, 59, 999);
 
     // 1. Total Members
     const totalMembers = await this.prisma.user.count({
@@ -149,7 +153,7 @@ export class DashboardService {
     });
     const adjPrev = prevSummary ? Number(prevSummary.adjustmentToNext) : 0;
 
-    const currMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    const currMonthDate = new Date(queryYear, queryMonth - 1, 1);
     const currSummary = await this.prisma.monthlySummary.findFirst({
       where: { monthYear: currMonthDate }
     });
@@ -337,14 +341,17 @@ export class DashboardService {
 
   // ==================== MEMBER DASHBOARD ====================
 
-  async getMemberDashboard(userId: string): Promise<MemberDashboardDto> {
+  async getMemberDashboard(userId: string, year?: number, month?: number): Promise<MemberDashboardDto> {
     if (!userId) {
       throw new BadRequestException("User ID is required");
     }
 
     const today = new Date();
-    const startMonth = startOfMonth(today);
-    const endMonth = endOfMonth(today);
+    const queryYear = year || today.getFullYear();
+    const queryMonth = month || today.getMonth() + 1;
+
+    const startMonth = new Date(queryYear, queryMonth - 1, 1);
+    const endMonth = new Date(queryYear, queryMonth, 0, 23, 59, 59, 999);
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -415,7 +422,7 @@ export class DashboardService {
     });
     const adjPrev = prevSummary ? Number(prevSummary.adjustmentToNext) : 0;
 
-    const currMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    const currMonthDate = new Date(queryYear, queryMonth - 1, 1);
     const currSummary = await this.prisma.monthlySummary.findFirst({
       where: { monthYear: currMonthDate }
     });
@@ -822,31 +829,20 @@ export class DashboardService {
     }));
   }
 
-  async getMemberBalances(): Promise<MemberBalanceDto[]> {
-    const balances = await this.prisma.userBalance.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-      },
-      orderBy: {
-        balance: "desc",
-      },
-    });
-
-    return balances.map((b) => ({
-      userId: b.userId,
-      userName: b.user.name,
-      userEmail: b.user.email || undefined,
-      userPhone: b.user.phone || undefined,
-      balance: Number(b.balance),
-      lastUpdated: b.lastUpdated,
+  async getMemberBalances(year?: number, month?: number): Promise<MemberBalanceDto[]> {
+    const summary = await this.getMonthlySummaryForDashboard(year, month);
+    
+    const balances = summary.userSummaries.map((u) => ({
+      userId: u.userId,
+      userName: u.userName,
+      userEmail: u.userEmail,
+      userPhone: u.userPhone,
+      totalPaid: u.totalPaid,
+      balance: -u.currentDue, // negate currentDue because positive due = negative balance
+      lastUpdated: new Date(),
     }));
+
+    return balances.sort((a, b) => b.balance - a.balance);
   }
 
   async getMessStats(): Promise<MessStatsDto> {

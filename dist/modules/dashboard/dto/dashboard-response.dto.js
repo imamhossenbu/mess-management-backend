@@ -292,6 +292,10 @@ __decorate([
 ], MemberBalanceDto.prototype, "balance", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], MemberBalanceDto.prototype, "totalPaid", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
 ], MemberBalanceDto.prototype, "lastUpdated", void 0);
 class MessStatsDto {

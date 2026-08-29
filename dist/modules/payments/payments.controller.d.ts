@@ -37,14 +37,7 @@ export declare class PaymentsController {
         updatedAt: Date;
         userId: string;
     }[]>;
-    getAllUserBalances(): Promise<{
-        userId: string;
-        userName: string;
-        phone: string;
-        email: string;
-        totalPaid: number;
-        balance: number;
-    }[]>;
+    getAllUserBalances(): Promise<import("../dashboard/dto").MemberBalanceDto[]>;
     getMonthlySummary(year?: number, month?: number): Promise<{
         month: string;
         year: number;

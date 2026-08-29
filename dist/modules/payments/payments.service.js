@@ -15,10 +15,12 @@ const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
 const notifications_service_1 = require("../notifications/notifications.service");
+const dashboard_service_1 = require("../dashboard/dashboard.service");
 let PaymentsService = class PaymentsService {
-    constructor(prisma, notificationsService) {
+    constructor(prisma, notificationsService, dashboardService) {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
+        this.dashboardService = dashboardService;
     }
     async create(createPaymentDto) {
         const { userId, amount, paymentDate, paymentMethod, note } = createPaymentDto;
@@ -260,10 +262,10 @@ let PaymentsService = class PaymentsService {
         if (!user) {
             throw new common_1.NotFoundException(`User with ID ${userId} not found`);
         }
-        const totalPaid = user.payments.reduce((sum, p) => sum + Number(p.amount), 0);
-        const balance = user.userBalance?.balance
-            ? Number(user.userBalance.balance)
-            : 0;
+        const currentMonthBalances = await this.dashboardService.getMemberBalances();
+        const liveBalanceData = currentMonthBalances.find(b => b.userId === userId);
+        const balance = liveBalanceData?.balance || 0;
+        const totalPaid = liveBalanceData?.totalPaid || 0;
         if (balance < -5000) {
             await this.notificationsService.create({
                 userId: user.id,
@@ -285,37 +287,14 @@ let PaymentsService = class PaymentsService {
         };
     }
     async getAllUserBalances() {
-        const users = await this.prisma.user.findMany({
-            where: {
-                isActive: true,
-            },
-            include: {
-                userBalance: true,
-                payments: {
-                    orderBy: {
-                        paymentDate: "desc",
-                    },
-                },
-            },
-            orderBy: {
-                name: "asc",
-            },
-        });
-        const results = users.map((user) => ({
-            userId: user.id,
-            userName: user.name,
-            phone: user.phone || "",
-            email: user.email || "",
-            totalPaid: user.payments.reduce((sum, p) => sum + Number(p.amount), 0),
-            balance: user.userBalance?.balance ? Number(user.userBalance.balance) : 0,
-        }));
+        const results = await this.dashboardService.getMemberBalances();
         for (const user of results) {
             if (user.balance < -5000) {
                 await this.notificationsService.create({
                     userId: user.userId,
                     type: "BILL",
                     title: "High Due Alert",
-                    message: `You have a high due balance of ${Math.abs(user.balance)} TK. Please pay as soon as possible.`,
+                    message: `Your balance is Tk ${Math.abs(user.balance)}. Please clear your dues.`,
                     link: "/payments",
                 });
             }
@@ -469,6 +448,7 @@ exports.PaymentsService = PaymentsService;
 exports.PaymentsService = PaymentsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        dashboard_service_1.DashboardService])
 ], PaymentsService);
 //# sourceMappingURL=payments.service.js.map

@@ -10,6 +10,7 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { CreateUserDto, UpdateUserDto, UpdateProfileDto } from "./dto";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { DashboardService } from "../dashboard/dashboard.service";
 
 @Injectable()
 export class UsersService {
@@ -17,6 +18,7 @@ export class UsersService {
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
     private notificationsService: NotificationsService,
+    private dashboardService: DashboardService,
   ) {}
 
   // ==================== CREATE ====================
@@ -80,19 +82,19 @@ export class UsersService {
 
   async findAll() {
     const users = await this.prisma.user.findMany({
-      include: {
-        userBalance: true,
-      },
       orderBy: {
         createdAt: "desc",
       },
     });
 
+    const currentMonthBalances = await this.dashboardService.getMemberBalances();
+
     return users.map((user) => {
-      const { password, userBalance, ...safeUser } = user;
+      const { password, ...safeUser } = user;
+      const userBalance = currentMonthBalances.find(b => b.userId === user.id)?.balance || 0;
       return {
         ...safeUser,
-        balance: userBalance?.balance || 0,
+        balance: userBalance,
       };
     });
   }
@@ -142,9 +144,12 @@ export class UsersService {
 
     const { password, userBalance, ...safeUser } = user;
 
+    const currentMonthBalances = await this.dashboardService.getMemberBalances();
+    const liveBalance = currentMonthBalances.find(b => b.userId === id)?.balance || 0;
+
     return {
       ...safeUser,
-      balance: userBalance?.balance || 0,
+      balance: liveBalance,
     };
   }
 

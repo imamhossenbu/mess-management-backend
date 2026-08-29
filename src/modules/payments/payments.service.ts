@@ -9,12 +9,14 @@ import { CreatePaymentDto, UpdatePaymentDto } from "./dto";
 import { PaymentMethod } from "@prisma/client";
 import { startOfDay, endOfDay, format } from "date-fns";
 import { NotificationsService } from "../notifications/notifications.service";
+import { DashboardService } from "../dashboard/dashboard.service";
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private dashboardService: DashboardService
   ) {}
 
   // ==================== CREATE ====================
@@ -310,13 +312,10 @@ export class PaymentsService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    const totalPaid = user.payments.reduce(
-      (sum, p) => sum + Number(p.amount),
-      0,
-    );
-    const balance = user.userBalance?.balance
-      ? Number(user.userBalance.balance)
-      : 0;
+    const currentMonthBalances = await this.dashboardService.getMemberBalances();
+    const liveBalanceData = currentMonthBalances.find(b => b.userId === userId);
+    const balance = liveBalanceData?.balance || 0;
+    const totalPaid = liveBalanceData?.totalPaid || 0;
 
     // High due alert
     if (balance < -5000) {
@@ -342,31 +341,7 @@ export class PaymentsService {
   }
 
   async getAllUserBalances() {
-    const users = await this.prisma.user.findMany({
-      where: {
-        isActive: true,
-      },
-      include: {
-        userBalance: true,
-        payments: {
-          orderBy: {
-            paymentDate: "desc",
-          },
-        },
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-
-    const results = users.map((user) => ({
-      userId: user.id,
-      userName: user.name,
-      phone: user.phone || "",
-      email: user.email || "",
-      totalPaid: user.payments.reduce((sum, p) => sum + Number(p.amount), 0),
-      balance: user.userBalance?.balance ? Number(user.userBalance.balance) : 0,
-    }));
+    const results = await this.dashboardService.getMemberBalances();
 
     // High due alerts
     for (const user of results) {
@@ -375,12 +350,12 @@ export class PaymentsService {
           userId: user.userId,
           type: "BILL",
           title: "High Due Alert",
-          message: `You have a high due balance of ${Math.abs(user.balance)} TK. Please pay as soon as possible.`,
+          message: `Your balance is Tk ${Math.abs(user.balance)}. Please clear your dues.`,
           link: "/payments",
         });
       }
     }
-
+    
     return results;
   }
 

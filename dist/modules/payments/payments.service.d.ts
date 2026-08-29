@@ -1,10 +1,12 @@
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreatePaymentDto, UpdatePaymentDto } from "./dto";
 import { NotificationsService } from "../notifications/notifications.service";
+import { DashboardService } from "../dashboard/dashboard.service";
 export declare class PaymentsService {
     private prisma;
     private notificationsService;
-    constructor(prisma: PrismaService, notificationsService: NotificationsService);
+    private dashboardService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService, dashboardService: DashboardService);
     create(createPaymentDto: CreatePaymentDto): Promise<{
         userName: string;
         user: {
@@ -146,14 +148,7 @@ export declare class PaymentsService {
             userId: string;
         }[];
     }>;
-    getAllUserBalances(): Promise<{
-        userId: string;
-        userName: string;
-        phone: string;
-        email: string;
-        totalPaid: number;
-        balance: number;
-    }[]>;
+    getAllUserBalances(): Promise<import("../dashboard/dto").MemberBalanceDto[]>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         userName: string;
         user: {

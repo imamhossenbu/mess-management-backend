@@ -48,11 +48,13 @@ const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 const cloudinary_service_1 = require("../cloudinary/cloudinary.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const dashboard_service_1 = require("../dashboard/dashboard.service");
 let UsersService = class UsersService {
-    constructor(prisma, cloudinaryService, notificationsService) {
+    constructor(prisma, cloudinaryService, notificationsService, dashboardService) {
         this.prisma = prisma;
         this.cloudinaryService = cloudinaryService;
         this.notificationsService = notificationsService;
+        this.dashboardService = dashboardService;
     }
     async create(createUserDto) {
         const existingUser = await this.prisma.user.findUnique({
@@ -102,18 +104,17 @@ let UsersService = class UsersService {
     }
     async findAll() {
         const users = await this.prisma.user.findMany({
-            include: {
-                userBalance: true,
-            },
             orderBy: {
                 createdAt: "desc",
             },
         });
+        const currentMonthBalances = await this.dashboardService.getMemberBalances();
         return users.map((user) => {
-            const { password, userBalance, ...safeUser } = user;
+            const { password, ...safeUser } = user;
+            const userBalance = currentMonthBalances.find(b => b.userId === user.id)?.balance || 0;
             return {
                 ...safeUser,
-                balance: userBalance?.balance || 0,
+                balance: userBalance,
             };
         });
     }
@@ -157,9 +158,11 @@ let UsersService = class UsersService {
             throw new common_1.NotFoundException(`User with ID ${id} not found`);
         }
         const { password, userBalance, ...safeUser } = user;
+        const currentMonthBalances = await this.dashboardService.getMemberBalances();
+        const liveBalance = currentMonthBalances.find(b => b.userId === id)?.balance || 0;
         return {
             ...safeUser,
-            balance: userBalance?.balance || 0,
+            balance: liveBalance,
         };
     }
     async update(id, updateUserDto) {
@@ -533,6 +536,7 @@ exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         cloudinary_service_1.CloudinaryService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        dashboard_service_1.DashboardService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

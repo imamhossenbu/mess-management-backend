@@ -12,6 +12,7 @@ const users_service_1 = require("./users.service");
 const users_controller_1 = require("./users.controller");
 const cloudinary_module_1 = require("../cloudinary/cloudinary.module");
 const notifications_module_1 = require("../notifications/notifications.module");
+const dashboard_module_1 = require("../dashboard/dashboard.module");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
@@ -20,6 +21,7 @@ exports.UsersModule = UsersModule = __decorate([
         imports: [
             cloudinary_module_1.CloudinaryModule,
             notifications_module_1.NotificationsModule,
+            dashboard_module_1.DashboardModule,
         ],
         controllers: [users_controller_1.UsersController],
         providers: [users_service_1.UsersService],

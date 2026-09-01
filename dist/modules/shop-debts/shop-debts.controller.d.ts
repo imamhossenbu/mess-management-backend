@@ -3,34 +3,34 @@ import { CreateShopDebtDto, UpdateShopDebtDto, CreateShopPaymentDto, CreateBulkS
 export declare class ShopDebtsController {
     private readonly shopDebtsService;
     constructor(shopDebtsService: ShopDebtsService);
-    createDebt(createShopDebtDto: CreateShopDebtDto, req: any): Promise<{
+    createDebt(createShopDebtDto: CreateShopDebtDto, req: any): Promise<any[] | ({
         recordedBy: {
             name: string;
         };
     } & {
+        shopName: string;
+        date: Date;
+        itemDetails: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        shopName: string;
-        note: string | null;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
         recordedById: string | null;
-    }>;
+    })>;
     createBulkDebt(createBulkShopDebtDto: CreateBulkShopDebtDto, req: any): Promise<any[]>;
     createPayment(createShopPaymentDto: CreateShopPaymentDto, req: any): Promise<{
         paidBy: {
             name: string;
         };
     } & {
+        shopName: string;
+        date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        shopName: string;
-        note: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
         paidById: string | null;
     }>;
     getSummary(): Promise<{
@@ -53,13 +53,13 @@ export declare class ShopDebtsController {
             recordedBy: {
                 name: string;
             };
+            shopName: string;
+            date: Date;
+            itemDetails: string | null;
+            note: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
-            shopName: string;
-            note: string | null;
-            itemDetails: string | null;
             recordedById: string | null;
         }[];
         payments: {
@@ -68,34 +68,34 @@ export declare class ShopDebtsController {
             paidBy: {
                 name: string;
             };
+            shopName: string;
+            date: Date;
+            note: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            date: Date;
-            shopName: string;
-            note: string | null;
             paidById: string | null;
         }[];
     }>;
     updateDebt(id: string, updateShopDebtDto: UpdateShopDebtDto): Promise<{
+        shopName: string;
+        date: Date;
+        itemDetails: string | null;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        shopName: string;
-        note: string | null;
-        itemDetails: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
         recordedById: string | null;
     }>;
     updatePayment(id: string, updateShopPaymentDto: any): Promise<{
+        shopName: string;
+        date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        note: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
-        shopName: string;
-        note: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
         paidById: string | null;
     }>;
     removeDebt(id: string): Promise<{

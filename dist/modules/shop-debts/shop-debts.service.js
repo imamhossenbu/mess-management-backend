@@ -20,7 +20,18 @@ let ShopDebtsService = class ShopDebtsService {
         this.notificationsService = notificationsService;
     }
     async createDebt(createShopDebtDto, userId) {
+        if (createShopDebtDto.items && createShopDebtDto.items.length > 0) {
+            return this.createBulkDebt({
+                items: createShopDebtDto.items,
+                shopName: createShopDebtDto.shopName,
+                date: createShopDebtDto.date,
+                note: createShopDebtDto.note,
+            }, userId);
+        }
         const { shopName, date, itemDetails, amount, note } = createShopDebtDto;
+        if (amount === undefined || amount === null || isNaN(Number(amount))) {
+            throw new common_1.BadRequestException("Amount is required and must be a valid number");
+        }
         const debtDate = date ? new Date(date) : new Date();
         const debt = await this.prisma.shopDebt.create({
             data: {
@@ -52,9 +63,15 @@ let ShopDebtsService = class ShopDebtsService {
         return debt;
     }
     async createBulkDebt(createBulkShopDebtDto, userId) {
+        const { shopName, date, note, items } = createBulkShopDebtDto;
         const createdDebts = [];
-        for (const item of createBulkShopDebtDto.items) {
-            createdDebts.push(await this.createDebt(item, userId));
+        for (const item of items) {
+            createdDebts.push(await this.createDebt({
+                ...item,
+                shopName: item.shopName || shopName || "Local Shop",
+                date: item.date || date,
+                note: item.note || note,
+            }, userId));
         }
         return createdDebts;
     }

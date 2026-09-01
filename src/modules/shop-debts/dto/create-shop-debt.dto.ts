@@ -1,19 +1,21 @@
-// src/modules/shop-debts/dto/create-shop-debt.dto.ts
 import {
   IsString,
   IsNumber,
   IsOptional,
-  IsEnum,
   Min,
   IsDateString,
+  IsArray,
+  ValidateNested,
+  ArrayMinSize,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { DebtStatus } from "@prisma/client";
+import { Type } from "class-transformer";
 
 export class CreateShopDebtDto {
-  @ApiProperty({ example: "MR Traders" })
+  @ApiProperty({ example: "MR Traders", required: false })
   @IsString()
-  shopName: string;
+  @IsOptional()
+  shopName?: string;
 
   @ApiProperty({ example: "2026-08-08", required: false })
   @IsDateString()
@@ -25,19 +27,46 @@ export class CreateShopDebtDto {
   @IsOptional()
   itemDetails?: string;
 
-  @ApiProperty({ example: 5000 })
+  @ApiProperty({ example: 5000, required: false })
   @IsNumber()
   @Min(0)
-  amount: number;
-
+  @IsOptional()
+  amount?: number;
 
   @ApiProperty({ example: "আগস্ট মাসের বাকি", required: false })
   @IsString()
   @IsOptional()
   note?: string;
+
+  @ApiProperty({ type: [CreateShopDebtDto], required: false })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateShopDebtDto)
+  @IsOptional()
+  items?: CreateShopDebtDto[];
 }
 
 export class CreateBulkShopDebtDto {
+  @ApiProperty({ example: "MR Traders", required: false })
+  @IsString()
+  @IsOptional()
+  shopName?: string;
+
+  @ApiProperty({ example: "2026-08-08", required: false })
+  @IsDateString()
+  @IsOptional()
+  date?: string;
+
+  @ApiProperty({ example: "আগস্ট মাসের বাকি", required: false })
+  @IsString()
+  @IsOptional()
+  note?: string;
+
   @ApiProperty({ type: [CreateShopDebtDto] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateShopDebtDto)
   items: CreateShopDebtDto[];
 }
+

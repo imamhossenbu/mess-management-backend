@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
-import { CreateShopDebtDto, UpdateShopDebtDto } from "./dto";
+import { CreateShopDebtDto, UpdateShopDebtDto, CreateBulkShopDebtDto } from "./dto";
 import { CreateShopPaymentDto } from "./dto/create-shop-payment.dto";
 import { format } from "date-fns";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -20,7 +20,24 @@ export class ShopDebtsService {
   // ==================== CREATE DEBT ====================
 
   async createDebt(createShopDebtDto: CreateShopDebtDto, userId: string) {
+    if (createShopDebtDto.items && createShopDebtDto.items.length > 0) {
+      return this.createBulkDebt(
+        {
+          items: createShopDebtDto.items,
+          shopName: createShopDebtDto.shopName,
+          date: createShopDebtDto.date,
+          note: createShopDebtDto.note,
+        },
+        userId,
+      );
+    }
+
     const { shopName, date, itemDetails, amount, note } = createShopDebtDto;
+
+    if (amount === undefined || amount === null || isNaN(Number(amount))) {
+      throw new BadRequestException("Amount is required and must be a valid number");
+    }
+
     const debtDate = date ? new Date(date) : new Date();
 
     const debt = await this.prisma.shopDebt.create({
@@ -58,10 +75,21 @@ export class ShopDebtsService {
 
   // ==================== CREATE BULK DEBT ====================
 
-  async createBulkDebt(createBulkShopDebtDto: { items: CreateShopDebtDto[] }, userId: string) {
+  async createBulkDebt(createBulkShopDebtDto: CreateBulkShopDebtDto, userId: string) {
+    const { shopName, date, note, items } = createBulkShopDebtDto;
     const createdDebts = [];
-    for (const item of createBulkShopDebtDto.items) {
-      createdDebts.push(await this.createDebt(item, userId));
+    for (const item of items) {
+      createdDebts.push(
+        await this.createDebt(
+          {
+            ...item,
+            shopName: item.shopName || shopName || "Local Shop",
+            date: item.date || date,
+            note: item.note || note,
+          },
+          userId,
+        ),
+      );
     }
     return createdDebts;
   }
